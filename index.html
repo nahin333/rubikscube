@@ -1,3 +1,5 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Rubik's Graph Lab</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,6 +30,8 @@
   --fwd: #3987e5; --bwd: #d95926; --soft: #1d2631; color-scheme: dark;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
 body {
   background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.5;
   padding-inline: clamp(16px, 3vw, 40px); padding-block: 28px 48px;
@@ -111,6 +115,39 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--fwd); outli
 .explain p { margin: 0; font-size: 14px; color: var(--muted); max-width: 62ch; }
 .explain strong { color: var(--ink); font-weight: 600; display: block; margin-bottom: 2px; }
 code { font-family: var(--f-mono); font-size: 0.92em; }
+details.scan { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+details.scan > summary { cursor: pointer; padding: 14px 16px; display: flex; gap: 6px 14px; align-items: baseline; flex-wrap: wrap; list-style: none; }
+details.scan > summary::-webkit-details-marker { display: none; }
+.s-title { font: 600 16px var(--f-body); }
+.s-title::before { content: "▸"; display: inline-block; margin-right: 8px; transition: transform 0.15s; }
+details[open] .s-title::before { transform: rotate(90deg); }
+.scan-body { padding: 0 16px 16px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)) minmax(260px, 330px); gap: 18px; }
+@media (max-width: 1100px) { .scan-body { grid-template-columns: repeat(2, minmax(0, 1fr)); } .netcol { grid-column: 1 / -1; } }
+@media (max-width: 640px) { .scan-body { grid-template-columns: minmax(0, 1fr); } }
+.slot { display: grid; gap: 10px; min-width: 0; align-content: start; }
+.slot canvas { width: 100%; max-width: 100%; display: block; border-radius: 8px; background: var(--soft); touch-action: none; cursor: move; }
+.faces-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: end; }
+.faces-row label { display: grid; gap: 3px; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
+select { font: 13px var(--f-body); color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 4px 6px; }
+.vh { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.net { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; max-width: 330px; }
+.face { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px; }
+.face button { aspect-ratio: 1; border: 1px solid rgba(0, 0, 0, 0.35); border-radius: 3px; padding: 0; cursor: pointer; min-width: 0; }
+.face button.center { cursor: default; box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.22); }
+.palette { display: flex; gap: 6px; flex-wrap: wrap; }
+.palette button { width: 30px; height: 30px; border-radius: 6px; border: 1px solid rgba(0, 0, 0, 0.35); cursor: pointer; }
+.palette button[aria-pressed="true"] { outline: 2px solid var(--ink); outline-offset: 2px; }
+.counts { font: 12px var(--f-mono); color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 10px; }
+.counts .bad { color: var(--bwd); font-weight: 600; }
+.scan-howto { padding: 0 16px 16px; margin: 0; font-size: 13px; color: var(--muted); max-width: 90ch; }
+.movepad-row { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; border-top: 1px solid var(--line); padding-top: 12px; }
+.field-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+.movepad { display: flex; flex-wrap: wrap; gap: 4px; }
+.movepad .grp { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.movepad button { border: 0; background: transparent; color: var(--ink); font: 600 13px var(--f-mono); padding: 5px 8px; min-width: 34px; cursor: pointer; }
+.movepad button + button { border-left: 1px solid var(--line); }
+.movepad button:hover { background: var(--soft); }
+.phase-sep { font: 600 11px var(--f-body); color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; align-self: center; padding: 0 2px; }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
 </style>
 
@@ -143,10 +180,49 @@ code { font-family: var(--f-mono); font-size: 0.92em; }
     <label class="field"><span>Length <b id="lenOut" style="font-family:var(--f-mono);color:var(--ink)"></b></span>
       <input type="range" id="len" min="1" max="10" value="7">
     </label>
-    <button type="button" class="btn" id="newBtn">New scramble</button>
+    <button type="button" class="btn" id="newBtn">Random scramble</button>
     <button type="button" class="btn primary" id="solveBtn">Solve</button>
+    <div class="movepad-row">
+      <span class="field-label">Make your own scramble</span>
+      <div class="movepad" id="movepad"></div>
+      <div class="play">
+        <button type="button" class="btn" id="undoMove">Undo</button>
+        <button type="button" class="btn" id="clearMoves">Clear</button>
+      </div>
+    </div>
   </section>
   <div class="status" id="status" role="status"></div>
+
+  <details class="scan" id="scanBox">
+    <summary><span class="s-title">Scan a real cube</span><span class="hint">Two photos of three sides each. The page reads the colors and solves the cube with Kociemba's two-phase algorithm.</span></summary>
+    <div class="scan-body">
+      <div class="slot">
+        <div class="card-head"><h2>Photo 1</h2><span class="hint">Three sides around one corner</span></div>
+        <canvas id="photo0" aria-label="First photo with alignment outline"></canvas>
+        <div class="faces-row" id="faces0"></div>
+        <div class="play"><label class="btn" for="file0">Upload photo</label><input type="file" id="file0" accept="image/*" class="vh"></div>
+      </div>
+      <div class="slot">
+        <div class="card-head"><h2>Photo 2</h2><span class="hint">The opposite three sides</span></div>
+        <canvas id="photo1" aria-label="Second photo with alignment outline"></canvas>
+        <div class="faces-row" id="faces1"></div>
+        <div class="play"><label class="btn" for="file1">Upload photo</label><input type="file" id="file1" accept="image/*" class="vh"></div>
+      </div>
+      <div class="slot netcol">
+        <div class="card-head"><h2>Sticker map</h2><span class="hint">Pick a color, then tap stickers to fix them</span></div>
+        <div class="palette" id="palette"></div>
+        <div class="net" id="net"></div>
+        <div class="counts" id="counts"></div>
+        <div class="play">
+          <button type="button" class="btn" id="readBtn">Read colors</button>
+          <button type="button" class="btn" id="sampleBtn">Load sample photos</button>
+          <button type="button" class="btn primary" id="scanSolve">Solve this cube</button>
+        </div>
+        <div class="status" id="scanStatus" role="status"></div>
+      </div>
+    </div>
+    <p class="scan-howto">One photo shows only 27 of the 54 stickers, so it takes two. Hold the cube with one corner pointing at the camera, take the photo, then turn the cube to show the diagonally opposite corner. On each photo, drag the middle handle onto the corner nearest the camera and the six outer handles onto the cube's outline, or drag anywhere else to move the whole outline. Check that the face names under each photo are right, fix any misread stickers in the map, then press Solve.</p>
+  </details>
 
   <div class="main">
     <section class="card">
@@ -162,7 +238,7 @@ code { font-family: var(--f-mono); font-size: 0.92em; }
           <input type="range" id="speed" min="1" max="5" value="3" style="width:80px" aria-label="Animation speed"></label>
       </div>
       <div>
-        <div class="hint" style="margin-bottom:6px">Shortest path (half-turn metric)</div>
+        <div class="hint" style="margin-bottom:6px" id="pathLabel">Shortest path (half-turn metric)</div>
         <div class="chips" id="chips"><span class="empty">Run a search to find the path.</span></div>
       </div>
       <div>
@@ -174,11 +250,11 @@ code { font-family: var(--f-mono); font-size: 0.92em; }
     <div class="right">
       <section class="card">
         <div class="card-head">
-          <h2>Explored state graph</h2>
+          <h2 id="graphTitle">Explored state graph</h2>
           <div class="legend">
-            <span><i style="background:var(--fwd)"></i>Forward tree (from scramble)</span>
-            <span id="bwdLegend"><i style="background:var(--bwd)"></i>Backward tree (from solved)</span>
-            <span><i class="path"></i>Shortest path</span>
+            <span><i style="background:var(--fwd)"></i><span id="legF">Forward tree (from scramble)</span></span>
+            <span id="bwdLegend"><i style="background:var(--bwd)"></i><span id="legB">Backward tree (from solved)</span></span>
+            <span><i class="path"></i><span id="legP">Shortest path</span></span>
           </div>
         </div>
         <div class="graph-box"><canvas id="graph" aria-label="Search tree drawn by depth"></canvas></div>
@@ -197,7 +273,7 @@ code { font-family: var(--f-mono); font-size: 0.92em; }
             <div class="stat"><span>Path length</span><b id="sLen">–</b></div>
             <div class="stat"><span>States visited</span><b id="sNodes">–</b></div>
             <div class="stat"><span>Time</span><b id="sTime">–</b></div>
-            <div class="stat"><span>Deepest level</span><b id="sDepth">–</b></div>
+            <div class="stat"><span id="sDepthLabel">Deepest level</span><b id="sDepth">–</b></div>
           </div>
           <p class="compare" id="compare"></p>
         </section>
@@ -399,7 +475,7 @@ function createSearch(P, startKey, algo) {
 
 // ---------- App state ----------
 const $ = id => document.getElementById(id);
-const app = { N: 3, algo: 'bidir', P: null, search: null, running: false, sol: null, pos: 0, states: [], cur: null, startState: null, selected: -1, playing: false, busy: false, drawn: [], t0: 0, elapsed: 0 };
+const app = { mode: 'search', scanInfo: null, N: 3, algo: 'bidir', P: null, search: null, running: false, sol: null, pos: 0, states: [], cur: null, startState: null, selected: -1, playing: false, busy: false, drawn: [], t0: 0, elapsed: 0 };
 
 function tok(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
 const fmt = n => n.toLocaleString('en-US');
@@ -434,6 +510,31 @@ function randomScramble(len) {
 function stateFrom(base, moves) { let s = base; for (const mi of moves) s = applyMove(app.P, s, mi); return s; }
 
 // ---------- 3D cube ----------
+function roundedSquare(size, r) {
+  const s = size / 2, sh = new THREE.Shape();
+  sh.moveTo(-s + r, -s); sh.lineTo(s - r, -s); sh.quadraticCurveTo(s, -s, s, -s + r); sh.lineTo(s, s - r);
+  sh.quadraticCurveTo(s, s, s - r, s); sh.lineTo(-s + r, s); sh.quadraticCurveTo(-s, s, -s, s - r); sh.lineTo(-s, -s + r);
+  sh.quadraticCurveTo(-s, -s, -s + r, -s);
+  return new THREE.ShapeGeometry(sh, 4);
+}
+function buildCubies(P, parent) {
+  const m = P.m, map = new Map(), cubies = [], mats = [];
+  const body = new THREE.BoxGeometry(0.97, 0.97, 0.97), bodyMat = new THREE.MeshLambertMaterial({ color: 0x15181d });
+  const sg = roundedSquare(0.84, 0.12);
+  for (let x = -m; x <= m; x += 2) for (let y = -m; y <= m; y += 2) for (let z = -m; z <= m; z += 2) {
+    if (Math.abs(x) < m && Math.abs(y) < m && Math.abs(z) < m) continue;
+    const g = new THREE.Group(); g.position.set(x / 2, y / 2, z / 2); g.userData.p = [x, y, z];
+    g.add(new THREE.Mesh(body, bodyMat)); parent.add(g); cubies.push(g); map.set([x, y, z].join(), g);
+  }
+  P.stickers.forEach((st, i) => {
+    const mat = new THREE.MeshLambertMaterial({ color: STICKER_HEX[st.face], side: THREE.DoubleSide });
+    const mesh = new THREE.Mesh(sg, mat), [nx, ny, nz] = st.n;
+    mesh.position.set(nx * 0.488, ny * 0.488, nz * 0.488);
+    if (nx) mesh.rotation.y = nx * Math.PI / 2; else if (ny) mesh.rotation.x = -ny * Math.PI / 2; else if (nz < 0) mesh.rotation.y = Math.PI;
+    map.get(st.p.join()).add(mesh); mats[i] = mat;
+  });
+  return { cubies, mats };
+}
 const cube3 = (() => {
   const canvas = $('cube');
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
@@ -447,31 +548,10 @@ const cube3 = (() => {
   const pivot = new THREE.Group(); root.add(pivot);
   let cubies = [], stickerMats = [], P = null;
 
-  function rounded(size, r) {
-    const s = size / 2, sh = new THREE.Shape();
-    sh.moveTo(-s + r, -s); sh.lineTo(s - r, -s); sh.quadraticCurveTo(s, -s, s, -s + r); sh.lineTo(s, s - r);
-    sh.quadraticCurveTo(s, s, s - r, s); sh.lineTo(-s + r, s); sh.quadraticCurveTo(-s, s, -s, s - r); sh.lineTo(-s, -s + r);
-    sh.quadraticCurveTo(-s, -s, -s + r, -s);
-    return new THREE.ShapeGeometry(sh, 4);
-  }
   function build(puzzle) {
     P = puzzle;
-    cubies.forEach(c => c.parent.remove(c)); cubies = []; stickerMats = [];
-    const m = P.m, map = new Map();
-    const body = new THREE.BoxGeometry(0.97, 0.97, 0.97), bodyMat = new THREE.MeshLambertMaterial({ color: 0x15181d });
-    const sg = rounded(0.84, 0.12);
-    for (let x = -m; x <= m; x += 2) for (let y = -m; y <= m; y += 2) for (let z = -m; z <= m; z += 2) {
-      if (Math.abs(x) < m && Math.abs(y) < m && Math.abs(z) < m) continue;
-      const g = new THREE.Group(); g.position.set(x / 2, y / 2, z / 2); g.userData.p = [x, y, z];
-      g.add(new THREE.Mesh(body, bodyMat)); root.add(g); cubies.push(g); map.set([x, y, z].join(), g);
-    }
-    P.stickers.forEach((st, i) => {
-      const mat = new THREE.MeshLambertMaterial({ color: STICKER_HEX[st.face], side: THREE.DoubleSide });
-      const mesh = new THREE.Mesh(sg, mat), [nx, ny, nz] = st.n;
-      mesh.position.set(nx * 0.488, ny * 0.488, nz * 0.488);
-      if (nx) mesh.rotation.y = nx * Math.PI / 2; else if (ny) mesh.rotation.x = -ny * Math.PI / 2; else if (nz < 0) mesh.rotation.y = Math.PI;
-      map.get(st.p.join()).add(mesh); stickerMats[i] = mat;
-    });
+    cubies.forEach(c => c.parent.remove(c));
+    ({ cubies, mats: stickerMats } = buildCubies(P, root));
     camera.position.set(0, 0, P.N * 3.55); camera.lookAt(0, 0, 0);
     resize();
   }
@@ -542,6 +622,7 @@ const graph = (() => {
     ctx.clearRect(0, 0, W, H);
     const ink = tok('--ink'), muted = tok('--muted'), line = tok('--line'), fwd = tok('--fwd'), bwd = tok('--bwd'), bg = tok('--bg');
     ctx.font = '11px "JetBrains Mono", monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    if (app.mode === 'scan') { app.drawn = []; drawTwoPhase(W, H, { ink, muted, line, fwd, bwd, bg, soft: tok('--soft') }); return; }
     if (!S) { ctx.fillStyle = muted; ctx.fillText('Press Solve to start exploring.', W / 2, H / 2); return; }
     const G = geometry(S, W, H);
     // depth columns
@@ -619,6 +700,49 @@ const graph = (() => {
       const [x, y] = G.pos(i); ctx.strokeStyle = c; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(x, y, 7, 0, Math.PI * 2); ctx.stroke();
     }
   }
+  // Kociemba view: phase 1 walks from the scramble into the subgroup H, phase 2 stays inside H.
+  function drawTwoPhase(W, H, c) {
+    const moves = app.sol || [], L = moves.length, k1 = app.scanInfo ? app.scanInfo.split : 0;
+    const cy = H * 0.54, R = Math.min(H * 0.36, W * 0.23), hx = W - R - 36, x0 = 52;
+    const E = [hx - R, cy], Z = [hx + R * 0.4, cy + R * 0.1], S0 = [x0, cy];
+    const bez = (a, b, ctl, t) => [(1 - t) ** 2 * a[0] + 2 * (1 - t) * t * ctl[0] + t * t * b[0], (1 - t) ** 2 * a[1] + 2 * (1 - t) * t * ctl[1] + t * t * b[1]];
+    const pts = [];
+    for (let k = 0; k <= L; k++) {
+      if (k <= k1) pts.push(k1 === 0 ? E : bez(S0, E, [(x0 + E[0]) / 2, cy - H * 0.32], k / k1));
+      else pts.push(bez(E, Z, [hx - R * 0.1, cy + R * 0.95], (k - k1) / (L - k1)));
+    }
+    if (k1 === 0 && L) pts[0] = E;
+    ctx.textBaseline = 'middle';
+    ctx.font = '600 12px "Instrument Sans", sans-serif'; ctx.fillStyle = c.muted; ctx.textAlign = 'left';
+    ctx.fillText('Cube graph G · 4.3 × 10¹⁹ vertices', 14, 18);
+    ctx.fillStyle = c.soft; ctx.strokeStyle = c.line; ctx.lineWidth = 1.5; ctx.setLineDash([5, 4]);
+    ctx.beginPath(); ctx.arc(hx, cy, R, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = c.ink; ctx.textAlign = 'center';
+    ctx.fillText('Subgroup H = ⟨U, D, R2, L2, F2, B2⟩', hx, cy - R - 26);
+    ctx.font = '11px "JetBrains Mono", monospace'; ctx.fillStyle = c.muted;
+    ctx.fillText('19,508,428,800 vertices', hx, cy - R - 10);
+    if (!L) { ctx.fillStyle = c.ink; ctx.fillText('Already solved', hx, cy); return; }
+    for (let k = 1; k <= L; k++) {
+      ctx.strokeStyle = c.bg; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(...pts[k - 1]); ctx.lineTo(...pts[k]); ctx.stroke();
+      ctx.strokeStyle = k <= k1 ? c.fwd : c.bwd; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(...pts[k - 1]); ctx.lineTo(...pts[k]); ctx.stroke();
+    }
+    ctx.font = '600 10px "JetBrains Mono", monospace';
+    for (let k = 1; k <= L; k++) {
+      const [x1, y1] = pts[k - 1], [x2, y2] = pts[k], t = app.P.moves[moves[k - 1]].name;
+      const off = k % 2 ? -11 : 11, mx = (x1 + x2) / 2, my = (y1 + y2) / 2 + off;
+      ctx.fillStyle = k <= app.pos ? c.ink : c.muted; ctx.fillText(t, mx, my);
+    }
+    pts.forEach(([x, y], k) => {
+      ctx.fillStyle = c.bg; ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = k <= k1 ? c.fwd : c.bwd; ctx.lineWidth = 2; ctx.stroke();
+    });
+    const [px, py] = pts[Math.min(app.pos, L)];
+    ctx.fillStyle = c.ink; ctx.beginPath(); ctx.arc(px, py, 6.5, 0, Math.PI * 2); ctx.fill();
+    ctx.font = '600 11px "Instrument Sans", sans-serif'; ctx.fillStyle = c.ink;
+    ctx.textAlign = 'left'; ctx.fillText('Scramble', S0[0] - 8, S0[1] + 20);
+    ctx.textAlign = 'left'; ctx.fillText('Solved', Z[0] + 12, Z[1] - 12);
+    if (k1 > 0) { ctx.fillStyle = c.muted; ctx.textAlign = 'right'; ctx.fillText(`enters H after ${k1} turns`, E[0] - 10, E[1] + 22); }
+  }
   function nearest(e) {
     const r = cv.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top;
     let best = -1, bd = 100;
@@ -679,13 +803,19 @@ function drawNeighbours() {
   html += `<circle cx="${cx}" cy="${cy}" r="11" fill="var(--ink)"/>`;
   html += `<text x="${cx}" y="${cy + 30}" text-anchor="middle" font-family="Instrument Sans, sans-serif" font-size="12" fill="var(--muted)">${solvedNow ? 'solved' : app.sol && app.selected < 0 ? `${app.sol.length - app.pos} turns to go` : 'inspected state'}</text>`;
   svg.innerHTML = html;
-  $('nbrHint').textContent = `degree ${k} · ${explored} seen by search`;
+  $('nbrHint').textContent = S ? `degree ${k} · ${explored} seen by search` : `degree ${k}`;
 }
 
 // ---------- Chart: states per depth ----------
 function drawChart() {
   const svg = $('chart'), S = app.search, tip = $('tip');
   const W = svg.getBoundingClientRect().width || 400, H = 230, padL = 46, padR = 8, padT = 10, padB = 28;
+  $('chartLegend').hidden = true;
+  if (app.mode === 'scan') {
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.onmousemove = null;
+    svg.innerHTML = `<text x="${W / 2}" y="${H / 2 - 8}" text-anchor="middle" fill="var(--muted)" font-size="13">The two-phase solver uses iterative deepening, not a breadth-first tree,</text><text x="${W / 2}" y="${H / 2 + 12}" text-anchor="middle" fill="var(--muted)" font-size="13">so there are no per-depth counts to chart.</text>`;
+    return;
+  }
   if (!S) { svg.innerHTML = `<text x="${W / 2}" y="${H / 2}" text-anchor="middle" fill="var(--muted)" font-size="13">No search yet</text>`; return; }
   const bidir = S.algo === 'bidir', series = bidir ? [0, 1] : [0];
   const depths = Math.max(S.counts[0].length, bidir ? S.counts[1].length : 0);
@@ -728,6 +858,14 @@ function drawChart() {
 function cumulative(arr, d) { let s = 0; for (let k = 0; k <= Math.min(d, arr.length - 1); k++) s += arr[k]; return s; }
 function updateStats() {
   const S = app.search;
+  $('sDepthLabel').textContent = app.mode === 'scan' ? 'Phase 1 + phase 2' : 'Deepest level';
+  if (app.mode === 'scan') {
+    const L = app.sol ? app.sol.length : 0, k1 = app.scanInfo.split;
+    $('sLen').textContent = `${L} turns`; $('sNodes').textContent = 'n/a';
+    $('sTime').textContent = `${Math.round(app.scanInfo.ms)} ms`; $('sDepth').textContent = `${k1} + ${L - k1}`;
+    $('compare').innerHTML = `A photographed cube can be up to 20 turns from solved, far beyond what breadth-first search can reach. Kociemba's algorithm first finds a path into the subgroup <b>H</b> (${k1} turns here), where every edge and corner is oriented. It then solves inside H using only the 10 moves that keep it there (${L - k1} turns). The result is short, though not guaranteed to be the shortest.`;
+    return;
+  }
   $('sNodes').textContent = S ? fmt(S.n) : '–';
   $('sTime').textContent = S ? (app.elapsed < 1000 ? `${Math.round(app.elapsed)} ms` : `${(app.elapsed / 1000).toFixed(2)} s`) : '–';
   $('sDepth').textContent = S ? (S.algo === 'bidir' ? `${S.counts[0].length - 1} + ${S.counts[1].length - 1}` : `${S.counts[0].length - 1}`) : '–';
@@ -751,7 +889,10 @@ function renderChips() {
   const el = $('chips');
   if (!app.sol) { el.innerHTML = '<span class="empty">Run a search to find the path.</span>'; return; }
   if (!app.sol.length) { el.innerHTML = '<span class="empty">Already solved, path length 0.</span>'; return; }
-  el.innerHTML = app.sol.map((mi, k) => `<button type="button" class="chip ${k < app.pos ? 'done' : ''} ${k === app.pos - 1 ? 'now' : ''}" data-k="${k + 1}">${app.P.moves[mi].name}</button>`).join('');
+  const split = app.mode === 'scan' ? app.scanInfo.split : -1;
+  el.innerHTML = app.sol.map((mi, k) => (k === split && k > 0 ? '<span class="phase-sep">Phase 2</span>' : '') +
+    `<button type="button" class="chip ${k < app.pos ? 'done' : ''} ${k === app.pos - 1 ? 'now' : ''}" data-k="${k + 1}">${app.P.moves[mi].name}</button>`).join('');
+  if (split > 0) el.insertAdjacentHTML('afterbegin', '<span class="phase-sep">Phase 1</span>');
 }
 $('chips').addEventListener('click', e => { const b = e.target.closest('[data-k]'); if (b) jumpTo(+b.dataset.k); });
 const speedMs = () => [0, 620, 420, 280, 170, 90][+$('speed').value];
@@ -799,7 +940,7 @@ function solve() {
   if (app.running) return;
   let moves;
   try { moves = parseScramble($('scramble').value); } catch (e) { setStatus(e.message, true); return; }
-  app.playing = false; app.sol = null; app.selected = -1;
+  app.playing = false; app.sol = null; app.selected = -1; app.mode = 'search'; setLegend();
   app.startState = stateFrom(app.P.solved, moves); app.cur = app.startState; cube3.paint(app.cur);
   renderChips();
   const S = createSearch(app.P, toKey(app.startState), app.algo);
@@ -838,14 +979,14 @@ function newScramble() {
 function resetView() {
   let moves = [];
   try { moves = parseScramble($('scramble').value); setStatus(''); } catch (e) { setStatus(e.message, true); }
-  app.search = null; app.sol = null; app.selected = -1; app.playing = false;
+  app.search = null; app.sol = null; app.selected = -1; app.playing = false; app.mode = 'search'; setLegend();
   app.startState = stateFrom(app.P.solved, moves); app.cur = app.startState; cube3.paint(app.cur);
   renderChips(); drawNeighbours(); graph.draw(); drawChart(); updateStats(); syncPlay();
   $('inspect').textContent = 'Columns are distance from the root. Hover a dot to see how the search reached it, click it to load that state onto the cube.';
 }
 
 function setPuzzle(N) {
-  app.N = N; app.P = buildPuzzle(N); cube3.build(app.P);
+  app.N = N; app.P = buildPuzzle(N); cube3.build(app.P); renderMovepad();
   document.querySelectorAll('#puzzleSeg button').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.n === N)));
   const len = $('len'); len.max = N === 2 ? 11 : 10; len.value = N === 2 ? 8 : 7; $('lenOut').textContent = len.value;
   $('facts').innerHTML = N === 3
@@ -856,8 +997,48 @@ function setPuzzle(N) {
 function setAlgo(a) {
   app.algo = a;
   document.querySelectorAll('#algoSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.a === a)));
-  $('bwdLegend').hidden = a !== 'bidir';
+  setLegend();
 }
+function setLegend() {
+  const scan = app.mode === 'scan';
+  $('legF').textContent = scan ? 'Phase 1 (reach subgroup H)' : 'Forward tree (from scramble)';
+  $('legB').textContent = scan ? 'Phase 2 (finish inside H)' : 'Backward tree (from solved)';
+  $('legP').textContent = scan ? 'Solution path' : 'Shortest path';
+  $('bwdLegend').hidden = !(scan || app.algo === 'bidir');
+  $('graphTitle').textContent = scan ? 'Two-phase route' : 'Explored state graph';
+  $('pathLabel').textContent = scan ? 'Two-phase solution (half-turn metric)' : 'Shortest path (half-turn metric)';
+  $('inspect').textContent = scan
+    ? 'Phase 1 searches for any path into H, the positions reachable with U, D, R2, L2, F2 and B2. Phase 2 solves inside H.'
+    : 'Columns are distance from the root. Hover a dot to see how the search reached it, click it to load that state onto the cube.';
+}
+
+// ---------- Make your own scramble ----------
+function renderMovepad() {
+  const faces = [...new Set(app.P.moves.map(m => m.face))];
+  $('movepad').innerHTML = faces.map(f => `<span class="grp">${[f, f + "'", f + '2'].map(n => `<button type="button" data-m="${n}" aria-label="Turn ${n}">${n}</button>`).join('')}</span>`).join('');
+}
+let padBusy = false;
+async function padMove(name) {
+  if (app.running || padBusy) return;
+  let moves;
+  try { moves = parseScramble($('scramble').value); } catch (e) { setStatus(e.message, true); return; }
+  if (app.sol || app.selected >= 0 || app.mode === 'scan') resetView();
+  padBusy = true;
+  const mi = app.P.moveIndex.get(name);
+  await cube3.animate(mi, Math.min(speedMs(), 220));
+  moves.push(mi);
+  $('scramble').value = moves.map(m => app.P.moves[m].name).join(' ');
+  app.startState = applyMove(app.P, app.startState, mi); app.cur = app.startState; cube3.paint(app.cur);
+  drawNeighbours(); padBusy = false;
+  setStatus(`Your scramble: ${moves.length} turn${moves.length === 1 ? '' : 's'}. Press Solve when ready.`);
+}
+$('movepad').addEventListener('click', e => { const b = e.target.closest('[data-m]'); if (b) padMove(b.dataset.m); });
+$('undoMove').onclick = () => {
+  if (app.running || padBusy) return;
+  let moves; try { moves = parseScramble($('scramble').value); } catch (e) { setStatus(e.message, true); return; }
+  moves.pop(); $('scramble').value = moves.map(m => app.P.moves[m].name).join(' '); resetView();
+};
+$('clearMoves').onclick = () => { if (app.running || padBusy) return; $('scramble').value = ''; resetView(); setStatus('Cleared. Tap turns above, or type moves into the scramble box.'); };
 $('puzzleSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b && !app.running) setPuzzle(+b.dataset.n); });
 $('algoSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b && !app.running) { setAlgo(b.dataset.a); resetView(); } });
 $('len').addEventListener('input', () => { $('lenOut').textContent = $('len').value; });
@@ -865,7 +1046,389 @@ $('len').addEventListener('change', () => { if (!app.running) newScramble(); });
 $('newBtn').onclick = newScramble;
 $('solveBtn').onclick = solve;
 $('scramble').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); resetView(); solve(); } });
-$('scramble').addEventListener('change', () => { if (!app.running) resetView(); });
+let typeTimer = 0;
+$('scramble').addEventListener('input', () => { clearTimeout(typeTimer); typeTimer = setTimeout(() => { if (!app.running) resetView(); }, 350); });
+
+// ---------- Scanning a real cube from two photos ----------
+const scan = (() => {
+  const P3 = buildPuzzle(3);
+  const FACE_NAME = ['White', 'Red', 'Green', 'Yellow', 'Orange', 'Blue'];
+  const FACE_CSS = STICKER_HEX.map(h => '#' + h.toString(16).padStart(6, '0'));
+  const NV = FACES.map(f => NORMAL[f]);
+  const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+  const det3 = (a, b, c) => a[0] * (b[1] * c[2] - b[2] * c[1]) - a[1] * (b[0] * c[2] - b[2] * c[0]) + a[2] * (b[0] * c[1] - b[1] * c[0]);
+  // Standard (Kociemba) facelet order: each face read row by row in the usual unfolded net.
+  const VIEW = { U: { c: [1, 0, 0], r: [0, 0, 1] }, R: { c: [0, 0, -1], r: [0, -1, 0] }, F: { c: [1, 0, 0], r: [0, -1, 0] },
+    D: { c: [1, 0, 0], r: [0, 0, -1] }, L: { c: [0, 0, 1], r: [0, -1, 0] }, B: { c: [-1, 0, 0], r: [0, -1, 0] } };
+  const cell = P3.stickers.map(st => { const v = VIEW[FACES[st.face]]; return { row: dot(st.p, v.r) / 2 + 1, col: dot(st.p, v.c) / 2 + 1 }; });
+  const kIndex = P3.stickers.map((st, i) => st.face * 9 + cell[i].row * 3 + cell[i].col);
+  const isCenter = P3.stickers.map(st => st.p.filter(v => v !== 0).length === 1);
+  const centerOf = FACES.map((_, f) => P3.stickers.findIndex((st, i) => st.face === f && isCenter[i]));
+  const colors = new Uint8Array(P3.solved);
+  let brush = 0;
+
+  // Hexagon handles in image pixels: 0 near corner, then outline clockwise from the top.
+  const C = 0, T = 1, UR = 2, LR = 3, BT = 4, LL = 5, UL = 6;
+  const EDGE = [BT, UR, UL];                       // V - 3 n_A, V - 3 n_B, V - 3 n_C
+  const FAR = { '1,2': T, '0,1': LR, '0,2': LL };  // V - 3 n_Y - 3 n_Z
+  const QUADS = [[C, UR, T, UL], [C, UL, LL, BT], [C, UR, LR, BT]]; // top, lower-left, lower-right
+
+  const slots = [0, 1].map(k => ({ k, cv: $('photo' + k), img: null, data: null, w: 800, h: 600, handles: null, faces: k ? [3, 5, 4] : [0, 2, 1], manual: [false, false, false] }));
+  function defaultHandles(s) {
+    const cx = s.w / 2, cy = s.h / 2, r = Math.min(s.w, s.h) * 0.36;
+    s.handles = [[cx, cy]].concat([-90, -30, 30, 90, 150, 210].map(a => [cx + r * Math.cos(a * Math.PI / 180), cy + r * Math.sin(a * Math.PI / 180)]));
+  }
+  slots.forEach(defaultHandles);
+
+  const bil = (q, s, t) => [0, 1].map(d => q[0][d] + s * (q[1][d] - q[0][d]) + t * (q[3][d] - q[0][d]) + s * t * (q[2][d] - q[1][d] - q[3][d] + q[0][d]));
+  // Image position of every sticker of the three visible faces, by 3D geometry.
+  function stickerPoints(s) {
+    const [A, B, Cf] = s.faces, n = [NV[A], NV[B], NV[Cf]], h = s.handles;
+    const V = [0, 1, 2].map(d => 1.5 * (n[0][d] + n[1][d] + n[2][d]));
+    const out = [];
+    P3.stickers.forEach((st, i) => {
+      const xi = s.faces.indexOf(st.face); if (xi < 0) return;
+      const [yi, zi] = [0, 1, 2].filter(j => j !== xi);
+      const q = [0, 1, 2].map(d => st.p[d] / 2 + 0.5 * st.n[d]);
+      const sv = (dot(V, n[yi]) - dot(q, n[yi])) / 3, tv = (dot(V, n[zi]) - dot(q, n[zi])) / 3;
+      const quad = [h[C], h[EDGE[yi]], h[FAR[[yi, zi].join()]], h[EDGE[zi]]];
+      out.push({ i, xy: bil(quad, sv, tv) });
+    });
+    return out;
+  }
+  function gridPoints(s) {
+    const pts = [];
+    QUADS.forEach(qi => { const q = qi.map(j => s.handles[j]); for (const a of [1 / 6, 0.5, 5 / 6]) for (const b of [1 / 6, 0.5, 5 / 6]) pts.push(bil(q, a, b)); });
+    return pts;
+  }
+  function facesValid(s) {
+    const [A, B, Cf] = s.faces;
+    return new Set(s.faces).size === 3 && Math.abs(det3(NV[A], NV[B], NV[Cf]) - 1) < 1e-9;
+  }
+
+  // Color sampling
+  function sample(s, x, y) {
+    const r = Math.max(2, Math.round(Math.hypot(s.handles[UR][0] - s.handles[C][0], s.handles[UR][1] - s.handles[C][1]) / 3 * 0.14));
+    const R = [], G = [], Bc = [], step = Math.max(1, Math.floor(r / 4));
+    for (let dy = -r; dy <= r; dy += step) for (let dx = -r; dx <= r; dx += step) {
+      const px = Math.round(x + dx), py = Math.round(y + dy);
+      if (px < 0 || py < 0 || px >= s.w || py >= s.h) continue;
+      const o = (py * s.w + px) * 4; R.push(s.data[o]); G.push(s.data[o + 1]); Bc.push(s.data[o + 2]);
+    }
+    const med = a => { if (!a.length) return 0; a.sort((p, q) => p - q); return a[a.length >> 1]; };
+    return [med(R), med(G), med(Bc)];
+  }
+  function lab([r, g, b]) {
+    const lin = v => { v /= 255; return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
+    const R = lin(r), G = lin(g), B = lin(b);
+    const X = (R * 0.4124 + G * 0.3576 + B * 0.1805) / 0.95047, Y = R * 0.2126 + G * 0.7152 + B * 0.0722, Z = (R * 0.0193 + G * 0.1192 + B * 0.9505) / 1.08883;
+    const f = t => t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116;
+    return [116 * f(Y) - 16, 500 * (f(X) - f(Y)), 200 * (f(Y) - f(Z))];
+  }
+  function guessFace([r, g, b]) {
+    const mx = Math.max(r, g, b), mn = Math.min(r, g, b), v = mx / 255, sat = mx ? (mx - mn) / mx : 0;
+    if (sat < 0.28 && v > 0.45) return 0;
+    let h = 0; const d = mx - mn || 1;
+    if (mx === r) h = ((g - b) / d) % 6; else if (mx === g) h = (b - r) / d + 2; else h = (r - g) / d + 4;
+    h = (h * 60 + 360) % 360;
+    if (h < 12 || h >= 330) return 1;
+    if (h < 38) return 4;
+    if (h < 75) return 3;
+    if (h < 170) return 2;
+    if (h < 275) return 5;
+    return 1;
+  }
+  function autoFaces(s) {
+    if (!s.data) return;
+    QUADS.forEach((qi, j) => { if (!s.manual[j]) s.faces[j] = guessFace(sample(s, ...bil(qi.map(t => s.handles[t]), 0.5, 0.5))); });
+    renderSelects(s);
+  }
+
+  // Reading all stickers: centers are the color references, then each color gets exactly 9 stickers.
+  function readColors() {
+    const got = new Map();
+    for (const s of slots) {
+      if (!s.data) continue;
+      if (!facesValid(s)) return fail(`Photo ${s.k + 1}: ${FACE_NAME[s.faces[0]]} on top, ${FACE_NAME[s.faces[1]]} on the left and ${FACE_NAME[s.faces[2]]} on the right can't meet at one corner. Check the face names under the photo.`);
+      for (const { i, xy } of stickerPoints(s)) got.set(i, lab(sample(s, ...xy)));
+    }
+    const seen = new Set([...got.keys()].map(i => P3.stickers[i].face));
+    if (seen.size < 6) {
+      const missing = FACE_NAME.filter((_, f) => !seen.has(f));
+      return fail(`The photos cover ${seen.size} of the 6 sides. Missing: ${missing.join(', ')}. Upload a photo of the opposite corner.`);
+    }
+    const refs = centerOf.map(i => got.get(i));
+    const pairs = [];
+    for (const [i, L] of got) {
+      if (isCenter[i]) continue;
+      refs.forEach((rf, f) => pairs.push([0.4 * (L[0] - rf[0]) ** 2 + (L[1] - rf[1]) ** 2 + (L[2] - rf[2]) ** 2, i, f]));
+    }
+    pairs.sort((a, b) => a[0] - b[0]);
+    const left = [8, 8, 8, 8, 8, 8], done = new Set();
+    for (const [, i, f] of pairs) { if (done.has(i) || !left[f]) continue; colors[i] = 48 + f; left[f]--; done.add(i); }
+    centerOf.forEach((i, f) => colors[i] = 48 + f);
+    renderNet(); slots.forEach(drawSlot);
+    say('Colors read. Check the map against your cube, fix any wrong stickers, then press Solve this cube.');
+    return true;
+  }
+  function fail(msg) { say(msg, true); return false; }
+  function say(msg, err) { $('scanStatus').textContent = msg; $('scanStatus').classList.toggle('err', !!err); }
+
+  // Is this a cube that can exist? Count colors, then check pieces, twist, flip and parity.
+  function validate(col) {
+    const cnt = [0, 0, 0, 0, 0, 0]; col.forEach(c => cnt[c - 48]++);
+    const off = cnt.map((n, f) => n !== 9 ? `${n} ${FACE_NAME[f].toLowerCase()}` : '').filter(Boolean);
+    if (off.length) return `Each color must appear 9 times, but the map has ${off.join(', ')}. Fix the map first.`;
+    const name = g => g.map(i => FACES[NV.findIndex(n => n.join() === P3.stickers[i].n.join())]).join('');
+    const colorNames = cs => cs.map(c => FACE_NAME[c - 48].toLowerCase()).join('-');
+    const parity = perm => { let p = 0; const seen = new Array(perm.length).fill(false); for (let i = 0; i < perm.length; i++) { if (seen[i]) continue; let j = i, len = 0; while (!seen[j]) { seen[j] = true; j = perm[j]; len++; } p += len - 1; } return p % 2; };
+    // corners: U/D sticker first, then the other two in a fixed handedness
+    const corners = P3.corners.map(g => {
+      const ud = g.find(i => P3.stickers[i].n[1] !== 0), rest = g.filter(i => i !== ud);
+      if (det3(P3.stickers[ud].n, P3.stickers[rest[0]].n, P3.stickers[rest[1]].n) < 0) rest.reverse();
+      return [ud, ...rest];
+    });
+    const homeC = corners.map(o => o.map(i => P3.solved[i]).join());
+    const cp = [], usedC = new Map(); let twist = 0;
+    for (let k = 0; k < corners.length; k++) {
+      const cur = corners[k].map(i => col[i]), t = cur.findIndex(c => c === 48 || c === 51);
+      const rotd = t < 0 ? null : [cur[t], cur[(t + 1) % 3], cur[(t + 2) % 3]].join();
+      const h = rotd ? homeC.indexOf(rotd) : -1;
+      if (h < 0) return `The corner at ${name(corners[k])} reads ${colorNames(cur)}, which no real corner piece has. One of its stickers is probably misread.`;
+      if (usedC.has(h)) return `Two corners (at ${name(corners[usedC.get(h)])} and ${name(corners[k])}) both read as the same piece. One of their stickers is probably misread.`;
+      usedC.set(h, k); cp.push(h); twist += t;
+    }
+    const edges = P3.edges.map(g => {
+      const pri = g.find(i => P3.stickers[i].n[1] !== 0) ?? g.find(i => P3.stickers[i].n[2] !== 0);
+      return [pri, g.find(i => i !== pri)];
+    });
+    const homeE = edges.map(o => o.map(i => P3.solved[i]).sort().join());
+    const ep = [], usedE = new Map(); let flip = 0;
+    for (let k = 0; k < edges.length; k++) {
+      const cur = edges[k].map(i => col[i]), h = homeE.indexOf([...cur].sort().join());
+      if (h < 0) return `The edge at ${name(edges[k])} reads ${colorNames(cur)}, which no real edge piece has. One of its stickers is probably misread.`;
+      if (usedE.has(h)) return `Two edges (at ${name(edges[usedE.get(h)])} and ${name(edges[k])}) both read as the same piece. One of their stickers is probably misread.`;
+      usedE.set(h, k); ep.push(h);
+      const prim = cur.find(c => c === 48 || c === 51) ?? cur.find(c => c === 50 || c === 53);
+      if (cur[0] !== prim) flip++;
+    }
+    if (twist % 3) return 'One corner is twisted in place. Either a corner sticker is misread, or the cube was reassembled with a twisted corner, which no sequence of turns can fix.';
+    if (flip % 2) return 'One edge is flipped in place. Either an edge sticker is misread, or the cube was reassembled with a flipped edge, which no sequence of turns can fix.';
+    if (parity(cp) !== parity(ep)) return 'Two pieces appear swapped, which no sequence of turns can produce. Two stickers are probably misread or swapped in the map.';
+    return null;
+  }
+
+  // In H = <U, D, R2, L2, F2, B2>: U/D faces hold only U/D colors and middle-layer edges show F/B colors on F/B.
+  function inH(st) {
+    for (let i = 0; i < P3.S; i++) { const f = P3.stickers[i].face; if ((f === 0 || f === 3) && st[i] !== 48 && st[i] !== 51) return false; }
+    for (const g of P3.edges) {
+      if (g.some(i => P3.stickers[i].n[1] !== 0)) continue;
+      const z = g.find(i => P3.stickers[i].n[2] !== 0);
+      if (st[z] !== 50 && st[z] !== 53) return false;
+    }
+    return true;
+  }
+  const hMove = mi => { const m = P3.moves[mi]; return m.face === 'U' || m.face === 'D' || m.q === 2; };
+  function phaseSplit(states, moves) {
+    for (let k = 0; k <= moves.length; k++) if (inH(states[k]) && moves.slice(k).every(hMove)) return k;
+    return moves.length;
+  }
+
+  // Kociemba two-phase solver (cubejs), built in a worker so the page stays responsive.
+  const LIB = ['https://cdn.jsdelivr.net/npm/cubejs@1.3.2/lib/cube.js', 'https://cdn.jsdelivr.net/npm/cubejs@1.3.2/lib/solve.js'];
+  let solverP = null;
+  function loadMain() {
+    return LIB.reduce((p, src) => p.then(() => new Promise((res, rej) => { const el = document.createElement('script'); el.src = src; el.onload = res; el.onerror = () => rej(new Error('Could not load the solver library. Check the internet connection.')); document.head.appendChild(el); })), Promise.resolve())
+      .then(() => { window.Cube.initSolver(); return { solve: s => Promise.resolve(window.Cube.fromString(s).solve()) }; });
+  }
+  function getSolver() {
+    if (solverP) return solverP;
+    solverP = new Promise((resolve) => {
+      let w;
+      try {
+        const src = `importScripts(${LIB.map(u => JSON.stringify(u)).join(',')});Cube.initSolver();postMessage({ready:1});onmessage=e=>{try{postMessage({id:e.data.id,sol:Cube.fromString(e.data.s).solve()})}catch(err){postMessage({id:e.data.id,error:String(err)})}};`;
+        w = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
+      } catch (e) { resolve(loadMain()); return; }
+      const pending = new Map(); let id = 0, ready = false;
+      w.onmessage = e => {
+        if (e.data.ready) { ready = true; resolve({ solve: s => new Promise((ok, no) => { pending.set(++id, { ok, no }); w.postMessage({ id, s }); }) }); return; }
+        const p = pending.get(e.data.id); pending.delete(e.data.id);
+        e.data.error ? p.no(new Error(e.data.error)) : p.ok(e.data.sol);
+      };
+      w.onerror = () => { if (!ready) { w.terminate(); resolve(loadMain()); } };
+    }).catch(e => { solverP = null; throw e; });
+    return solverP;
+  }
+
+  async function solveScanned() {
+    if (app.running) return;
+    const err = validate(colors);
+    if (err) return fail(err);
+    say('Loading the two-phase solver. The first run builds its lookup tables, which takes a few seconds.');
+    $('scanSolve').disabled = true;
+    try {
+      const solver = await getSolver();
+      say('Solving…');
+      const ks = new Array(54); colors.forEach((c, i) => ks[kIndex[i]] = 'URFDLB'[c - 48]);
+      const t0 = performance.now();
+      const solStr = (await solver.solve(ks.join(''))) || '';
+      const ms = performance.now() - t0;
+      if (app.N !== 3) setPuzzle(3);
+      const moves = solStr.trim() ? solStr.trim().split(/\s+/).map(n => app.P.moveIndex.get(n)) : [];
+      if (moves.some(m => m === undefined) || toKey(stateFrom(colors, moves)) !== toKey(app.P.solved)) throw new Error('The solver returned a sequence that does not solve this cube.');
+      app.search = null; app.selected = -1; app.playing = false; app.mode = 'scan';
+      app.startState = new Uint8Array(colors);
+      $('scramble').value = moves.slice().reverse().map(m => app.P.moves[inverse(m)].name).join(' ');
+      const states = [app.startState]; for (const m of moves) states.push(applyMove(app.P, states[states.length - 1], m));
+      app.scanInfo = { split: phaseSplit(states, moves), ms };
+      setLegend(); setSolution(moves); graph.draw(); drawChart(); updateStats();
+      say(`Solved: ${moves.length} turns. Press Play next to the cube to watch it.`);
+      setStatus(`Scanned cube solved in ${moves.length} turns with Kociemba's two-phase algorithm. The scramble box now holds a sequence that recreates this cube.`);
+      document.querySelector('.main').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+    } catch (e) { fail(e.message); }
+    finally { $('scanSolve').disabled = false; }
+  }
+
+  // ----- UI: photo canvases, face pickers, net editor -----
+  function renderSelects(s) {
+    const box = $('faces' + s.k);
+    box.innerHTML = ['Top', 'Left', 'Right'].map((lbl, j) => `<label>${lbl}<select id="face${s.k}_${j}" data-j="${j}">${FACE_NAME.map((n, f) => `<option value="${f}" ${s.faces[j] === f ? 'selected' : ''}>${n}</option>`).join('')}</select></label>`).join('');
+  }
+  slots.forEach(s => {
+    renderSelects(s);
+    $('faces' + s.k).addEventListener('change', e => { const j = +e.target.dataset.j; s.faces[j] = +e.target.value; s.manual[j] = true; drawSlot(s); });
+  });
+  function drawSlot(s) {
+    const cv = s.cv, ctx = cv.getContext('2d'), d = window.devicePixelRatio || 1;
+    const cw = cv.clientWidth || 300, ch = cw * s.h / s.w;
+    cv.style.height = ch + 'px'; cv.width = Math.round(cw * d); cv.height = Math.round(ch * d);
+    ctx.setTransform(d * cw / s.w, 0, 0, d * cw / s.w, 0, 0);
+    const k = s.w / cw; // image px per css px
+    if (s.img) ctx.drawImage(s.img, 0, 0, s.w, s.h);
+    else { ctx.fillStyle = tok('--muted'); ctx.font = `${14 * k}px "Instrument Sans", sans-serif`; ctx.textAlign = 'center'; ctx.fillText('Upload a photo of three sides', s.w / 2, 24 * k); }
+    const h = s.handles;
+    const path = () => { ctx.beginPath(); ctx.moveTo(...h[T]); [UR, LR, BT, LL, UL, T].forEach(j => ctx.lineTo(...h[j])); [UR, BT, UL].forEach(j => { ctx.moveTo(...h[C]); ctx.lineTo(...h[j]); }); };
+    ctx.lineJoin = 'round';
+    path(); ctx.strokeStyle = 'rgba(0,0,0,0.55)'; ctx.lineWidth = 4 * k; ctx.stroke();
+    path(); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.6 * k; ctx.stroke();
+    const pts = facesValid(s) && s.data ? stickerPoints(s) : gridPoints(s).map(xy => ({ xy }));
+    for (const p of pts) {
+      ctx.beginPath(); ctx.arc(p.xy[0], p.xy[1], 4.5 * k, 0, Math.PI * 2);
+      ctx.fillStyle = p.i !== undefined ? FACE_CSS[colors[p.i] - 48] : 'rgba(255,255,255,0.15)'; ctx.fill();
+      ctx.lineWidth = 1.5 * k; ctx.strokeStyle = '#111'; ctx.stroke();
+    }
+    h.forEach((pt, j) => {
+      ctx.beginPath(); ctx.arc(pt[0], pt[1], (j === C ? 8 : 7) * k, 0, Math.PI * 2);
+      ctx.fillStyle = j === C ? '#111' : '#fff'; ctx.fill(); ctx.lineWidth = 2 * k; ctx.strokeStyle = j === C ? '#fff' : '#111'; ctx.stroke();
+    });
+  }
+  slots.forEach(s => {
+    const cv = s.cv; let drag = null;
+    const toImg = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) / r.width * s.w, (e.clientY - r.top) / r.height * s.h]; };
+    cv.addEventListener('pointerdown', e => {
+      const p = toImg(e), k = s.w / cv.getBoundingClientRect().width;
+      let best = -1, bd = (22 * k) ** 2;
+      s.handles.forEach((h, j) => { const dd = (h[0] - p[0]) ** 2 + (h[1] - p[1]) ** 2; if (dd < bd) { bd = dd; best = j; } });
+      drag = { j: best, last: p }; cv.setPointerCapture(e.pointerId);
+    });
+    cv.addEventListener('pointermove', e => {
+      if (!drag) return;
+      const p = toImg(e), dx = p[0] - drag.last[0], dy = p[1] - drag.last[1]; drag.last = p;
+      (drag.j < 0 ? s.handles : [s.handles[drag.j]]).forEach(h => { h[0] += dx; h[1] += dy; });
+      drawSlot(s);
+    });
+    const end = () => { if (!drag) return; drag = null; autoFaces(s); drawSlot(s); };
+    cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
+    new ResizeObserver(() => drawSlot(s)).observe(cv);
+    $('file' + s.k).addEventListener('change', e => {
+      const f = e.target.files[0]; if (!f) return;
+      const url = URL.createObjectURL(f), img = new Image();
+      img.onload = () => { setImage(s, img); URL.revokeObjectURL(url); s.manual = [false, false, false]; defaultHandles(s); autoFaces(s); drawSlot(s); say(`Photo ${s.k + 1} loaded. Drag the outline onto the cube, then press Read colors.`); };
+      img.onerror = () => say('That file could not be opened as an image. Try a JPEG or PNG.', true);
+      img.src = url; e.target.value = '';
+    });
+  });
+  function setImage(s, img) {
+    const scale = Math.min(1, 1000 / Math.max(img.naturalWidth, img.naturalHeight));
+    s.w = Math.round(img.naturalWidth * scale); s.h = Math.round(img.naturalHeight * scale);
+    const off = document.createElement('canvas'); off.width = s.w; off.height = s.h;
+    const c = off.getContext('2d', { willReadFrequently: true }); c.drawImage(img, 0, 0, s.w, s.h);
+    s.img = off; s.data = c.getImageData(0, 0, s.w, s.h).data;
+  }
+
+  function renderNet() {
+    const place = { 0: [1, 2], 4: [2, 1], 2: [2, 2], 1: [2, 3], 5: [2, 4], 3: [3, 2] };
+    let html = '';
+    for (let f = 0; f < 6; f++) {
+      const ids = P3.stickers.map((st, i) => i).filter(i => P3.stickers[i].face === f).sort((a, b) => cell[a].row * 3 + cell[a].col - (cell[b].row * 3 + cell[b].col));
+      html += `<div class="face" style="grid-row:${place[f][0]};grid-column:${place[f][1]}">` + ids.map(i =>
+        `<button type="button" data-i="${i}" class="${isCenter[i] ? 'center' : ''}" style="background:${FACE_CSS[colors[i] - 48]}" aria-label="${FACES[f]} face sticker, ${FACE_NAME[colors[i] - 48]}${isCenter[i] ? ' (center, fixed)' : ''}"></button>`).join('') + '</div>';
+    }
+    $('net').innerHTML = html;
+    const cnt = [0, 0, 0, 0, 0, 0]; colors.forEach(c => cnt[c - 48]++);
+    $('counts').innerHTML = cnt.map((n, f) => `<span class="${n !== 9 ? 'bad' : ''}">${FACE_NAME[f]} ${n}</span>`).join('');
+  }
+  $('palette').innerHTML = FACE_NAME.map((n, f) => `<button type="button" data-f="${f}" aria-pressed="${f === brush}" aria-label="Paint ${n}" title="${n}" style="background:${FACE_CSS[f]}"></button>`).join('');
+  $('palette').addEventListener('click', e => { const b = e.target.closest('[data-f]'); if (!b) return; brush = +b.dataset.f; $('palette').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(+x.dataset.f === brush))); });
+  $('net').addEventListener('click', e => { const b = e.target.closest('[data-i]'); if (!b || isCenter[+b.dataset.i]) return; colors[+b.dataset.i] = 48 + brush; renderNet(); slots.forEach(drawSlot); });
+  $('readBtn').onclick = () => { if (!slots.some(s => s.data)) return fail('Upload two photos first, or press Load sample photos to try it.'); readColors(); };
+  $('scanSolve').onclick = solveScanned;
+
+  // Sample photos: render a randomly scrambled cube from two opposite corners.
+  function samplePhotos() {
+    const w = 720, h = 540, rnd = Math.random;
+    let st = P3.solved, last = -1;
+    for (let k = 0; k < 25; k++) { let m; do { m = Math.floor(rnd() * 18); } while (((m / 3) | 0) === last); last = (m / 3) | 0; st = applyMove(P3, st, m); }
+    const r = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+    r.setPixelRatio(1); r.setSize(w, h, false); r.setClearColor(0xb8b0a3, 1);
+    const scene = new THREE.Scene(), g = new THREE.Group(); scene.add(g);
+    const { mats } = buildCubies(P3, g); st.forEach((c, i) => mats[i].color.setHex(STICKER_HEX[c - 48]));
+    scene.add(new THREE.AmbientLight(0xffffff, 0.82));
+    const sun = new THREE.DirectionalLight(0xffffff, 0.3); scene.add(sun);
+    const cam = new THREE.PerspectiveCamera(28, w / h, 0.1, 100);
+    const views = [[[1, 1.15, 0.85], [1, 2, 0]], [[-0.9, -1.1, -1], [3, 5, 4]]];
+    const out = views.map(([dir, faceTriple]) => {
+      const len = Math.hypot(...dir), dist = 11.5;
+      cam.position.set(...dir.map(v => v / len * dist)); cam.up.set(0, 1, 0); cam.lookAt(0, 0, 0); cam.updateMatrixWorld();
+      sun.position.set(...dir.map((v, i) => v * 4 + (i === 1 ? 3 : 0)));
+      r.render(scene, cam);
+      const url = r.domElement.toDataURL('image/png');
+      const proj = p => { const v = new THREE.Vector3(...p).project(cam); return [(v.x + 1) / 2 * w, (1 - v.y) / 2 * h]; };
+      // pick the cyclic order of the three faces whose far corner sits on top of the image
+      let best = null;
+      for (const perm of [[0, 1, 2], [1, 2, 0], [2, 0, 1], [0, 2, 1], [2, 1, 0], [1, 0, 2]]) {
+        const f3 = perm.map(j => faceTriple[j]), n = f3.map(f => NV[f]);
+        if (det3(...n) < 0) continue;
+        const V = [0, 1, 2].map(d => 1.5 * (n[0][d] + n[1][d] + n[2][d]));
+        const pt = (...ks) => proj(V.map((v, d) => v - 3 * ks.reduce((a, j) => a + n[j][d], 0)));
+        const hs = [proj(V), pt(1, 2), pt(1), pt(0, 1), pt(0), pt(0, 2), pt(2)];
+        if (!best || hs[T][1] < best.hs[T][1]) best = { hs, f3 };
+      }
+      return { url, ...best };
+    });
+    r.dispose(); r.forceContextLoss && r.forceContextLoss();
+    let loaded = 0;
+    out.forEach((o, k) => {
+      const img = new Image();
+      img.onload = () => {
+        const s = slots[k]; setImage(s, img); s.handles = o.hs.map(p => p.slice()); s.faces = o.f3.slice(); s.manual = [true, true, true];
+        renderSelects(s); drawSlot(s);
+        if (++loaded === 2) { readColors(); say('Sample photos of a randomly scrambled cube are loaded and read. Press Solve this cube.'); }
+      };
+      img.src = o.url;
+    });
+  }
+  $('sampleBtn').onclick = samplePhotos;
+
+  let opened = false;
+  $('scanBox').addEventListener('toggle', () => {
+    if (!$('scanBox').open) return;
+    slots.forEach(drawSlot);
+    if (!opened) { opened = true; samplePhotos(); getSolver().catch(() => {}); }
+  });
+  renderNet();
+  return { validate, inH, phaseSplit, kIndex, colors, readColors, slots };
+})();
 
 // redraw canvases when the theme changes
 const redraw = () => { graph.draw(); drawChart(); drawNeighbours(); };
