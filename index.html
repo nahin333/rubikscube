@@ -1,0 +1,880 @@
+<title>Rubik's Graph Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: lab bench. Control strip on top, the cube (the vertex) on the left, the explored graph (its neighbourhood) dominating the right. */
+:root {
+  --bg: #eceff3;
+  --panel: #f8f9fb;
+  --ink: #16202c;
+  --muted: #586473;
+  --line: #d3d9e1;
+  --fwd: #2a78d6;
+  --bwd: #eb6834;
+  --soft: #e2e7ed;
+  --f-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1319; --panel: #151c25; --ink: #e6ebf1; --muted: #98a4b2; --line: #26303c;
+    --fwd: #3987e5; --bwd: #d95926; --soft: #1d2631; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1319; --panel: #151c25; --ink: #e6ebf1; --muted: #98a4b2; --line: #26303c;
+  --fwd: #3987e5; --bwd: #d95926; --soft: #1d2631; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.5;
+  padding-inline: clamp(16px, 3vw, 40px); padding-block: 28px 48px;
+}
+.wrap { max-width: 1400px; margin: 0 auto; display: grid; gap: 18px; }
+header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 8px 24px; }
+h1 { font-family: var(--f-display); font-weight: 800; font-size: clamp(28px, 4vw, 40px); letter-spacing: -0.02em; margin: 0; line-height: 1.05; text-wrap: balance; }
+.lede { color: var(--muted); margin: 6px 0 0; max-width: 62ch; }
+.facts { font-family: var(--f-mono); font-size: 12px; color: var(--muted); display: grid; gap: 2px; text-align: right; }
+.facts b { color: var(--ink); font-weight: 600; }
+
+.controls {
+  display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: end;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px;
+}
+.field { display: grid; gap: 5px; min-width: 0; }
+.field > span { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; }
+.seg button { border: 0; background: transparent; color: var(--ink); padding: 7px 12px; font: 500 14px var(--f-body); cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--panel); }
+input[type="text"] {
+  font: 14px var(--f-mono); color: var(--ink); background: var(--bg); border: 1px solid var(--line);
+  border-radius: 7px; padding: 7px 10px; width: min(340px, 100%);
+}
+.grow { flex: 1 1 260px; }
+.grow input { width: 100%; }
+input[type="range"] { accent-color: var(--ink); width: 130px; }
+.btn {
+  font: 600 14px var(--f-body); border-radius: 7px; padding: 8px 14px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--panel); color: var(--ink);
+}
+.btn.primary { background: var(--ink); color: var(--panel); border-color: var(--ink); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--fwd); outline-offset: 2px; }
+.status { font: 13px var(--f-mono); color: var(--muted); min-height: 20px; }
+.status.err { color: var(--bwd); }
+
+.main { display: grid; grid-template-columns: minmax(280px, 380px) minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 860px) { .main { grid-template-columns: minmax(0, 1fr); } }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.card h2 { font: 600 13px var(--f-body); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 0; }
+.card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.hint { font-size: 12px; color: var(--muted); }
+
+#cube { width: 100%; max-width: 100%; aspect-ratio: 1; display: block; touch-action: none; cursor: grab; border-radius: 8px; background: var(--soft); }
+.play { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.play .btn { padding: 6px 11px; font-family: var(--f-mono); }
+.chips { display: flex; flex-wrap: wrap; gap: 5px; min-height: 30px; }
+.chip { font: 600 13px var(--f-mono); padding: 3px 8px; border-radius: 5px; border: 1px solid var(--line); color: var(--muted); cursor: pointer; background: transparent; }
+.chip.done { color: var(--ink); border-color: var(--ink); }
+.chip.now { background: var(--ink); color: var(--panel); border-color: var(--ink); }
+.empty { font-size: 13px; color: var(--muted); }
+
+.right { display: grid; gap: 18px; min-width: 0; }
+.graph-box { position: relative; }
+#graph { width: 100%; height: 460px; display: block; border-radius: 8px; background: var(--bg); cursor: crosshair; }
+@media (max-width: 600px) { #graph { height: 340px; } }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+.legend i.path { border-radius: 2px; height: 4px; width: 16px; vertical-align: 2px; background: var(--ink); }
+.inspect { font: 13px var(--f-mono); color: var(--muted); min-height: 20px; overflow-wrap: anywhere; }
+.inspect b { color: var(--ink); }
+
+.lower { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 18px; }
+@media (max-width: 1100px) { .lower { grid-template-columns: minmax(0, 1fr); } }
+.stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.stat { background: var(--panel); padding: 10px 12px; display: grid; gap: 2px; }
+.stat span { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+.stat b { font: 600 20px var(--f-mono); font-variant-numeric: tabular-nums; }
+.compare { font-size: 13px; color: var(--muted); margin: 0; }
+.compare b { color: var(--ink); font-family: var(--f-mono); font-weight: 600; }
+#chart { width: 100%; display: block; overflow: visible; }
+.chart-box { position: relative; }
+.tip {
+  position: absolute; pointer-events: none; background: var(--ink); color: var(--panel); font: 12px var(--f-mono);
+  padding: 5px 8px; border-radius: 5px; white-space: nowrap; transform: translate(-50%, -100%); z-index: 5;
+}
+#nbr { width: 100%; max-width: 300px; display: block; margin: 0 auto; }
+.explain { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }
+.explain p { margin: 0; font-size: 14px; color: var(--muted); max-width: 62ch; }
+.explain strong { color: var(--ink); font-weight: 600; display: block; margin-bottom: 2px; }
+code { font-family: var(--f-mono); font-size: 0.92em; }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Rubik's Graph Lab</h1>
+      <p class="lede">Every cube position is a vertex, every face turn is an edge. Solving the cube means finding a shortest path to the solved vertex. Watch the search explore the graph, then step along the path it finds.</p>
+    </div>
+    <div class="facts" id="facts"></div>
+  </header>
+
+  <section class="controls" aria-label="Search setup">
+    <label class="field"><span>Puzzle</span>
+      <div class="seg" id="puzzleSeg">
+        <button type="button" data-n="2" aria-pressed="false">2×2</button>
+        <button type="button" data-n="3" aria-pressed="true">3×3</button>
+      </div>
+    </label>
+    <label class="field"><span>Algorithm</span>
+      <div class="seg" id="algoSeg">
+        <button type="button" data-a="bidir" aria-pressed="true">Bidirectional BFS</button>
+        <button type="button" data-a="bfs" aria-pressed="false">BFS</button>
+        <button type="button" data-a="astar" aria-pressed="false">A*</button>
+      </div>
+    </label>
+    <label class="field grow"><span>Scramble</span>
+      <input type="text" id="scramble" spellcheck="false" autocomplete="off" aria-label="Scramble moves">
+    </label>
+    <label class="field"><span>Length <b id="lenOut" style="font-family:var(--f-mono);color:var(--ink)"></b></span>
+      <input type="range" id="len" min="1" max="10" value="7">
+    </label>
+    <button type="button" class="btn" id="newBtn">New scramble</button>
+    <button type="button" class="btn primary" id="solveBtn">Solve</button>
+  </section>
+  <div class="status" id="status" role="status"></div>
+
+  <div class="main">
+    <section class="card">
+      <div class="card-head"><h2>Current vertex</h2><span class="hint">Drag to rotate</span></div>
+      <canvas id="cube" aria-label="3D cube"></canvas>
+      <div class="play">
+        <button type="button" class="btn" id="toStart" aria-label="Back to scramble">|◀</button>
+        <button type="button" class="btn" id="back" aria-label="Step back">◀</button>
+        <button type="button" class="btn primary" id="playBtn">Play</button>
+        <button type="button" class="btn" id="fwd" aria-label="Step forward">▶</button>
+        <button type="button" class="btn" id="toEnd" aria-label="Jump to solved">▶|</button>
+        <label class="hint" style="display:flex;align-items:center;gap:6px;margin-left:auto">Speed
+          <input type="range" id="speed" min="1" max="5" value="3" style="width:80px" aria-label="Animation speed"></label>
+      </div>
+      <div>
+        <div class="hint" style="margin-bottom:6px">Shortest path (half-turn metric)</div>
+        <div class="chips" id="chips"><span class="empty">Run a search to find the path.</span></div>
+      </div>
+      <div>
+        <div class="card-head"><h2>Neighbourhood</h2><span class="hint" id="nbrHint"></span></div>
+        <svg id="nbr" viewBox="0 0 300 300" role="img" aria-label="Neighbours of the current state"></svg>
+      </div>
+    </section>
+
+    <div class="right">
+      <section class="card">
+        <div class="card-head">
+          <h2>Explored state graph</h2>
+          <div class="legend">
+            <span><i style="background:var(--fwd)"></i>Forward tree (from scramble)</span>
+            <span id="bwdLegend"><i style="background:var(--bwd)"></i>Backward tree (from solved)</span>
+            <span><i class="path"></i>Shortest path</span>
+          </div>
+        </div>
+        <div class="graph-box"><canvas id="graph" aria-label="Search tree drawn by depth"></canvas></div>
+        <div class="inspect" id="inspect">Columns are distance from the root. Hover a dot to see how the search reached it, click it to load that state onto the cube.</div>
+      </section>
+
+      <div class="lower">
+        <section class="card">
+          <div class="card-head"><h2>States discovered per depth</h2><span class="hint">log scale</span></div>
+          <div class="legend" id="chartLegend"></div>
+          <div class="chart-box"><svg id="chart" height="230"></svg><div class="tip" id="tip" hidden></div></div>
+        </section>
+        <section class="card">
+          <h2>Search cost</h2>
+          <div class="stats">
+            <div class="stat"><span>Path length</span><b id="sLen">–</b></div>
+            <div class="stat"><span>States visited</span><b id="sNodes">–</b></div>
+            <div class="stat"><span>Time</span><b id="sTime">–</b></div>
+            <div class="stat"><span>Deepest level</span><b id="sDepth">–</b></div>
+          </div>
+          <p class="compare" id="compare"></p>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <section class="card">
+    <h2>The graph behind the cube</h2>
+    <div class="explain">
+      <p><strong>Vertices and edges</strong>The cube group is a Cayley graph. Each of the 43,252,003,274,489,856,000 positions of a 3×3 is a vertex, and the 18 face turns (<code>U U2 U'</code> and so on for six faces) are its edges. The graph is 18-regular and looks the same from every vertex.</p>
+      <p><strong>Breadth-first search</strong>BFS visits vertices in rings of equal distance, so the first time it touches the solved state it has found a shortest path. The catch is the ring sizes: 18, 243, 3,240, 43,239… roughly ×13 per level.</p>
+      <p><strong>Meeting in the middle</strong>Bidirectional BFS grows one tree from the scramble and one from solved, and stops when they touch. Two trees of depth d/2 are far smaller than one of depth d, which is why it reaches scrambles that plain BFS cannot.</p>
+      <p><strong>A* with a lower bound</strong>One face turn moves at most 4 corners and 4 edges, so ⌈misplaced corners ÷ 4⌉ is a distance that can never be overestimated. A* uses it to expand promising vertices first, while still guaranteeing a shortest path.</p>
+    </div>
+  </section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(() => {
+'use strict';
+// ---------- Puzzle model: facelets + move permutations ----------
+const FACES = ['U', 'R', 'F', 'D', 'L', 'B'];
+const NORMAL = { U: [0, 1, 0], R: [1, 0, 0], F: [0, 0, 1], D: [0, -1, 0], L: [-1, 0, 0], B: [0, 0, -1] };
+// axis, outer-layer sign, rotation sign (clockwise seen from the face)
+const TURN = { U: [1, 1, -1], R: [0, 1, -1], F: [2, 1, -1], D: [1, -1, 1], L: [0, -1, 1], B: [2, -1, 1] };
+const STICKER_HEX = [0xf4f4ef, 0xd7263d, 0x2fa84f, 0xffd23f, 0xf28c28, 0x1f6fd1];
+// Positions at each distance from solved (half-turn metric), from the literature.
+const DIST = {
+  3: [1, 18, 243, 3240, 43239, 574908, 7618438, 100803036, 1332343288, 17596479795, 232248063316, 3063288809012, 40374425656248],
+  2: [1, 9, 54, 321, 1847, 9992, 50136, 227536, 870072, 1887748, 623800, 2644],
+};
+const CAP = { 2: 2500000, 3: 1500000 };
+
+function rot(v, axis, s) {
+  const [x, y, z] = v;
+  if (axis === 0) return [x, -z * s, y * s];
+  if (axis === 1) return [z * s, y, -x * s];
+  return [-y * s, x * s, z];
+}
+
+function buildPuzzle(N) {
+  const m = N - 1; // doubled outer coordinate
+  const stickers = [], index = new Map();
+  FACES.forEach((f, fi) => {
+    const n = NORMAL[f], ax = n.findIndex(v => v !== 0), others = [0, 1, 2].filter(i => i !== ax);
+    for (let a = -m; a <= m; a += 2) for (let b = -m; b <= m; b += 2) {
+      const p = [0, 0, 0]; p[ax] = n[ax] * m; p[others[0]] = a; p[others[1]] = b;
+      index.set(p.join() + '|' + n.join(), stickers.length);
+      stickers.push({ p, n, face: fi });
+    }
+  });
+  const S = stickers.length;
+  // 2x2: fix the D-L-B corner by only turning U, R, F, so the solved vertex is unique.
+  const faces = N === 2 ? ['U', 'R', 'F'] : FACES;
+  const moves = [];
+  faces.forEach(f => {
+    const [axis, sign, s] = TURN[f];
+    const Q = new Uint8Array(S).map((_, i) => i);
+    stickers.forEach((st, i) => {
+      if (st.p[axis] !== sign * m) return;
+      const j = index.get(rot(st.p, axis, s).join() + '|' + rot(st.n, axis, s).join());
+      Q[j] = i;
+    });
+    let P = Q;
+    for (let q = 1; q <= 3; q++) {
+      moves.push({ name: f + (q === 1 ? '' : q === 2 ? '2' : "'"), face: f, q, perm: P, axis, sign, s });
+      const prev = P; P = new Uint8Array(S); for (let k = 0; k < S; k++) P[k] = prev[Q[k]];
+    }
+  });
+  const solved = new Uint8Array(S); stickers.forEach((st, i) => solved[i] = 48 + st.face);
+  const groups = new Map();
+  stickers.forEach((st, i) => { const k = st.p.join(); (groups.get(k) || groups.set(k, []).get(k)).push(i); });
+  const corners = [], edges = [];
+  for (const g of groups.values()) { if (g.length === 3) corners.push(g); else if (g.length === 2) edges.push(g); }
+  const moveIndex = new Map(moves.map((mv, i) => [mv.name, i]));
+  return { N, m, stickers, S, moves, solved, corners, edges, moveIndex };
+}
+
+const dec = new TextDecoder('latin1');
+const toKey = arr => dec.decode(arr);
+function fromKey(key, out) { for (let i = 0; i < key.length; i++) out[i] = key.charCodeAt(i); return out; }
+function applyMove(P, state, mi) { const perm = P.moves[mi].perm, out = new Uint8Array(P.S); for (let k = 0; k < P.S; k++) out[k] = state[perm[k]]; return out; }
+const inverse = mi => mi - (mi % 3) + (2 - (mi % 3));
+
+function heuristic(P, key) {
+  let bc = 0, be = 0;
+  for (const g of P.corners) for (const i of g) if (key.charCodeAt(i) !== P.solved[i]) { bc++; break; }
+  for (const g of P.edges) for (const i of g) if (key.charCodeAt(i) !== P.solved[i]) { be++; break; }
+  return Math.max(Math.ceil(bc / 4), Math.ceil(be / 4));
+}
+
+// ---------- Search (runs in slices so the graph can grow on screen) ----------
+function createSearch(P, startKey, algo) {
+  const cap = CAP[P.N];
+  const par = new Int32Array(cap + 64), mv = new Int8Array(cap + 64), dep = new Uint8Array(cap + 64);
+  const sd = new Uint8Array(cap + 64), rk = new Int32Array(cap + 64), keys = new Array(cap + 64);
+  const counts = [[], []], maps = [new Map(), new Map()];
+  const solvedKey = toKey(P.solved);
+  const S = { algo, n: 0, par, mv, dep, sd, rk, keys, counts, maps, startKey, solvedKey, done: false, result: null, error: null, side: 0, levelDepth: 0, expanded: 0 };
+  const buf = new Uint8Array(P.S), out = new Uint8Array(P.S);
+
+  function add(key, parent, move, depth, side) {
+    const i = S.n++;
+    keys[i] = key; par[i] = parent; mv[i] = move; dep[i] = depth; sd[i] = side;
+    const c = counts[side]; while (c.length <= depth) c.push(0);
+    rk[i] = c[depth]++;
+    maps[side].set(key, i);
+    return i;
+  }
+  function children(i, fn) {
+    fromKey(keys[i], buf);
+    const lastFace = mv[i] >= 0 ? (mv[i] / 3) | 0 : -1;
+    for (let mi = 0; mi < P.moves.length; mi++) {
+      if (((mi / 3) | 0) === lastFace) continue;
+      const perm = P.moves[mi].perm;
+      for (let k = 0; k < P.S; k++) out[k] = buf[perm[k]];
+      fn(toKey(out), mi);
+    }
+  }
+  function chain(i) { const c = []; while (i >= 0) { c.push(i); i = par[i]; } return c.reverse(); }
+
+  const root = add(startKey, -1, -1, 0, 0);
+  if (startKey === solvedKey) { S.done = true; S.result = { fchain: [root], bchain: [], moves: [] }; return S; }
+
+  if (algo === 'bidir' || algo === 'bfs') {
+    const frontier = [[root], []], next = [];
+    if (algo === 'bidir') frontier[1].push(add(solvedKey, -1, -1, 0, 1));
+    let ptr = 0, best = null;
+    S.step = (budget) => {
+      while (budget-- > 0 && !S.done) {
+        if (ptr >= frontier[S.side].length) {
+          frontier[S.side] = next.splice(0);
+          if (best) return finishBidir(best);
+          S.side = algo === 'bfs' ? 0 : (frontier[0].length <= frontier[1].length ? 0 : 1);
+          ptr = 0;
+          if (!frontier[S.side].length) { S.done = true; S.error = 'Frontier emptied without reaching the goal.'; return; }
+          S.levelDepth = dep[frontier[S.side][0]];
+          continue;
+        }
+        const i = frontier[S.side][ptr++], side = S.side, d = dep[i] + 1;
+        S.expanded++;
+        children(i, (key, mi) => {
+          if (S.done || maps[side].has(key)) return;
+          const ci = add(key, i, mi, d, side);
+          next.push(ci);
+          if (algo === 'bfs') {
+            if (key === solvedKey) { const c = chain(ci); S.done = true; S.result = { fchain: c, bchain: [], moves: c.slice(1).map(x => mv[x]) }; }
+            return;
+          }
+          const other = maps[1 - side].get(key);
+          if (other !== undefined) {
+            const total = d + dep[other];
+            if (!best || total < best.total) best = { f: side ? other : ci, b: side ? ci : other, total };
+          }
+        });
+        if (S.n >= cap && !S.done) { S.done = true; S.error = 'cap'; }
+      }
+    };
+    function finishBidir(best) {
+      const fchain = chain(best.f), bchain = chain(best.b).reverse();
+      const moves = fchain.slice(1).map(x => mv[x]).concat(bchain.slice(0, -1).map(x => inverse(mv[x])));
+      S.done = true; S.result = { fchain, bchain, moves };
+    }
+  } else {
+    // A*: binary heap keyed on f = g + h, ties broken toward deeper nodes.
+    const heap = [], pri = [], closed = new Uint8Array(cap + 64);
+    const push = (i, p) => { heap.push(i); pri.push(p); let c = heap.length - 1; while (c > 0) { const pa = (c - 1) >> 1; if (pri[pa] <= pri[c]) break; [heap[pa], heap[c]] = [heap[c], heap[pa]]; [pri[pa], pri[c]] = [pri[c], pri[pa]]; c = pa; } };
+    const pop = () => {
+      const top = heap[0], lh = heap.pop(), lp = pri.pop();
+      if (heap.length) { heap[0] = lh; pri[0] = lp; let c = 0; for (;;) { const l = 2 * c + 1, r = l + 1; let s = c; if (l < heap.length && pri[l] < pri[s]) s = l; if (r < heap.length && pri[r] < pri[s]) s = r; if (s === c) break; [heap[s], heap[c]] = [heap[c], heap[s]]; [pri[s], pri[c]] = [pri[c], pri[s]]; c = s; } }
+      return top;
+    };
+    push(root, heuristic(P, startKey) * 100);
+    S.step = (budget) => {
+      while (budget-- > 0 && !S.done) {
+        if (!heap.length) { S.done = true; S.error = 'Open set emptied without reaching the goal.'; return; }
+        const i = pop();
+        if (closed[i]) continue;
+        closed[i] = 1; S.expanded++;
+        if (keys[i] === solvedKey) { const c = chain(i); S.done = true; S.result = { fchain: c, bchain: [], moves: c.slice(1).map(x => mv[x]) }; return; }
+        const g = dep[i] + 1; S.levelDepth = dep[i];
+        children(i, (key, mi) => {
+          const ex = maps[0].get(key);
+          if (ex === undefined) { const ci = add(key, i, mi, g, 0); push(ci, (g + heuristic(P, key)) * 100 - g); }
+          else if (!closed[ex] && dep[ex] > g) {
+            dep[ex] = g; par[ex] = i; mv[ex] = mi;
+            const c = counts[0]; while (c.length <= g) c.push(0); rk[ex] = c[g]++;
+            push(ex, (g + heuristic(P, key)) * 100 - g);
+          }
+        });
+        if (S.n >= cap) { S.done = true; S.error = 'cap'; }
+      }
+    };
+  }
+  return S;
+}
+
+// ---------- App state ----------
+const $ = id => document.getElementById(id);
+const app = { N: 3, algo: 'bidir', P: null, search: null, running: false, sol: null, pos: 0, states: [], cur: null, startState: null, selected: -1, playing: false, busy: false, drawn: [], t0: 0, elapsed: 0 };
+
+function tok(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+const fmt = n => n.toLocaleString('en-US');
+function setStatus(msg, err) { $('status').textContent = msg; $('status').classList.toggle('err', !!err); }
+
+function parseScramble(text) {
+  const t = text.trim(); if (!t) return [];
+  const out = [];
+  for (const raw of t.split(/\s+/)) {
+    const name = raw.replace(/’/g, "'");
+    const mi = app.P.moveIndex.get(name);
+    if (mi === undefined) {
+      throw new Error(app.N === 2 && /^[DLB]/.test(name)
+        ? `"${raw}": the 2×2 view holds the back-down-left corner still, so scrambles use U, R and F only.`
+        : `"${raw}" is not a move. Use faces ${[...new Set(app.P.moves.map(m => m.face))].join(' ')} with an optional ' or 2.`);
+    }
+    out.push(mi);
+  }
+  return out;
+}
+function randomScramble(len) {
+  const res = []; let last = -1, prevAxisFace = -1;
+  while (res.length < len) {
+    const mi = Math.floor(Math.random() * app.P.moves.length), f = (mi / 3) | 0;
+    if (f === last) continue;
+    // avoid U D U style redundancy: opposite faces only in one order
+    if (app.N === 3 && Math.abs(f - last) === 3 && f < last) continue;
+    res.push(mi); prevAxisFace = last; last = f;
+  }
+  return res;
+}
+function stateFrom(base, moves) { let s = base; for (const mi of moves) s = applyMove(app.P, s, mi); return s; }
+
+// ---------- 3D cube ----------
+const cube3 = (() => {
+  const canvas = $('cube');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+  renderer.setClearColor(0x000000, 0);
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 100);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.72));
+  const sun = new THREE.DirectionalLight(0xffffff, 0.55); sun.position.set(4, 6, 5); scene.add(sun);
+  const root = new THREE.Group(); root.rotation.set(0.5, -0.65, 0); scene.add(root);
+  const pivot = new THREE.Group(); root.add(pivot);
+  let cubies = [], stickerMats = [], P = null;
+
+  function rounded(size, r) {
+    const s = size / 2, sh = new THREE.Shape();
+    sh.moveTo(-s + r, -s); sh.lineTo(s - r, -s); sh.quadraticCurveTo(s, -s, s, -s + r); sh.lineTo(s, s - r);
+    sh.quadraticCurveTo(s, s, s - r, s); sh.lineTo(-s + r, s); sh.quadraticCurveTo(-s, s, -s, s - r); sh.lineTo(-s, -s + r);
+    sh.quadraticCurveTo(-s, -s, -s + r, -s);
+    return new THREE.ShapeGeometry(sh, 4);
+  }
+  function build(puzzle) {
+    P = puzzle;
+    cubies.forEach(c => c.parent.remove(c)); cubies = []; stickerMats = [];
+    const m = P.m, map = new Map();
+    const body = new THREE.BoxGeometry(0.97, 0.97, 0.97), bodyMat = new THREE.MeshLambertMaterial({ color: 0x15181d });
+    const sg = rounded(0.84, 0.12);
+    for (let x = -m; x <= m; x += 2) for (let y = -m; y <= m; y += 2) for (let z = -m; z <= m; z += 2) {
+      if (Math.abs(x) < m && Math.abs(y) < m && Math.abs(z) < m) continue;
+      const g = new THREE.Group(); g.position.set(x / 2, y / 2, z / 2); g.userData.p = [x, y, z];
+      g.add(new THREE.Mesh(body, bodyMat)); root.add(g); cubies.push(g); map.set([x, y, z].join(), g);
+    }
+    P.stickers.forEach((st, i) => {
+      const mat = new THREE.MeshLambertMaterial({ color: STICKER_HEX[st.face], side: THREE.DoubleSide });
+      const mesh = new THREE.Mesh(sg, mat), [nx, ny, nz] = st.n;
+      mesh.position.set(nx * 0.488, ny * 0.488, nz * 0.488);
+      if (nx) mesh.rotation.y = nx * Math.PI / 2; else if (ny) mesh.rotation.x = -ny * Math.PI / 2; else if (nz < 0) mesh.rotation.y = Math.PI;
+      map.get(st.p.join()).add(mesh); stickerMats[i] = mat;
+    });
+    camera.position.set(0, 0, P.N * 3.55); camera.lookAt(0, 0, 0);
+    resize();
+  }
+  function paint(state) { for (let i = 0; i < state.length; i++) stickerMats[i].color.setHex(STICKER_HEX[state[i] - 48]); }
+  function resize() {
+    const w = canvas.clientWidth || 300; renderer.setSize(w, w, false); camera.aspect = 1; camera.updateProjectionMatrix();
+  }
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  function animate(mi, ms) {
+    const mv = P.moves[mi];
+    if (reduced.matches || ms <= 0) return Promise.resolve();
+    const layer = cubies.filter(c => c.userData.p[mv.axis] === mv.sign * P.m);
+    layer.forEach(c => pivot.add(c));
+    const total = (mv.q === 3 ? -1 : mv.q) * mv.s * Math.PI / 2, dur = mv.q === 2 ? ms * 1.4 : ms;
+    const axisKey = ['x', 'y', 'z'][mv.axis];
+    return new Promise(res => {
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min(1, (t - t0) / dur), e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+        pivot.rotation[axisKey] = total * e;
+        if (k < 1) requestAnimationFrame(frame);
+        else { pivot.rotation.set(0, 0, 0); layer.forEach(c => root.add(c)); res(); }
+      }
+      requestAnimationFrame(frame);
+    });
+  }
+  // drag to orbit
+  let drag = null;
+  canvas.addEventListener('pointerdown', e => { drag = { x: e.clientX, y: e.clientY }; canvas.setPointerCapture(e.pointerId); canvas.style.cursor = 'grabbing'; });
+  canvas.addEventListener('pointermove', e => {
+    if (!drag) return;
+    root.rotation.y += (e.clientX - drag.x) * 0.01;
+    root.rotation.x = Math.max(-1.4, Math.min(1.4, root.rotation.x + (e.clientY - drag.y) * 0.01));
+    drag = { x: e.clientX, y: e.clientY };
+  });
+  const end = () => { drag = null; canvas.style.cursor = 'grab'; };
+  canvas.addEventListener('pointerup', end); canvas.addEventListener('pointercancel', end);
+  new ResizeObserver(resize).observe(canvas);
+  (function loop() { renderer.render(scene, camera); requestAnimationFrame(loop); })();
+  return { build, paint, animate };
+})();
+
+// ---------- Search graph canvas ----------
+const graph = (() => {
+  const cv = $('graph'), ctx = cv.getContext('2d');
+  const PER_LAYER = 420;
+  let hover = -1;
+  function size() { const r = cv.getBoundingClientRect(), d = window.devicePixelRatio || 1; cv.width = Math.round(r.width * d); cv.height = Math.round(r.height * d); ctx.setTransform(d, 0, 0, d, 0, 0); return r; }
+  function geometry(S, W, H) {
+    const left = 44, right = W - 44, top = 40, bottom = H - 22;
+    const res = S.result, bidir = S.algo === 'bidir';
+    let L;
+    if (res && res.moves.length) L = res.moves.length;
+    else if (bidir) L = Math.max(2, S.counts[0].length - 1 + S.counts[1].length - 1 + 1);
+    else L = Math.max(2, S.counts[0].length - 1 + 1);
+    if (!bidir && res) L = Math.max(L, S.counts[0].length - 1);
+    const dx = (right - left) / Math.max(1, L);
+    const pos = i => {
+      const side = S.sd[i], d = S.dep[i], cnt = S.counts[side][d] || 1;
+      const x = side === 0 ? left + d * dx : right - d * dx;
+      const y = top + ((S.rk[i] % cnt) + 0.5) / cnt * (bottom - top);
+      return [x, y];
+    };
+    return { left, right, top, bottom, dx, L, pos };
+  }
+  function draw() {
+    const r = size(), W = r.width, H = r.height, S = app.search;
+    ctx.clearRect(0, 0, W, H);
+    const ink = tok('--ink'), muted = tok('--muted'), line = tok('--line'), fwd = tok('--fwd'), bwd = tok('--bwd'), bg = tok('--bg');
+    ctx.font = '11px "JetBrains Mono", monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    if (!S) { ctx.fillStyle = muted; ctx.fillText('Press Solve to start exploring.', W / 2, H / 2); return; }
+    const G = geometry(S, W, H);
+    // depth columns
+    const bidir = S.algo === 'bidir';
+    for (let d = 0; d <= G.L; d++) {
+      const x = G.left + d * G.dx;
+      ctx.strokeStyle = line; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x, G.top - 6); ctx.lineTo(x, G.bottom + 6); ctx.stroke();
+    }
+    for (let side = 0; side < (bidir ? 2 : 1); side++) {
+      ctx.fillStyle = side ? bwd : fwd;
+      for (let d = 0; d < S.counts[side].length; d++) {
+        const x = side ? G.right - d * G.dx : G.left + d * G.dx;
+        ctx.fillText(String(d), x + (side ? 7 : -7) * (bidir ? 1 : 0), side ? 26 : 12);
+      }
+    }
+    // pick nodes to draw
+    const n = S.n, onPath = new Set();
+    if (S.result) { S.result.fchain.forEach(i => onPath.add(i)); S.result.bchain.forEach(i => onPath.add(i)); }
+    const drawn = [];
+    for (let i = 0; i < n; i++) {
+      const cnt = S.counts[S.sd[i]][S.dep[i]], stride = Math.max(1, Math.ceil(cnt / PER_LAYER));
+      if ((S.rk[i] % stride) === 0 || onPath.has(i)) drawn.push(i);
+    }
+    // edges
+    ctx.lineWidth = 0.6;
+    for (const side of [0, 1]) {
+      ctx.strokeStyle = side ? bwd : fwd; ctx.globalAlpha = drawn.length > 3000 ? 0.12 : 0.22; ctx.beginPath();
+      for (const i of drawn) {
+        if (S.sd[i] !== side || S.par[i] < 0) continue;
+        const [x, y] = G.pos(i), [px, py] = G.pos(S.par[i]);
+        ctx.moveTo(px, py); ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    // nodes
+    const rad = drawn.length > 3000 ? 1.3 : 1.8;
+    for (const side of [0, 1]) {
+      ctx.fillStyle = side ? bwd : fwd; ctx.beginPath();
+      for (const i of drawn) { if (S.sd[i] !== side) continue; const [x, y] = G.pos(i); ctx.moveTo(x + rad, y); ctx.arc(x, y, rad, 0, Math.PI * 2); }
+      ctx.fill();
+    }
+    app.drawn = drawn.map(i => [i, ...G.pos(i)]);
+    // roots
+    const label = (i, txt, align) => { const [x, y] = G.pos(i); ctx.fillStyle = ink; ctx.textAlign = align; ctx.font = '600 11px "Instrument Sans", sans-serif'; ctx.fillText(txt, x + (align === 'left' ? 9 : -9), y - 12); ctx.font = '11px "JetBrains Mono", monospace'; ctx.textAlign = 'center'; };
+    // solution path
+    if (S.result && S.result.moves.length) {
+      const pts = S.result.fchain.concat(S.result.bchain).map(G.pos);
+      ctx.strokeStyle = bg; ctx.lineWidth = 6; ctx.lineJoin = 'round'; ctx.beginPath(); pts.forEach(([x, y], k) => k ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.stroke();
+      ctx.strokeStyle = ink; ctx.lineWidth = 2.5; ctx.beginPath(); pts.forEach(([x, y], k) => k ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.stroke();
+      // move labels on the edges
+      const fc = S.result.fchain, bc = S.result.bchain, moves = S.result.moves;
+      const edges = [];
+      for (let k = 1; k < fc.length; k++) edges.push([fc[k - 1], fc[k]]);
+      for (let k = 1; k < bc.length; k++) edges.push([bc[k - 1], bc[k]]);
+      edges.forEach(([a, b], k) => {
+        const [x1, y1] = G.pos(a), [x2, y2] = G.pos(b), mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+        const t = app.P.moves[moves[k]].name, w = ctx.measureText(t).width + 8;
+        ctx.fillStyle = k < app.pos ? ink : bg; ctx.strokeStyle = ink; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.roundRect ? ctx.roundRect(mx - w / 2, my - 8, w, 16, 4) : ctx.rect(mx - w / 2, my - 8, w, 16); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = k < app.pos ? bg : ink; ctx.fillText(t, mx, my + 0.5);
+      });
+      // nodes of path
+      pts.forEach(([x, y]) => { ctx.fillStyle = bg; ctx.beginPath(); ctx.arc(x, y, 4.5, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = ink; ctx.lineWidth = 2; ctx.stroke(); });
+      // playhead
+      const dF = fc.length - 1, cur = app.pos <= dF ? fc[app.pos] : bc[app.pos - dF];
+      if (cur !== undefined) { const [x, y] = G.pos(cur); ctx.fillStyle = ink; ctx.beginPath(); ctx.arc(x, y, 6.5, 0, Math.PI * 2); ctx.fill(); }
+    }
+    label(0, 'Scramble', 'left');
+    if (bidir && S.n > 1) label(1, 'Solved', 'right');
+    else if (S.result && S.result.moves.length) label(S.result.fchain[S.result.fchain.length - 1], 'Solved', 'right');
+    // hover + selection rings
+    for (const [i, c] of [[app.selected, ink], [hover, ink]]) {
+      if (i < 0 || i >= S.n) continue;
+      const [x, y] = G.pos(i); ctx.strokeStyle = c; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(x, y, 7, 0, Math.PI * 2); ctx.stroke();
+    }
+  }
+  function nearest(e) {
+    const r = cv.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top;
+    let best = -1, bd = 100;
+    for (const [i, x, y] of app.drawn) { const d = (x - mx) ** 2 + (y - my) ** 2; if (d < bd) { bd = d; best = i; } }
+    return best;
+  }
+  cv.addEventListener('mousemove', e => { if (app.running) return; const i = nearest(e); if (i !== hover) { hover = i; describe(i); draw(); } });
+  cv.addEventListener('mouseleave', () => { hover = -1; draw(); });
+  cv.addEventListener('click', e => { if (app.running) return; const i = nearest(e); if (i >= 0) inspectNode(i); });
+  new ResizeObserver(() => draw()).observe(cv);
+  return { draw };
+})();
+
+function nodeMoves(i) { const S = app.search, out = []; while (S.par[i] >= 0) { out.push(S.mv[i]); i = S.par[i]; } return out.reverse(); }
+function describe(i) {
+  const el = $('inspect'), S = app.search;
+  if (i < 0 || !S) return;
+  const ms = nodeMoves(i).map(m => app.P.moves[m].name).join(' ') || '(root)';
+  if (S.sd[i] === 0) el.innerHTML = `<b>Forward tree</b> · depth ${S.dep[i]} · scramble then <b>${ms}</b>`;
+  else el.innerHTML = `<b>Backward tree</b> · depth ${S.dep[i]} · solved then <b>${ms}</b>, so it is ${S.dep[i]} turns from solved`;
+}
+function inspectNode(i) {
+  const S = app.search; app.selected = i; app.playing = false; syncPlay();
+  const base = S.sd[i] === 0 ? app.startState : app.P.solved;
+  app.cur = stateFrom(base, nodeMoves(i));
+  cube3.paint(app.cur); describe(i); drawNeighbours(); graph.draw();
+}
+
+// ---------- Neighbourhood star ----------
+function drawNeighbours() {
+  const svg = $('nbr'), P = app.P, S = app.search, cur = app.cur;
+  if (!cur) { svg.innerHTML = ''; return; }
+  const moves = P.moves, k = moves.length, cx = 150, cy = 150, R = 108;
+  let next = -1, prev = -1;
+  if (app.sol && app.selected < 0) {
+    if (app.pos < app.sol.length) next = app.sol[app.pos];
+    if (app.pos > 0) prev = inverse(app.sol[app.pos - 1]);
+  }
+  let explored = 0, html = '';
+  const spokes = [];
+  moves.forEach((mv, j) => {
+    const a = -Math.PI / 2 + j / k * Math.PI * 2, x = cx + R * Math.cos(a), y = cy + R * Math.sin(a);
+    const key = toKey(applyMove(P, cur, j));
+    const seen = S && (S.maps[0].has(key) || S.maps[1].has(key)); if (seen) explored++;
+    spokes.push({ j, x, y, a, seen, isNext: j === next, isPrev: j === prev, solved: key === toKey(P.solved), name: mv.name });
+  });
+  for (const s of spokes) {
+    const stroke = s.isNext ? 'var(--ink)' : 'var(--line)';
+    html += `<line x1="${cx}" y1="${cy}" x2="${s.x.toFixed(1)}" y2="${s.y.toFixed(1)}" stroke="${stroke}" stroke-width="${s.isNext ? 2.5 : 1}" ${s.isPrev ? 'stroke-dasharray="3 3"' : ''}/>`;
+  }
+  for (const s of spokes) {
+    const fill = s.solved ? 'var(--ink)' : s.seen ? 'var(--fwd)' : 'var(--panel)';
+    html += `<circle cx="${s.x.toFixed(1)}" cy="${s.y.toFixed(1)}" r="${s.isNext ? 7 : 5}" fill="${fill}" stroke="${s.isNext ? 'var(--ink)' : 'var(--fwd)'}" stroke-width="1.5"><title>${s.name}${s.isNext ? ' (next on path)' : ''}${s.isPrev ? ' (undo previous turn)' : ''}</title></circle>`;
+    const lx = cx + (R + 20) * Math.cos(s.a), ly = cy + (R + 20) * Math.sin(s.a);
+    html += `<text x="${lx.toFixed(1)}" y="${(ly + 4).toFixed(1)}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="${s.isNext ? 700 : 400}" fill="${s.isNext ? 'var(--ink)' : 'var(--muted)'}">${s.name}</text>`;
+  }
+  const solvedNow = toKey(cur) === toKey(P.solved);
+  html += `<circle cx="${cx}" cy="${cy}" r="11" fill="var(--ink)"/>`;
+  html += `<text x="${cx}" y="${cy + 30}" text-anchor="middle" font-family="Instrument Sans, sans-serif" font-size="12" fill="var(--muted)">${solvedNow ? 'solved' : app.sol && app.selected < 0 ? `${app.sol.length - app.pos} turns to go` : 'inspected state'}</text>`;
+  svg.innerHTML = html;
+  $('nbrHint').textContent = `degree ${k} · ${explored} seen by search`;
+}
+
+// ---------- Chart: states per depth ----------
+function drawChart() {
+  const svg = $('chart'), S = app.search, tip = $('tip');
+  const W = svg.getBoundingClientRect().width || 400, H = 230, padL = 46, padR = 8, padT = 10, padB = 28;
+  if (!S) { svg.innerHTML = `<text x="${W / 2}" y="${H / 2}" text-anchor="middle" fill="var(--muted)" font-size="13">No search yet</text>`; return; }
+  const bidir = S.algo === 'bidir', series = bidir ? [0, 1] : [0];
+  const depths = Math.max(S.counts[0].length, bidir ? S.counts[1].length : 0);
+  const max = Math.max(1, ...S.counts[0], ...(bidir ? S.counts[1] : []));
+  const top = Math.max(1, Math.ceil(Math.log10(max)));
+  const y = v => padT + (1 - Math.log10(Math.max(1, v)) / top) * (H - padT - padB);
+  const band = (W - padL - padR) / depths, bw = Math.min(28, (band - 8) / series.length - 2);
+  let html = '';
+  for (let p = 0; p <= top; p++) {
+    const yy = y(10 ** p), lab = p < 3 ? String(10 ** p) : p < 6 ? `${10 ** (p - 3)}k` : `${10 ** (p - 6)}M`;
+    html += `<line x1="${padL}" x2="${W - padR}" y1="${yy}" y2="${yy}" stroke="var(--line)" stroke-width="1"/>`;
+    html += `<text x="${padL - 6}" y="${yy + 4}" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="10" fill="var(--muted)">${lab}</text>`;
+  }
+  for (let d = 0; d < depths; d++) {
+    const cx = padL + band * (d + 0.5);
+    html += `<text x="${cx}" y="${H - 10}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="var(--muted)">${d}</text>`;
+    series.forEach((s, k) => {
+      const v = S.counts[s][d]; if (!v) return;
+      const x = cx - (series.length * (bw + 2)) / 2 + k * (bw + 2) + 1, y0 = H - padB, y1 = Math.min(y(v), y0 - 2), r = Math.min(4, bw / 2, y0 - y1);
+      const d0 = `M${x},${y0} V${y1 + r} Q${x},${y1} ${x + r},${y1} H${x + bw - r} Q${x + bw},${y1} ${x + bw},${y1 + r} V${y0} Z`;
+      html += `<path d="${d0}" fill="var(${s ? '--bwd' : '--fwd'})" data-tip="${s ? 'Backward' : 'Forward'} · depth ${d} · ${fmt(v)} states" data-x="${x + bw / 2}" data-y="${y1}"/>`;
+      html += `<rect x="${cx - band / 2}" y="${padT}" width="${band}" height="${H - padT - padB}" fill="transparent" data-tip="${series.map(t => `${t ? 'Backward' : 'Forward'} ${fmt(S.counts[t][d] || 0)}`).join(' · ')} at depth ${d}" data-x="${cx}" data-y="${y1}"/>`;
+    });
+  }
+  html += `<text x="${(padL + W - padR) / 2}" y="${H}" text-anchor="middle" font-size="10" fill="var(--muted)" font-family="Instrument Sans, sans-serif">depth (turns from root)</text>`;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.innerHTML = html;
+  svg.onmousemove = e => {
+    const t = e.target.closest('[data-tip]');
+    if (!t) { tip.hidden = true; return; }
+    tip.textContent = t.dataset.tip; tip.style.left = t.dataset.x + 'px'; tip.style.top = (+t.dataset.y - 6) + 'px'; tip.hidden = false;
+  };
+  svg.onmouseleave = () => { tip.hidden = true; };
+  $('chartLegend').innerHTML = bidir
+    ? '<span><i style="background:var(--fwd)"></i>Forward</span><span><i style="background:var(--bwd)"></i>Backward</span>' : '';
+  $('chartLegend').hidden = !bidir;
+}
+
+// ---------- Stats ----------
+function cumulative(arr, d) { let s = 0; for (let k = 0; k <= Math.min(d, arr.length - 1); k++) s += arr[k]; return s; }
+function updateStats() {
+  const S = app.search;
+  $('sNodes').textContent = S ? fmt(S.n) : '–';
+  $('sTime').textContent = S ? (app.elapsed < 1000 ? `${Math.round(app.elapsed)} ms` : `${(app.elapsed / 1000).toFixed(2)} s`) : '–';
+  $('sDepth').textContent = S ? (S.algo === 'bidir' ? `${S.counts[0].length - 1} + ${S.counts[1].length - 1}` : `${S.counts[0].length - 1}`) : '–';
+  $('sLen').textContent = S && S.result ? `${S.result.moves.length} turns` : '–';
+  const cmp = $('compare');
+  if (!S || !S.result) { cmp.textContent = ''; return; }
+  const L = S.result.moves.length, D = DIST[app.N];
+  if (L === 0) { cmp.textContent = 'The scramble is already solved.'; return; }
+  const one = cumulative(D, L), two = cumulative(D, Math.ceil(L / 2)) + cumulative(D, Math.floor(L / 2));
+  const algoName = { bidir: 'Bidirectional BFS', bfs: 'BFS', astar: 'A*' }[S.algo];
+  cmp.innerHTML = `Positions within ${L} turns of any vertex: <b>${fmt(one)}</b>. That is the cost of one-way BFS. Two half-depth trees cost about <b>${fmt(two)}</b>. ${algoName} visited <b>${fmt(S.n)}</b>.`;
+}
+
+// ---------- Playback ----------
+function setSolution(moves) {
+  app.sol = moves; app.pos = 0; app.selected = -1;
+  app.states = [app.startState]; for (const mi of moves) app.states.push(applyMove(app.P, app.states[app.states.length - 1], mi));
+  app.cur = app.startState; cube3.paint(app.cur); renderChips(); drawNeighbours(); syncPlay();
+}
+function renderChips() {
+  const el = $('chips');
+  if (!app.sol) { el.innerHTML = '<span class="empty">Run a search to find the path.</span>'; return; }
+  if (!app.sol.length) { el.innerHTML = '<span class="empty">Already solved, path length 0.</span>'; return; }
+  el.innerHTML = app.sol.map((mi, k) => `<button type="button" class="chip ${k < app.pos ? 'done' : ''} ${k === app.pos - 1 ? 'now' : ''}" data-k="${k + 1}">${app.P.moves[mi].name}</button>`).join('');
+}
+$('chips').addEventListener('click', e => { const b = e.target.closest('[data-k]'); if (b) jumpTo(+b.dataset.k); });
+const speedMs = () => [0, 620, 420, 280, 170, 90][+$('speed').value];
+async function step(dir) {
+  if (!app.sol || app.busy) return false;
+  if (app.selected >= 0) { app.selected = -1; app.cur = app.states[app.pos]; cube3.paint(app.cur); }
+  if (dir > 0 && app.pos >= app.sol.length) return false;
+  if (dir < 0 && app.pos <= 0) return false;
+  app.busy = true;
+  const mi = dir > 0 ? app.sol[app.pos] : inverse(app.sol[app.pos - 1]);
+  await cube3.animate(mi, speedMs());
+  app.pos += dir; app.cur = app.states[app.pos]; cube3.paint(app.cur);
+  app.busy = false; renderChips(); drawNeighbours(); graph.draw(); syncPlay();
+  return true;
+}
+function jumpTo(k) {
+  if (!app.sol || app.busy) return;
+  app.playing = false; app.selected = -1; app.pos = k; app.cur = app.states[k]; cube3.paint(app.cur);
+  renderChips(); drawNeighbours(); graph.draw(); syncPlay();
+}
+async function play() {
+  if (app.playing) { app.playing = false; syncPlay(); return; }
+  if (!app.sol) return;
+  if (app.pos >= app.sol.length) jumpTo(0);
+  app.playing = true; syncPlay();
+  while (app.playing && app.pos < app.sol.length) {
+    if (!(await step(1))) break;
+    await new Promise(r => setTimeout(r, speedMs() * 0.5));
+  }
+  app.playing = false; syncPlay();
+}
+function syncPlay() {
+  const has = !!(app.sol && app.sol.length);
+  $('playBtn').textContent = app.playing ? 'Pause' : (has && app.pos >= app.sol.length ? 'Replay' : 'Play');
+  for (const id of ['playBtn', 'fwd', 'back', 'toStart', 'toEnd']) $(id).disabled = !has || app.running;
+}
+$('playBtn').onclick = play;
+$('fwd').onclick = () => { app.playing = false; step(1); };
+$('back').onclick = () => { app.playing = false; step(-1); };
+$('toStart').onclick = () => jumpTo(0);
+$('toEnd').onclick = () => app.sol && jumpTo(app.sol.length);
+
+// ---------- Running a search ----------
+function solve() {
+  if (app.running) return;
+  let moves;
+  try { moves = parseScramble($('scramble').value); } catch (e) { setStatus(e.message, true); return; }
+  app.playing = false; app.sol = null; app.selected = -1;
+  app.startState = stateFrom(app.P.solved, moves); app.cur = app.startState; cube3.paint(app.cur);
+  renderChips();
+  const S = createSearch(app.P, toKey(app.startState), app.algo);
+  app.search = S; app.running = true; app.t0 = performance.now(); app.elapsed = 0;
+  $('solveBtn').disabled = true; $('newBtn').disabled = true; syncPlay();
+  const sideName = s => (s ? 'backward' : 'forward');
+  function tick() {
+    const tEnd = performance.now() + 14;
+    while (!S.done && performance.now() < tEnd) S.step(400);
+    app.elapsed = performance.now() - app.t0;
+    graph.draw(); drawChart(); updateStats();
+    if (!S.done) {
+      setStatus(app.algo === 'astar'
+        ? `A* expanding g = ${S.levelDepth} · ${fmt(S.n)} states discovered`
+        : `Expanding ${sideName(S.side)} level ${S.levelDepth} · ${fmt(S.n)} states discovered`);
+      requestAnimationFrame(tick); return;
+    }
+    app.running = false; $('solveBtn').disabled = false; $('newBtn').disabled = false;
+    if (S.error) {
+      setStatus(S.error === 'cap'
+        ? `Stopped at ${fmt(S.n)} states, the memory budget for this page. Each level is about ${app.N === 3 ? '13' : '6'}× larger than the last; try Bidirectional BFS or a shorter scramble.`
+        : S.error, true);
+      syncPlay(); updateStats(); return;
+    }
+    setStatus(`Found a shortest path of ${S.result.moves.length} turns after visiting ${fmt(S.n)} states.`);
+    setSolution(S.result.moves); graph.draw(); updateStats();
+  }
+  requestAnimationFrame(tick);
+}
+
+function newScramble() {
+  const moves = randomScramble(+$('len').value);
+  $('scramble').value = moves.map(m => app.P.moves[m].name).join(' ');
+  resetView();
+}
+function resetView() {
+  let moves = [];
+  try { moves = parseScramble($('scramble').value); setStatus(''); } catch (e) { setStatus(e.message, true); }
+  app.search = null; app.sol = null; app.selected = -1; app.playing = false;
+  app.startState = stateFrom(app.P.solved, moves); app.cur = app.startState; cube3.paint(app.cur);
+  renderChips(); drawNeighbours(); graph.draw(); drawChart(); updateStats(); syncPlay();
+  $('inspect').textContent = 'Columns are distance from the root. Hover a dot to see how the search reached it, click it to load that state onto the cube.';
+}
+
+function setPuzzle(N) {
+  app.N = N; app.P = buildPuzzle(N); cube3.build(app.P);
+  document.querySelectorAll('#puzzleSeg button').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.n === N)));
+  const len = $('len'); len.max = N === 2 ? 11 : 10; len.value = N === 2 ? 8 : 7; $('lenOut').textContent = len.value;
+  $('facts').innerHTML = N === 3
+    ? '<span><b>4.3 × 10<sup>19</sup></b> vertices</span><span><b>18</b> edges per vertex</span><span>God\'s number <b>20</b></span>'
+    : '<span><b>3,674,160</b> vertices</span><span><b>9</b> edges per vertex (U R F)</span><span>God\'s number <b>11</b></span>';
+  newScramble();
+}
+function setAlgo(a) {
+  app.algo = a;
+  document.querySelectorAll('#algoSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.a === a)));
+  $('bwdLegend').hidden = a !== 'bidir';
+}
+$('puzzleSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b && !app.running) setPuzzle(+b.dataset.n); });
+$('algoSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b && !app.running) { setAlgo(b.dataset.a); resetView(); } });
+$('len').addEventListener('input', () => { $('lenOut').textContent = $('len').value; });
+$('len').addEventListener('change', () => { if (!app.running) newScramble(); });
+$('newBtn').onclick = newScramble;
+$('solveBtn').onclick = solve;
+$('scramble').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); resetView(); solve(); } });
+$('scramble').addEventListener('change', () => { if (!app.running) resetView(); });
+
+// redraw canvases when the theme changes
+const redraw = () => { graph.draw(); drawChart(); drawNeighbours(); };
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', redraw);
+new MutationObserver(redraw).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+window.addEventListener('resize', drawChart);
+
+setAlgo('bidir');
+setPuzzle(3);
+solve();
+})();
+</script>
