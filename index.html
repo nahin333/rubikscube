@@ -50,6 +50,14 @@ body {
 header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 8px 24px; }
 h1 { font-family: var(--f-display); font-weight: 800; font-size: clamp(28px, 4vw, 40px); letter-spacing: -0.02em; margin: 0; line-height: 1.05; text-wrap: balance; }
 .lede { color: var(--muted); margin: 6px 0 0; max-width: 62ch; }
+.resource-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.resource-links a {
+  display: inline-flex; align-items: center; min-height: 36px; padding: 6px 11px;
+  border: 1px solid var(--line); border-radius: 7px; background: var(--panel);
+  color: var(--ink); font-size: 13px; font-weight: 600; text-decoration: none;
+}
+.resource-links a:hover { border-color: var(--fwd); color: var(--fwd); }
+.resource-links a:focus-visible { outline: 2px solid var(--fwd); outline-offset: 2px; }
 .facts { font-family: var(--f-mono); font-size: 12px; color: var(--muted); display: grid; gap: 2px; text-align: right; }
 .facts b { color: var(--ink); font-weight: 600; }
 
@@ -167,6 +175,10 @@ select { font: 13px var(--f-body); color: var(--ink); background: var(--bg); bor
     <div>
       <h1>Rubik's Graph Lab</h1>
       <p class="lede">Every cube position is a vertex, every face turn is an edge. Use COVE-3 to solve a long 3×3 scramble, or explore shortest-path searches on smaller problems. Then step through the verified moves on the cube.</p>
+      <nav class="resource-links" aria-label="Project links">
+        <a href="https://github.com/nahin333/rubikscube" target="_blank" rel="noopener noreferrer">GitHub repository ↗</a>
+        <a href="research/paper.pdf" target="_blank" rel="noopener noreferrer">Research paper (PDF) ↗</a>
+      </nav>
     </div>
     <div class="facts" id="facts"></div>
   </header>
