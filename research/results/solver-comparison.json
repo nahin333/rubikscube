@@ -1,0 +1,2633 @@
+{
+  "compactSourceSha256": "81d31da8e08a01ece13ebc2757f87c70998a3549828c721efaa25e87fc04def5",
+  "baselineVersion": "cubejs 1.3.2",
+  "environment": {
+    "node": "v18.19.1",
+    "platform": "linux",
+    "arch": "x64",
+    "cpu": "AMD EPYC 9254 24-Core Processor"
+  },
+  "seed": "0x74bc39",
+  "fixture": "200 seeded 20–40-turn scrambles, no consecutive same-face turns; not uniformly random states",
+  "compactSetupMs": 538.3432819843292,
+  "cubejsSetupMs": 1265.9889389276505,
+  "compactTableBytes": 5815245,
+  "compact": {
+    "verified": 200,
+    "medianMs": 5.965404987335205,
+    "p95Ms": 28.917722940444946,
+    "maxMs": 88.87527000904083,
+    "meanMoves": 22.77,
+    "maxMoves": 26
+  },
+  "cubejs": {
+    "verified": 200,
+    "medianMs": 34.047146916389465,
+    "p95Ms": 203.4850070476532,
+    "maxMs": 1062.3170570135117,
+    "meanMoves": 21.71,
+    "maxMoves": 22
+  },
+  "rows": [
+    {
+      "trial": 0,
+      "scramble": "L R' L D' R' U' R2 L F2 R2 B2 D2 R L D2 B' L B2 L' R2 U' R2 U'",
+      "compact": {
+        "ms": 13.541823029518127,
+        "length": 24,
+        "nodes": 65905
+      },
+      "cubejs": {
+        "ms": 94.389927983284,
+        "length": 21
+      }
+    },
+    {
+      "trial": 1,
+      "scramble": "U2 R U2 R' U' B' R2 B2 R' L2 B2 D F2 D U D2 B F' U F2 L D2 L F2 D2 B' R2 L U2 B R2 B' R2 U' F B U' D' L U",
+      "cubejs": {
+        "ms": 53.9403600692749,
+        "length": 22
+      },
+      "compact": {
+        "ms": 21.057931065559387,
+        "length": 23,
+        "nodes": 121614
+      }
+    },
+    {
+      "trial": 2,
+      "scramble": "D L' F2 R2 F2 L U' R D2 U' F2 R2 D' R' U2 L2 R' D' B2 D2 L B' D' F' B2 D2 R F' B2 U' L' B' R' B L2",
+      "compact": {
+        "ms": 24.59991192817688,
+        "length": 24,
+        "nodes": 552934
+      },
+      "cubejs": {
+        "ms": 49.10362207889557,
+        "length": 22
+      }
+    },
+    {
+      "trial": 3,
+      "scramble": "B R' L2 F' U' D' B' L U L2 D U' B' D U2 B2 R2 U' B2 U2 F' R F' L' B2 F2 U2 L' F' L B L2 U R",
+      "cubejs": {
+        "ms": 62.35953104496002,
+        "length": 22
+      },
+      "compact": {
+        "ms": 22.56881296634674,
+        "length": 21,
+        "nodes": 563232
+      }
+    },
+    {
+      "trial": 4,
+      "scramble": "L B U2 F' D' U' D2 L2 U2 B' R2 D L B2 L' B' D F R2 F L' B U F' L U2 F B2 U",
+      "compact": {
+        "ms": 0.4830770492553711,
+        "length": 20,
+        "nodes": 6906
+      },
+      "cubejs": {
+        "ms": 2.568747043609619,
+        "length": 20
+      }
+    },
+    {
+      "trial": 5,
+      "scramble": "F B' R2 D2 R' L' B2 U' B2 D U F2 D B' F L R2 D' L2 U' D2 R2 L B D' F2 R",
+      "cubejs": {
+        "ms": 34.047146916389465,
+        "length": 22
+      },
+      "compact": {
+        "ms": 1.8199859857559204,
+        "length": 23,
+        "nodes": 26982
+      }
+    },
+    {
+      "trial": 6,
+      "scramble": "B' R2 D2 B2 R2 L U2 L R2 U2 D R2 D2 U' F R U' F' L R' U L U L D' R F D F' L2 B2 R U2 D' F' U2",
+      "compact": {
+        "ms": 0.6782689094543457,
+        "length": 21,
+        "nodes": 6536
+      },
+      "cubejs": {
+        "ms": 2.2551729679107666,
+        "length": 21
+      }
+    },
+    {
+      "trial": 7,
+      "scramble": "R2 F R' B D' F' R F L' F' U2 R2 L2 F2 L' R2 F2 B2 U' R U F' U2 B' L' R2 L' B F2 D U2 F R",
+      "cubejs": {
+        "ms": 36.14150595664978,
+        "length": 22
+      },
+      "compact": {
+        "ms": 4.975620985031128,
+        "length": 23,
+        "nodes": 80215
+      }
+    },
+    {
+      "trial": 8,
+      "scramble": "R' F' B U2 R' D' L F L2 F2 L2 B2 D' B L' F L2 R' B L B2 R' U F D F2 B F2 U B2 F'",
+      "compact": {
+        "ms": 4.338781952857971,
+        "length": 22,
+        "nodes": 90729
+      },
+      "cubejs": {
+        "ms": 22.921648025512695,
+        "length": 22
+      }
+    },
+    {
+      "trial": 9,
+      "scramble": "L U B2 U F' R' D' B' L2 D U2 D2 U' R B' R2 D' F U2 D2",
+      "cubejs": {
+        "ms": 34.88461899757385,
+        "length": 22
+      },
+      "compact": {
+        "ms": 6.261170029640198,
+        "length": 22,
+        "nodes": 125285
+      }
+    },
+    {
+      "trial": 10,
+      "scramble": "F2 U2 F D2 R' L' F2 R2 D R' F' L' B2 R' D' F2 R' F D' L2 U' D' L2 F2 R' B' L2 D' F L' U D2",
+      "compact": {
+        "ms": 3.5232099294662476,
+        "length": 21,
+        "nodes": 68995
+      },
+      "cubejs": {
+        "ms": 14.068161010742188,
+        "length": 21
+      }
+    },
+    {
+      "trial": 11,
+      "scramble": "L B L' D L' U R' L D L2 B' F' R' U D2 B' D2 U2 L U L2 R L2 D R' U'",
+      "cubejs": {
+        "ms": 50.354249000549316,
+        "length": 21
+      },
+      "compact": {
+        "ms": 3.5767509937286377,
+        "length": 21,
+        "nodes": 46107
+      }
+    },
+    {
+      "trial": 12,
+      "scramble": "U B D' U' B D U B D' L2 R' B' F2 R' B' L2 F2 D2 B' L2 F2 U R B2 D2 R L' R' F2 D' F2 L2 R F2 L R F2 L U' F",
+      "compact": {
+        "ms": 25.367213010787964,
+        "length": 23,
+        "nodes": 657900
+      },
+      "cubejs": {
+        "ms": 84.37883496284485,
+        "length": 22
+      }
+    },
+    {
+      "trial": 13,
+      "scramble": "F' B D2 R2 L2 F' R' U2 D' U' B L' B2 D' U F' L U' B' L' F L D2 U2",
+      "cubejs": {
+        "ms": 4.09293794631958,
+        "length": 21
+      },
+      "compact": {
+        "ms": 1.468430995941162,
+        "length": 21,
+        "nodes": 17472
+      }
+    },
+    {
+      "trial": 14,
+      "scramble": "F B2 R U2 R L2 B2 U' F B F2 D' R' B D2 U2 D2 U R2 B' L' R L R U' B' L R",
+      "compact": {
+        "ms": 0.872412919998169,
+        "length": 20,
+        "nodes": 8535
+      },
+      "cubejs": {
+        "ms": 2.0487700700759888,
+        "length": 20
+      }
+    },
+    {
+      "trial": 15,
+      "scramble": "R' D2 L' D F2 B D' B2 U D2 B D' L' B' D2 B2 U2 F2 D' B' R2 U D'",
+      "cubejs": {
+        "ms": 64.50708198547363,
+        "length": 22
+      },
+      "compact": {
+        "ms": 11.957311034202576,
+        "length": 24,
+        "nodes": 335680
+      }
+    },
+    {
+      "trial": 16,
+      "scramble": "L' D2 B2 U' D2 B D B2 L' B' F2 B F U D2 U2 B2 F B' L2",
+      "compact": {
+        "ms": 1.1192759275436401,
+        "length": 24,
+        "nodes": 13388
+      },
+      "cubejs": {
+        "ms": 17.059693932533264,
+        "length": 22
+      }
+    },
+    {
+      "trial": 17,
+      "scramble": "U2 L F2 R F' R2 U D2 U' L D2 L D L2 D F2 B2 D2 F2 U' F' B2 D' R",
+      "cubejs": {
+        "ms": 81.05735909938812,
+        "length": 22
+      },
+      "compact": {
+        "ms": 11.455373048782349,
+        "length": 23,
+        "nodes": 296607
+      }
+    },
+    {
+      "trial": 18,
+      "scramble": "U D L2 B L U2 L D F2 U' B' D B R2 D2 F2 L2 U L2 U2 R L B' U2 B2 U2 B'",
+      "compact": {
+        "ms": 0.9427930116653442,
+        "length": 21,
+        "nodes": 23011
+      },
+      "cubejs": {
+        "ms": 5.01065194606781,
+        "length": 21
+      }
+    },
+    {
+      "trial": 19,
+      "scramble": "D U2 F D' L2 B L2 B2 L2 U2 D' B' F2 B' L F' U R' F B",
+      "cubejs": {
+        "ms": 59.13319492340088,
+        "length": 21
+      },
+      "compact": {
+        "ms": 8.283599019050598,
+        "length": 24,
+        "nodes": 205212
+      }
+    },
+    {
+      "trial": 20,
+      "scramble": "R2 L2 D' F' R' U2 L' R D F2 R2 B2 R' L2 F2 R L D2 R' D F B2 U F' L R2 U2 F' R' U' F'",
+      "compact": {
+        "ms": 9.976773023605347,
+        "length": 23,
+        "nodes": 307164
+      },
+      "cubejs": {
+        "ms": 29.052304983139038,
+        "length": 22
+      }
+    },
+    {
+      "trial": 21,
+      "scramble": "U F' L2 F' D L U B F2 R' B2 F2 U2 L2 R' D' F2 R U2 D' R2 B U'",
+      "cubejs": {
+        "ms": 15.774535059928894,
+        "length": 22
+      },
+      "compact": {
+        "ms": 3.821593999862671,
+        "length": 22,
+        "nodes": 77272
+      }
+    },
+    {
+      "trial": 22,
+      "scramble": "D F' U2 B D B2 L R' B' U2 L B' U L F2 R2 D' L' R' L' B' D' L2 D2 L' F",
+      "compact": {
+        "ms": 4.161989092826843,
+        "length": 22,
+        "nodes": 109526
+      },
+      "cubejs": {
+        "ms": 22.639013051986694,
+        "length": 22
+      }
+    },
+    {
+      "trial": 23,
+      "scramble": "R' B' D' R2 L' U2 R2 F2 U F2 L2 F B2 R D U F' U D B'",
+      "cubejs": {
+        "ms": 7.381415963172913,
+        "length": 21
+      },
+      "compact": {
+        "ms": 2.1142799854278564,
+        "length": 21,
+        "nodes": 33125
+      }
+    },
+    {
+      "trial": 24,
+      "scramble": "D B' F' L B R' D R' B F' L2 R' D' F' B2 F D2 R' L R' F' U D2 U' D2 U' R' D2 L B' D' B2 F D2 F U'",
+      "compact": {
+        "ms": 4.101389050483704,
+        "length": 22,
+        "nodes": 107556
+      },
+      "cubejs": {
+        "ms": 26.17578399181366,
+        "length": 21
+      }
+    },
+    {
+      "trial": 25,
+      "scramble": "R' D' R' B' D' R B2 L F D' R' D2 F' L2 U2 D' F B' R' D B' L2 D'",
+      "cubejs": {
+        "ms": 21.38926601409912,
+        "length": 22
+      },
+      "compact": {
+        "ms": 7.531048059463501,
+        "length": 23,
+        "nodes": 181056
+      }
+    },
+    {
+      "trial": 26,
+      "scramble": "B' F' R2 F' L U' D B' F' D U2 B U' L' D U2 B' D U2 R2 B D2 B R L' D2 R F2 U F",
+      "compact": {
+        "ms": 20.510222911834717,
+        "length": 23,
+        "nodes": 669932
+      },
+      "cubejs": {
+        "ms": 34.45077300071716,
+        "length": 22
+      }
+    },
+    {
+      "trial": 27,
+      "scramble": "F' L2 R2 U L R' D L' R2 F' L2 R B2 L U L' F2 L' F2 B D U2 B L R' D2 F B U' F B' D2 L D2 R2 L2 D U' D'",
+      "cubejs": {
+        "ms": 32.19901990890503,
+        "length": 22
+      },
+      "compact": {
+        "ms": 8.591652989387512,
+        "length": 25,
+        "nodes": 180226
+      }
+    },
+    {
+      "trial": 28,
+      "scramble": "D L' B2 D F2 D L' U B D F2 B2 L2 D B U2 R' F R F' R2 L D' L R'",
+      "compact": {
+        "ms": 32.99904203414917,
+        "length": 23,
+        "nodes": 1057071
+      },
+      "cubejs": {
+        "ms": 85.03788495063782,
+        "length": 22
+      }
+    },
+    {
+      "trial": 29,
+      "scramble": "B2 U' F U R' L D U B F D2 R U F R2 D R D B R2 U",
+      "cubejs": {
+        "ms": 19.61431097984314,
+        "length": 22
+      },
+      "compact": {
+        "ms": 7.376335978507996,
+        "length": 23,
+        "nodes": 163210
+      }
+    },
+    {
+      "trial": 30,
+      "scramble": "L' F2 L2 B' F' R2 U F2 R2 L R' F2 B2 D2 B L B F2 U2 D2 L R2 F2 R' D F' L' D B' F2 L' U D' R2 U' B F L' D' U2",
+      "compact": {
+        "ms": 6.797106981277466,
+        "length": 24,
+        "nodes": 204365
+      },
+      "cubejs": {
+        "ms": 178.4184889793396,
+        "length": 22
+      }
+    },
+    {
+      "trial": 31,
+      "scramble": "D2 U' D2 R B' D2 L2 D U' D' L2 U' D2 U2 B2 U' B L2 F2 L' U B2 D2 B' F2 L2 F U' F U' R' F' B' F' B D2 U'",
+      "cubejs": {
+        "ms": 27.41261100769043,
+        "length": 22
+      },
+      "compact": {
+        "ms": 6.113566994667053,
+        "length": 23,
+        "nodes": 142411
+      }
+    },
+    {
+      "trial": 32,
+      "scramble": "U F2 D' B' D2 R' U F2 U' D2 B' R L2 B2 D2 U2 F' B' U' D2 U' D' F2 R2 F U B L D' U2 R2 U F' U B' D L2 U2",
+      "compact": {
+        "ms": 3.0616040229797363,
+        "length": 22,
+        "nodes": 73645
+      },
+      "cubejs": {
+        "ms": 16.410925030708313,
+        "length": 22
+      }
+    },
+    {
+      "trial": 33,
+      "scramble": "R2 F U R2 U F D2 F2 B' D2 U D2 L D2 L F2 L' U D L2",
+      "cubejs": {
+        "ms": 20.490203022956848,
+        "length": 22
+      },
+      "compact": {
+        "ms": 12.505048036575317,
+        "length": 24,
+        "nodes": 350612
+      }
+    },
+    {
+      "trial": 34,
+      "scramble": "L2 R' F2 L D' F U' B2 F' R D B2 L' B R' F B' L' D2 F",
+      "compact": {
+        "ms": 1.9803780317306519,
+        "length": 23,
+        "nodes": 53847
+      },
+      "cubejs": {
+        "ms": 53.83953893184662,
+        "length": 22
+      }
+    },
+    {
+      "trial": 35,
+      "scramble": "F R' U2 R2 D L' U D' F B2 U2 F2 D2 L2 F' B' D' R F' B' L2 B' F2 D2 B2 L2 U2 B' U2 L R2 D2",
+      "cubejs": {
+        "ms": 318.5938820838928,
+        "length": 22
+      },
+      "compact": {
+        "ms": 4.966681003570557,
+        "length": 24,
+        "nodes": 95524
+      }
+    },
+    {
+      "trial": 36,
+      "scramble": "F' U D' F2 R' F' D B R2 L D' B U2 B2 F2 B R B' L D'",
+      "compact": {
+        "ms": 33.652671098709106,
+        "length": 24,
+        "nodes": 1051879
+      },
+      "cubejs": {
+        "ms": 35.96676301956177,
+        "length": 22
+      }
+    },
+    {
+      "trial": 37,
+      "scramble": "B' R2 D B2 U' D' B L' F2 U' B D F2 R2 L2 R2 F R' U2 D' L D2 B' D L' F' U' D' B' U' R' D' B2",
+      "cubejs": {
+        "ms": 94.4690089225769,
+        "length": 22
+      },
+      "compact": {
+        "ms": 11.403082966804504,
+        "length": 23,
+        "nodes": 293989
+      }
+    },
+    {
+      "trial": 38,
+      "scramble": "R' L B2 L2 D' L' U F2 B' L F' B F2 L D F' R B2 R F R F' R B U' R' U B D U' R",
+      "compact": {
+        "ms": 7.636469006538391,
+        "length": 21,
+        "nodes": 128000
+      },
+      "cubejs": {
+        "ms": 32.14033901691437,
+        "length": 21
+      }
+    },
+    {
+      "trial": 39,
+      "scramble": "R L2 B' F D' U2 F' L D2 L' F' R B2 U2 R L D L' D R2 L' R' L B' R' B' F2 B' L2",
+      "cubejs": {
+        "ms": 62.767646074295044,
+        "length": 21
+      },
+      "compact": {
+        "ms": 9.414475083351135,
+        "length": 24,
+        "nodes": 187920
+      }
+    },
+    {
+      "trial": 40,
+      "scramble": "B2 R' D' F U D2 F' U2 L' B' R2 D R U2 L B2 F' D2 R' U2 R F' U D F2 R D2 B F2",
+      "compact": {
+        "ms": 15.531661987304688,
+        "length": 22,
+        "nodes": 415044
+      },
+      "cubejs": {
+        "ms": 85.34465897083282,
+        "length": 22
+      }
+    },
+    {
+      "trial": 41,
+      "scramble": "L F' B2 F U' D B D2 R2 F2 U D2 L' U2 R2 B2 L' B2 F' D' L2 R2",
+      "cubejs": {
+        "ms": 44.833279967308044,
+        "length": 21
+      },
+      "compact": {
+        "ms": 11.084918022155762,
+        "length": 23,
+        "nodes": 254955
+      }
+    },
+    {
+      "trial": 42,
+      "scramble": "D U R2 D F' D' F2 B U2 F2 D2 R L' U2 D L' R' F' B L F2 B L2 D B2 U' L2 B' L2 D2 L' U2 D L' U2",
+      "compact": {
+        "ms": 1.60856294631958,
+        "length": 22,
+        "nodes": 20871
+      },
+      "cubejs": {
+        "ms": 18.51536500453949,
+        "length": 22
+      }
+    },
+    {
+      "trial": 43,
+      "scramble": "F2 U2 R' D' U B U' F' L2 D2 R2 U2 L R U L R F' B' L D' U' B'",
+      "cubejs": {
+        "ms": 30.963811993598938,
+        "length": 22
+      },
+      "compact": {
+        "ms": 9.082340002059937,
+        "length": 23,
+        "nodes": 176778
+      }
+    },
+    {
+      "trial": 44,
+      "scramble": "F' D B D L2 R2 U B' R' U B' U2 D B F' B' D F' R' F2 U2 R' F U B2 R D2 L2 B2 L2 R' D L' U L U R B",
+      "compact": {
+        "ms": 11.668686985969543,
+        "length": 21,
+        "nodes": 282194
+      },
+      "cubejs": {
+        "ms": 90.74823701381683,
+        "length": 21
+      }
+    },
+    {
+      "trial": 45,
+      "scramble": "F' D' R2 U' L2 D' R2 F' L' R' F D U2 R D2 B' R2 U F L' R F L2 R' L' F D'",
+      "cubejs": {
+        "ms": 165.84238004684448,
+        "length": 22
+      },
+      "compact": {
+        "ms": 41.61162495613098,
+        "length": 23,
+        "nodes": 1150386
+      }
+    },
+    {
+      "trial": 46,
+      "scramble": "U' D' L F' R2 L2 F2 D' L2 R2 U' D' F' U2 L' D B' U B2 L R' L2 U2 L D B U' L B' F2 U'",
+      "compact": {
+        "ms": 5.187163949012756,
+        "length": 23,
+        "nodes": 123952
+      },
+      "cubejs": {
+        "ms": 14.94579303264618,
+        "length": 22
+      }
+    },
+    {
+      "trial": 47,
+      "scramble": "R2 U2 R B R L2 R L' D B2 U L U' L B L R2 F R' U' F D B' D' R2 L U'",
+      "cubejs": {
+        "ms": 56.852452993392944,
+        "length": 21
+      },
+      "compact": {
+        "ms": 7.355195045471191,
+        "length": 23,
+        "nodes": 181567
+      }
+    },
+    {
+      "trial": 48,
+      "scramble": "B F' U' B2 D2 R2 L' R' U R' U2 D' F2 D B D F2 L2 B' U B U D R D' F2 R2 B' R' F' D U D2 L2 U' D2 R2 F",
+      "compact": {
+        "ms": 3.5849419832229614,
+        "length": 24,
+        "nodes": 99736
+      },
+      "cubejs": {
+        "ms": 39.35803198814392,
+        "length": 22
+      }
+    },
+    {
+      "trial": 49,
+      "scramble": "F' L B2 L' B2 F2 R L' D R F2 L U2 F2 B F2 U2 L2 D2 L U2 R U' F' U' D U R2 U2 R' L",
+      "cubejs": {
+        "ms": 11.689917087554932,
+        "length": 22
+      },
+      "compact": {
+        "ms": 2.7295889854431152,
+        "length": 22,
+        "nodes": 42610
+      }
+    },
+    {
+      "trial": 50,
+      "scramble": "U L2 F2 D' F U' D F U' R F2 L2 D2 F' R B R2 F2 R' D F' U D R D U2 F' U B",
+      "compact": {
+        "ms": 17.133684992790222,
+        "length": 22,
+        "nodes": 418459
+      },
+      "cubejs": {
+        "ms": 142.90290200710297,
+        "length": 22
+      }
+    },
+    {
+      "trial": 51,
+      "scramble": "L' F R L' F U' B F2 U' B' F R2 U' B' L2 R' F U R' D B2",
+      "cubejs": {
+        "ms": 59.5669219493866,
+        "length": 22
+      },
+      "compact": {
+        "ms": 10.508420944213867,
+        "length": 22,
+        "nodes": 238526
+      }
+    },
+    {
+      "trial": 52,
+      "scramble": "U2 D' B2 R2 U L' U' R U' F2 R2 L2 F B2 L' B2 R' U' R' U D2",
+      "compact": {
+        "ms": 2.8315709829330444,
+        "length": 23,
+        "nodes": 51373
+      },
+      "cubejs": {
+        "ms": 68.40700805187225,
+        "length": 21
+      }
+    },
+    {
+      "trial": 53,
+      "scramble": "U B' U2 D2 R' D U' R' B2 L R2 L B2 U' F L2 F B' L F D L' B U2 B2 R F' L' F2 L2 F D U",
+      "cubejs": {
+        "ms": 65.65093803405762,
+        "length": 22
+      },
+      "compact": {
+        "ms": 3.903265953063965,
+        "length": 23,
+        "nodes": 54145
+      }
+    },
+    {
+      "trial": 54,
+      "scramble": "U2 R B' F' B2 R2 B L2 F2 L U D' L D' L2 B R2 B' L D' U2 B2 D U' L' R' L' R2 B2 D B2 F R",
+      "compact": {
+        "ms": 13.061527013778687,
+        "length": 24,
+        "nodes": 352591
+      },
+      "cubejs": {
+        "ms": 22.96772801876068,
+        "length": 21
+      }
+    },
+    {
+      "trial": 55,
+      "scramble": "L D U' B2 L R' U R' L' F2 U' D2 L' R' F B' F U2 F R2 U L' U2 R' B' D U",
+      "cubejs": {
+        "ms": 2.453545093536377,
+        "length": 22
+      },
+      "compact": {
+        "ms": 0.8936430215835571,
+        "length": 22,
+        "nodes": 11564
+      }
+    },
+    {
+      "trial": 56,
+      "scramble": "L D2 B2 L2 U2 D' B2 R2 D R L2 F' R' B' F2 L2 B' F2 B U R' D' B2",
+      "compact": {
+        "ms": 32.99540090560913,
+        "length": 23,
+        "nodes": 971602
+      },
+      "cubejs": {
+        "ms": 197.9931390285492,
+        "length": 22
+      }
+    },
+    {
+      "trial": 57,
+      "scramble": "B' U F2 U2 F2 R2 B2 F2 L' U2 F2 L' U' B' F2 L D U F U' D'",
+      "cubejs": {
+        "ms": 134.48714101314545,
+        "length": 22
+      },
+      "compact": {
+        "ms": 23.957242012023926,
+        "length": 23,
+        "nodes": 573562
+      }
+    },
+    {
+      "trial": 58,
+      "scramble": "L' U B F U2 R D2 U' F D2 F2 U D' L U2 F R' D2 B R2 L' B D2 L2 F2 R U B R2 F B' L' R L R F' U'",
+      "compact": {
+        "ms": 2.164260983467102,
+        "length": 21,
+        "nodes": 46379
+      },
+      "cubejs": {
+        "ms": 13.786817073822021,
+        "length": 21
+      }
+    },
+    {
+      "trial": 59,
+      "scramble": "U' L' F B D F2 U F' L2 U' D B R2 B F' B L2 R' F' U' F2 B2 D F' D2 U' R' D' U2",
+      "cubejs": {
+        "ms": 346.7901840209961,
+        "length": 22
+      },
+      "compact": {
+        "ms": 20.86581802368164,
+        "length": 23,
+        "nodes": 501651
+      }
+    },
+    {
+      "trial": 60,
+      "scramble": "B' L' B' L U D U' R' L2 U' B L2 F' D L R' F2 R F D2 B D",
+      "compact": {
+        "ms": 5.167963981628418,
+        "length": 23,
+        "nodes": 138635
+      },
+      "cubejs": {
+        "ms": 28.449746012687683,
+        "length": 22
+      }
+    },
+    {
+      "trial": 61,
+      "scramble": "F U2 F' L2 B' R B2 D B2 R L' B D' R2 D' U B' L B2 D L U2 R D L D F R F' U2 F B' F' L2 R' B2 D' F2",
+      "cubejs": {
+        "ms": 35.20969295501709,
+        "length": 21
+      },
+      "compact": {
+        "ms": 10.256386995315552,
+        "length": 21,
+        "nodes": 240944
+      }
+    },
+    {
+      "trial": 62,
+      "scramble": "L' B2 D2 B2 F B2 L' R B L B2 U L F' L2 R U2 R' L B L' B",
+      "compact": {
+        "ms": 7.867493033409119,
+        "length": 24,
+        "nodes": 179373
+      },
+      "cubejs": {
+        "ms": 113.42444097995758,
+        "length": 22
+      }
+    },
+    {
+      "trial": 63,
+      "scramble": "R' L2 F2 B' F' D U' F D U' R2 L' D' L2 F R2 B2 R U F D' R2 L' R' F' L2 R2 F' D2 B2 D2 B2 U' B' U' L' D2 R' D",
+      "cubejs": {
+        "ms": 8.057564973831177,
+        "length": 22
+      },
+      "compact": {
+        "ms": 2.0330790281295776,
+        "length": 22,
+        "nodes": 28092
+      }
+    },
+    {
+      "trial": 64,
+      "scramble": "L2 R2 F U2 D2 B U2 F U' F2 R D' U' B2 D L2 F2 U' R2 D2 B F' U B2 R2 U' R2 U' B2 F D2 F D2 B2 D' L",
+      "compact": {
+        "ms": 5.673030972480774,
+        "length": 23,
+        "nodes": 106218
+      },
+      "cubejs": {
+        "ms": 523.4331389665604,
+        "length": 22
+      }
+    },
+    {
+      "trial": 65,
+      "scramble": "D U' F2 U F U L' D' R' D' R' U' B2 L U2 D' B' D U' D L B U2 L' D' L' B' D2 F L F' B2 F2 B R2 D U' F U2",
+      "cubejs": {
+        "ms": 53.92609000205994,
+        "length": 22
+      },
+      "compact": {
+        "ms": 22.079124927520752,
+        "length": 23,
+        "nodes": 653297
+      }
+    },
+    {
+      "trial": 66,
+      "scramble": "F2 R2 D F' U' B F2 R2 U2 B R' F U L2 F B' L U' B' R' B U2 L2 D2 U' D F' R' U",
+      "compact": {
+        "ms": 19.085232973098755,
+        "length": 23,
+        "nodes": 647485
+      },
+      "cubejs": {
+        "ms": 57.66923403739929,
+        "length": 22
+      }
+    },
+    {
+      "trial": 67,
+      "scramble": "L D R2 F' D' F B' F U2 L U F B F' R2 U B2 F U F2",
+      "cubejs": {
+        "ms": 132.1377980709076,
+        "length": 22
+      },
+      "compact": {
+        "ms": 8.000573992729187,
+        "length": 23,
+        "nodes": 168410
+      }
+    },
+    {
+      "trial": 68,
+      "scramble": "F' U2 R' L U2 B2 R2 U2 L2 D2 B2 U2 F D2 F B U2 F' B' L2 U D2 F2 D B D2 B' U F2 B2 R2 F L'",
+      "compact": {
+        "ms": 24.41222894191742,
+        "length": 21,
+        "nodes": 812940
+      },
+      "cubejs": {
+        "ms": 223.8698489665985,
+        "length": 22
+      }
+    },
+    {
+      "trial": 69,
+      "scramble": "D' R' F L2 U2 D2 L' R' F' U F L D U R2 L2 B2 L' B2 U2 R L2 F U R' F2 B",
+      "cubejs": {
+        "ms": 14.30097496509552,
+        "length": 21
+      },
+      "compact": {
+        "ms": 0.915132999420166,
+        "length": 20,
+        "nodes": 8917
+      }
+    },
+    {
+      "trial": 70,
+      "scramble": "F L2 F2 D U F' D2 R2 B' L2 F R F2 U L B' D2 U F' B2 D U' L2 D2 U D U' F'",
+      "compact": {
+        "ms": 0.8680319786071777,
+        "length": 21,
+        "nodes": 9127
+      },
+      "cubejs": {
+        "ms": 2.5108659267425537,
+        "length": 21
+      }
+    },
+    {
+      "trial": 71,
+      "scramble": "L R2 F2 R L2 R' F D' B F2 D R2 U B R2 B' R' D2 F R L F R U' B' R2",
+      "cubejs": {
+        "ms": 28.444416999816895,
+        "length": 22
+      },
+      "compact": {
+        "ms": 6.133677959442139,
+        "length": 24,
+        "nodes": 125449
+      }
+    },
+    {
+      "trial": 72,
+      "scramble": "F' L2 D L2 D' F2 B' D2 R2 D R B' R' U' L' R2 U' F' B' U2 R' L' U D' L2 D' R U D2 R' L D2",
+      "compact": {
+        "ms": 10.06104302406311,
+        "length": 24,
+        "nodes": 323809
+      },
+      "cubejs": {
+        "ms": 9.719609022140503,
+        "length": 22
+      }
+    },
+    {
+      "trial": 73,
+      "scramble": "F' R2 D' U2 D L B' R F' L R2 L2 D R2 D' B' U B F B' R2 U R2 B2 D U' L R D' R' B",
+      "cubejs": {
+        "ms": 3.3912689685821533,
+        "length": 21
+      },
+      "compact": {
+        "ms": 0.8392419815063477,
+        "length": 21,
+        "nodes": 15222
+      }
+    },
+    {
+      "trial": 74,
+      "scramble": "B L2 R B' D U' L' R' F B' L' D' U L R2 U B R F' L' F",
+      "compact": {
+        "ms": 1.1101149320602417,
+        "length": 21,
+        "nodes": 15589
+      },
+      "cubejs": {
+        "ms": 3.4299190044403076,
+        "length": 21
+      }
+    },
+    {
+      "trial": 75,
+      "scramble": "R2 D' L2 B' R D F D' B' L' R' D2 U' B2 R' U' D2 R' L2 U' D2 L' R B2 L R D B2 F",
+      "cubejs": {
+        "ms": 15.37044894695282,
+        "length": 22
+      },
+      "compact": {
+        "ms": 4.369521975517273,
+        "length": 23,
+        "nodes": 111654
+      }
+    },
+    {
+      "trial": 76,
+      "scramble": "F2 B2 D2 R2 L2 B R' F2 L F B D L2 D B2 D L B' L2 D2 L",
+      "compact": {
+        "ms": 0.8285620212554932,
+        "length": 22,
+        "nodes": 10458
+      },
+      "cubejs": {
+        "ms": 2.9737420082092285,
+        "length": 21
+      }
+    },
+    {
+      "trial": 77,
+      "scramble": "L2 F' U2 R D B U F2 L2 D L B L2 U F' B D F' R F U' L' D L D F B2 D2 B' L B U L2 B2 L' F' D2",
+      "cubejs": {
+        "ms": 152.60099005699158,
+        "length": 22
+      },
+      "compact": {
+        "ms": 11.47391402721405,
+        "length": 24,
+        "nodes": 214853
+      }
+    },
+    {
+      "trial": 78,
+      "scramble": "D L' F L' R2 L' D' U' B2 R2 D2 B' L2 D L2 R' U2 B' R' D U2 R2 L B' D2 B F' B2 U' L' B2 L2 R'",
+      "compact": {
+        "ms": 2.0443090200424194,
+        "length": 22,
+        "nodes": 26940
+      },
+      "cubejs": {
+        "ms": 8.021484971046448,
+        "length": 22
+      }
+    },
+    {
+      "trial": 79,
+      "scramble": "R2 D' R' U' D2 U' F R2 L' F' U' R' F2 U' D' U2 D2 F' D F2 U2 B D' L' D2",
+      "cubejs": {
+        "ms": 23.3034930229187,
+        "length": 22
+      },
+      "compact": {
+        "ms": 9.187270998954773,
+        "length": 23,
+        "nodes": 177319
+      }
+    },
+    {
+      "trial": 80,
+      "scramble": "U2 L' R2 B' R B' U2 B' L F U D B2 D' B F2 U B2 D2 U' D' U2 R2 D L U R D' F U2 F'",
+      "compact": {
+        "ms": 20.979339957237244,
+        "length": 24,
+        "nodes": 506549
+      },
+      "cubejs": {
+        "ms": 55.68983602523804,
+        "length": 22
+      }
+    },
+    {
+      "trial": 81,
+      "scramble": "D2 B2 L' R' D L' U2 D' R' B F' U' D R2 U R2 U2 D2 F' D' B2 D F' U2",
+      "cubejs": {
+        "ms": 242.4634940624237,
+        "length": 22
+      },
+      "compact": {
+        "ms": 5.293586015701294,
+        "length": 24,
+        "nodes": 111634
+      }
+    },
+    {
+      "trial": 82,
+      "scramble": "R B2 L R2 L2 R' L B F2 U' B D' F B U' R' B U2 D' U2 R F U2 R2 L",
+      "compact": {
+        "ms": 9.793529987335205,
+        "length": 22,
+        "nodes": 308959
+      },
+      "cubejs": {
+        "ms": 33.78329300880432,
+        "length": 22
+      }
+    },
+    {
+      "trial": 83,
+      "scramble": "D2 L F2 L2 R2 F2 B L2 R' F' D2 U' F2 R D F' L' F2 R2 B2 U' R'",
+      "cubejs": {
+        "ms": 31.36686897277832,
+        "length": 21
+      },
+      "compact": {
+        "ms": 8.909218072891235,
+        "length": 24,
+        "nodes": 172096
+      }
+    },
+    {
+      "trial": 84,
+      "scramble": "D2 F' R2 B U' D F' R2 B2 D R U F D' R U' F R' L2 U2 L B2 D R' L2 F U L F L' U D B' L",
+      "compact": {
+        "ms": 14.60335898399353,
+        "length": 22,
+        "nodes": 321807
+      },
+      "cubejs": {
+        "ms": 93.2195919752121,
+        "length": 22
+      }
+    },
+    {
+      "trial": 85,
+      "scramble": "D' R F' R2 L2 U' B F B' R F2 B F' U' R' L2 D' U2 B U' D2 B' R B2 U L U2 L' R'",
+      "cubejs": {
+        "ms": 56.50240707397461,
+        "length": 22
+      },
+      "compact": {
+        "ms": 18.25589096546173,
+        "length": 23,
+        "nodes": 329623
+      }
+    },
+    {
+      "trial": 86,
+      "scramble": "U' F2 U2 R2 B F L2 U2 R2 L2 F' L2 F U B2 R' L2 D2 U B' D' U F2 B2 U' D' U2 L F' B D2",
+      "compact": {
+        "ms": 14.98500406742096,
+        "length": 22,
+        "nodes": 332748
+      },
+      "cubejs": {
+        "ms": 59.14029502868652,
+        "length": 22
+      }
+    },
+    {
+      "trial": 87,
+      "scramble": "R L2 U2 D F D' R U B2 U F' R2 D2 U F2 L R U2 D' U' D2 B2 U2 D2 L B2 U2 L2 D2 R U2 D F2 L U R2 F'",
+      "cubejs": {
+        "ms": 18.610954999923706,
+        "length": 21
+      },
+      "compact": {
+        "ms": 2.1383109092712402,
+        "length": 20,
+        "nodes": 26088
+      }
+    },
+    {
+      "trial": 88,
+      "scramble": "B U2 L2 R2 D R F L F' B' L2 U2 L' U2 R U' F' L2 R' U2 R' F' R' F2 U' L D' B2 R'",
+      "compact": {
+        "ms": 25.849340081214905,
+        "length": 23,
+        "nodes": 581198
+      },
+      "cubejs": {
+        "ms": 44.79275894165039,
+        "length": 22
+      }
+    },
+    {
+      "trial": 89,
+      "scramble": "D' U' R2 B' F' U' R2 D' R F D R2 U' B' L' D2 R2 L2 U B D2 L2 F' D' U2 R' L' F L2 F2 L U R D F L2",
+      "cubejs": {
+        "ms": 36.28685796260834,
+        "length": 21
+      },
+      "compact": {
+        "ms": 6.427602052688599,
+        "length": 22,
+        "nodes": 96852
+      }
+    },
+    {
+      "trial": 90,
+      "scramble": "B D' U B2 U D' R' L' B2 L2 D' U2 B2 R B D2 R' B2 F2 B' U D U L2 U' D' B' U' L R U2 D B' R U2 F' L2 D' L2",
+      "compact": {
+        "ms": 7.792500972747803,
+        "length": 24,
+        "nodes": 160503
+      },
+      "cubejs": {
+        "ms": 76.23070895671844,
+        "length": 22
+      }
+    },
+    {
+      "trial": 91,
+      "scramble": "B2 D' B' D U' B' F2 D L2 R' B U2 R F' U' D' U2 B L' B F' B' F2 U2 R2 L' U F R2 D' B' R2 B R2 F D L' F2 U2 D",
+      "cubejs": {
+        "ms": 17.471090078353882,
+        "length": 22
+      },
+      "compact": {
+        "ms": 3.7379629611968994,
+        "length": 22,
+        "nodes": 65945
+      }
+    },
+    {
+      "trial": 92,
+      "scramble": "R2 F B' F2 B L F' R2 L2 U2 F D2 U' F' R' L2 F2 D F2 D2 L F R2 B' F' B D' U2 D L2 U F2 U",
+      "compact": {
+        "ms": 5.563288927078247,
+        "length": 24,
+        "nodes": 142589
+      },
+      "cubejs": {
+        "ms": 49.00013995170593,
+        "length": 22
+      }
+    },
+    {
+      "trial": 93,
+      "scramble": "F' B2 D2 U2 R' B' U L2 F2 L B2 U L R' D' R D2 U B U2 F2 R L' B2 F' L' F B' U' L' D2 R",
+      "cubejs": {
+        "ms": 72.25372195243835,
+        "length": 22
+      },
+      "compact": {
+        "ms": 4.590416073799133,
+        "length": 22,
+        "nodes": 64336
+      }
+    },
+    {
+      "trial": 94,
+      "scramble": "D2 F' L' D' L F D' F2 U D' U' B2 D' B2 L U2 F R2 B D' B' F U2 R L' D' F' B R L' F2 L2 D' U2 R' F B U2",
+      "compact": {
+        "ms": 5.965404987335205,
+        "length": 22,
+        "nodes": 135986
+      },
+      "cubejs": {
+        "ms": 61.20292508602142,
+        "length": 22
+      }
+    },
+    {
+      "trial": 95,
+      "scramble": "F R D2 F2 U2 F' D' B L' F R2 L B2 D U D2 F B R2 L' U' R B2 R2 L R2",
+      "cubejs": {
+        "ms": 23.263901948928833,
+        "length": 22
+      },
+      "compact": {
+        "ms": 13.774526953697205,
+        "length": 23,
+        "nodes": 316398
+      }
+    },
+    {
+      "trial": 96,
+      "scramble": "B' D2 B2 L' D B R D F' L F L F U2 D' F2 L U2 B' D F' U' F U2 B D2 L2",
+      "compact": {
+        "ms": 1.512781023979187,
+        "length": 23,
+        "nodes": 18189
+      },
+      "cubejs": {
+        "ms": 35.20290291309357,
+        "length": 22
+      }
+    },
+    {
+      "trial": 97,
+      "scramble": "L2 U B' R F2 L2 R2 L' U L2 B' D2 R' B' D L R' B2 L' D L2 F D' R' L U' B D B2 L2 R' L U2 F L2 D' L",
+      "cubejs": {
+        "ms": 12.356176018714905,
+        "length": 22
+      },
+      "compact": {
+        "ms": 8.894737005233765,
+        "length": 24,
+        "nodes": 227339
+      }
+    },
+    {
+      "trial": 98,
+      "scramble": "F L2 B' F2 B' L' R B' D2 L2 F' D2 U' D B' F2 U' R B2 F2 B' R U2 L2 D L D F' U2",
+      "compact": {
+        "ms": 4.000367045402527,
+        "length": 22,
+        "nodes": 96423
+      },
+      "cubejs": {
+        "ms": 25.960731029510498,
+        "length": 22
+      }
+    },
+    {
+      "trial": 99,
+      "scramble": "F' U2 R' D2 L F2 U R F' R2 B2 L2 F D' R2 D' U D' F2 D' R B' L' U B F' R L2 F' D' R B2 L2 U2 L",
+      "cubejs": {
+        "ms": 30.112470984458923,
+        "length": 22
+      },
+      "compact": {
+        "ms": 13.518193006515503,
+        "length": 23,
+        "nodes": 412375
+      }
+    },
+    {
+      "trial": 100,
+      "scramble": "F' D F' R L2 R2 F' D F2 B D2 L' R U' D L2 F' R' U2 D R U2 R U2 B' D B D' F' R L F2 D2 B2 D2 R2",
+      "compact": {
+        "ms": 24.366948008537292,
+        "length": 24,
+        "nodes": 700075
+      },
+      "cubejs": {
+        "ms": 32.5065940618515,
+        "length": 22
+      }
+    },
+    {
+      "trial": 101,
+      "scramble": "D' U D2 U R2 U' R2 F' L' R L U2 D2 F2 L2 B' D' R L R2 U' D2 U2 R2 L' B' L2 D' L' R B2",
+      "cubejs": {
+        "ms": 25.491254091262817,
+        "length": 22
+      },
+      "compact": {
+        "ms": 4.974611043930054,
+        "length": 23,
+        "nodes": 108554
+      }
+    },
+    {
+      "trial": 102,
+      "scramble": "L' U2 B' D2 F2 D' U' D F' U' L2 D' R' B U R' L' D L2 R2",
+      "compact": {
+        "ms": 12.3349369764328,
+        "length": 24,
+        "nodes": 364111
+      },
+      "cubejs": {
+        "ms": 151.56145596504211,
+        "length": 22
+      }
+    },
+    {
+      "trial": 103,
+      "scramble": "B' U B' U R' U D' F2 L2 B L U2 D2 B2 F2 L2 D2 R D2 B' F' D2 B' R D2 F' B R F' L2 B R B' L2 B D' R2 F2 L",
+      "cubejs": {
+        "ms": 61.91940498352051,
+        "length": 22
+      },
+      "compact": {
+        "ms": 46.124868988990784,
+        "length": 26,
+        "nodes": 1089500
+      }
+    },
+    {
+      "trial": 104,
+      "scramble": "B U B R2 U L B2 D U L' B' L' D' R' F2 U D' B2 D' B L' D L F2 L U' B' U R2 F' B F' D",
+      "compact": {
+        "ms": 4.202720046043396,
+        "length": 23,
+        "nodes": 99217
+      },
+      "cubejs": {
+        "ms": 46.038138031959534,
+        "length": 22
+      }
+    },
+    {
+      "trial": 105,
+      "scramble": "D' U2 D' R2 U2 B2 F D' R U' B' F2 L2 U' D L2 U' F2 L' D' L R2 B' D2 F' R U2 D2 R U' L F2 U2 R2 D2 B U2 F2 B'",
+      "cubejs": {
+        "ms": 103.71905207633972,
+        "length": 22
+      },
+      "compact": {
+        "ms": 31.352527022361755,
+        "length": 24,
+        "nodes": 795819
+      }
+    },
+    {
+      "trial": 106,
+      "scramble": "B U' L' F L' D2 R' U R2 L F' U' R' L2 U D L2 D' F L2 B2 D R U' B2 U2",
+      "compact": {
+        "ms": 3.362528085708618,
+        "length": 24,
+        "nodes": 88184
+      },
+      "cubejs": {
+        "ms": 20.97104001045227,
+        "length": 22
+      }
+    },
+    {
+      "trial": 107,
+      "scramble": "D' R2 B2 D2 L U R' U B' R' F L R2 B U2 L' D L2 B' D' U2 B2 L' B' U2 R U2 R2 B' R' U2 F U' D U2 B' L2",
+      "cubejs": {
+        "ms": 4.482974052429199,
+        "length": 22
+      },
+      "compact": {
+        "ms": 1.3858100175857544,
+        "length": 22,
+        "nodes": 22166
+      }
+    },
+    {
+      "trial": 108,
+      "scramble": "D F2 U2 R' U' R' L B U B2 R F2 L D2 U2 D' B2 L' F B' D B' F' R B2 R2 F' D2 U D B2 D2 U2 R' D' R2 U2 B2 R' F",
+      "compact": {
+        "ms": 2.579257011413574,
+        "length": 24,
+        "nodes": 59167
+      },
+      "cubejs": {
+        "ms": 17.007232904434204,
+        "length": 22
+      }
+    },
+    {
+      "trial": 109,
+      "scramble": "B2 L2 F U' L U' F' L U2 F2 L2 D' R D2 R2 L2 B R L U2 D2 L U' B2 D F2 R' B L D2 F",
+      "cubejs": {
+        "ms": 37.05475890636444,
+        "length": 22
+      },
+      "compact": {
+        "ms": 3.3678579330444336,
+        "length": 24,
+        "nodes": 50911
+      }
+    },
+    {
+      "trial": 110,
+      "scramble": "L2 R2 L B2 U' D F2 B D2 R B' D B2 U' D B R2 B' R' U B' L' F2 R' L U' F2 L F' L2 D' F B D F' U R D",
+      "compact": {
+        "ms": 1.180077075958252,
+        "length": 23,
+        "nodes": 19270
+      },
+      "cubejs": {
+        "ms": 79.86214101314545,
+        "length": 22
+      }
+    },
+    {
+      "trial": 111,
+      "scramble": "R F2 U' F' R2 U2 L2 D U' F B2 U2 L' D2 F' B2 F' B' D' R2 B' R' D L2 F' L U2 R2 B L R B2 R B' R U F2 R2 U",
+      "cubejs": {
+        "ms": 86.4911060333252,
+        "length": 22
+      },
+      "compact": {
+        "ms": 8.63852310180664,
+        "length": 23,
+        "nodes": 222673
+      }
+    },
+    {
+      "trial": 112,
+      "scramble": "L' U' R L2 R2 F' L' D B L' B2 F2 D R2 L2 F R L R F R' B D R2 U B R2 B L F U2 F' R2 D2 L' R' F' U R2",
+      "compact": {
+        "ms": 12.550928950309753,
+        "length": 24,
+        "nodes": 395157
+      },
+      "cubejs": {
+        "ms": 69.09019696712494,
+        "length": 22
+      }
+    },
+    {
+      "trial": 113,
+      "scramble": "D U' D' L2 D L' B' R F2 B2 D' R2 D' L' F' R2 U2 D2 U B2 L' D B' D U D2 F' D' L2 F R2 B'",
+      "cubejs": {
+        "ms": 22.100396037101746,
+        "length": 22
+      },
+      "compact": {
+        "ms": 2.2001819610595703,
+        "length": 23,
+        "nodes": 31575
+      }
+    },
+    {
+      "trial": 114,
+      "scramble": "B D' L2 B' L' U' F' B L B2 R' B2 L2 R U D2 R U2 L F' D' R' B L2 B L F R' L2 U' B2 D2 U' B L U L2 B2 R2",
+      "compact": {
+        "ms": 7.000169992446899,
+        "length": 24,
+        "nodes": 189207
+      },
+      "cubejs": {
+        "ms": 40.32348597049713,
+        "length": 22
+      }
+    },
+    {
+      "trial": 115,
+      "scramble": "B' L2 B F U' B' F2 L U L' R D2 R B L' F2 U B' D' F' L2 D' L' R B2 U' D2 B2 F2",
+      "cubejs": {
+        "ms": 46.9342600107193,
+        "length": 22
+      },
+      "compact": {
+        "ms": 17.961417078971863,
+        "length": 25,
+        "nodes": 526611
+      }
+    },
+    {
+      "trial": 116,
+      "scramble": "F' B2 L' R2 U2 L2 R' F2 R' F' B U' F2 B' F2 U F' L2 F2 D' R2 U F' L D2",
+      "compact": {
+        "ms": 5.62972092628479,
+        "length": 23,
+        "nodes": 189570
+      },
+      "cubejs": {
+        "ms": 17.248257040977478,
+        "length": 22
+      }
+    },
+    {
+      "trial": 117,
+      "scramble": "B' L U D2 R2 B2 R' D2 F B D' B2 F L R2 U D' R' F R2 U' R2 U2 L D2 L2 D",
+      "cubejs": {
+        "ms": 131.93711495399475,
+        "length": 22
+      },
+      "compact": {
+        "ms": 23.698797941207886,
+        "length": 24,
+        "nodes": 661724
+      }
+    },
+    {
+      "trial": 118,
+      "scramble": "B2 D' F2 B2 L2 D B2 R D2 B L F2 R2 U2 B R2 F' B2 F' U L' U D B U' B R2 D' B2 D R2",
+      "compact": {
+        "ms": 1.8798069953918457,
+        "length": 21,
+        "nodes": 42133
+      },
+      "cubejs": {
+        "ms": 6.220579028129578,
+        "length": 21
+      }
+    },
+    {
+      "trial": 119,
+      "scramble": "F' R2 U2 R B2 D' B F2 R' F' R2 B L B' L' R2 F' B F R2 L D B D U B' U L' B2 L2 U",
+      "cubejs": {
+        "ms": 32.168750047683716,
+        "length": 21
+      },
+      "compact": {
+        "ms": 5.802722930908203,
+        "length": 23,
+        "nodes": 149156
+      }
+    },
+    {
+      "trial": 120,
+      "scramble": "F D' B2 U2 F2 D' R F' L B' F' R L' U' R2 U2 F L F2 R' D2 B' L B2 D U R",
+      "compact": {
+        "ms": 3.712613105773926,
+        "length": 22,
+        "nodes": 116391
+      },
+      "cubejs": {
+        "ms": 25.232311010360718,
+        "length": 22
+      }
+    },
+    {
+      "trial": 121,
+      "scramble": "R2 F' U2 F' U2 R L F2 R D U2 F U' B' F2 U2 L2 F D B2 R' U' L' R U R' B2 L U' L2 D2 F2",
+      "cubejs": {
+        "ms": 40.14458405971527,
+        "length": 22
+      },
+      "compact": {
+        "ms": 2.874130964279175,
+        "length": 23,
+        "nodes": 40466
+      }
+    },
+    {
+      "trial": 122,
+      "scramble": "U2 B2 F' B' R' U' F2 B' D2 B2 R L2 F' B2 D' L2 D L U2 L2 R F B D' U F' U F D' U'",
+      "compact": {
+        "ms": 3.175935983657837,
+        "length": 20,
+        "nodes": 88211
+      },
+      "cubejs": {
+        "ms": 19.724212050437927,
+        "length": 20
+      }
+    },
+    {
+      "trial": 123,
+      "scramble": "R B' D2 L2 F' B' R' F B U2 L2 B L2 R2 D F' R F L D' U",
+      "cubejs": {
+        "ms": 25.34430205821991,
+        "length": 21
+      },
+      "compact": {
+        "ms": 3.1272549629211426,
+        "length": 23,
+        "nodes": 62247
+      }
+    },
+    {
+      "trial": 124,
+      "scramble": "D' F' B D2 U2 F2 D' L' R2 F' L2 B2 F' R' F' D F B2 U' B' F2 B' R D U2 L2 D' R2 U R L R' U B' U B' R2",
+      "compact": {
+        "ms": 12.44808804988861,
+        "length": 24,
+        "nodes": 332823
+      },
+      "cubejs": {
+        "ms": 29.267588019371033,
+        "length": 21
+      }
+    },
+    {
+      "trial": 125,
+      "scramble": "U2 F' B2 U2 D L D' B2 R2 L' U2 B2 L' D2 F' D' R L2 D' U2 B2 D2 L' D' U'",
+      "cubejs": {
+        "ms": 10.054273009300232,
+        "length": 22
+      },
+      "compact": {
+        "ms": 2.740238904953003,
+        "length": 22,
+        "nodes": 49229
+      }
+    },
+    {
+      "trial": 126,
+      "scramble": "L B2 F2 R' F' L R B2 R D2 F' R' L2 B2 F D' L' B' R' F' L2 B D' F2 L U R' B' L' B D U' D' R2 B2 F' L B U2 F",
+      "compact": {
+        "ms": 13.636995077133179,
+        "length": 23,
+        "nodes": 439512
+      },
+      "cubejs": {
+        "ms": 74.71041691303253,
+        "length": 22
+      }
+    },
+    {
+      "trial": 127,
+      "scramble": "U2 F L2 R L2 D2 U' B R' D2 F' U' D U2 F2 B R2 B' F2 D L2 B' F",
+      "cubejs": {
+        "ms": 8.135986924171448,
+        "length": 22
+      },
+      "compact": {
+        "ms": 5.111333012580872,
+        "length": 23,
+        "nodes": 90712
+      }
+    },
+    {
+      "trial": 128,
+      "scramble": "L F' U' L' R2 B' U2 D L B2 L' B F2 L U' D F2 L' D U' L2 F' R2",
+      "compact": {
+        "ms": 7.9535040855407715,
+        "length": 23,
+        "nodes": 230525
+      },
+      "cubejs": {
+        "ms": 23.985662937164307,
+        "length": 22
+      }
+    },
+    {
+      "trial": 129,
+      "scramble": "D2 R2 D2 B L2 U2 D2 U' B2 F R2 U' R' D' B' F2 D' F B' D2 B2 L'",
+      "cubejs": {
+        "ms": 88.81547904014587,
+        "length": 22
+      },
+      "compact": {
+        "ms": 10.66897201538086,
+        "length": 22,
+        "nodes": 300036
+      }
+    },
+    {
+      "trial": 130,
+      "scramble": "U2 L2 R D R B' D R2 F2 B2 L2 B2 U2 B' U2 R2 L2 F2 R2 U' F2 U2 L2 D2 B' L D2 B L D' L U B L'",
+      "compact": {
+        "ms": 7.2632529735565186,
+        "length": 23,
+        "nodes": 242992
+      },
+      "cubejs": {
+        "ms": 58.9644820690155,
+        "length": 22
+      }
+    },
+    {
+      "trial": 131,
+      "scramble": "L2 F' D U R2 F' U2 F U' R' U' B U R2 B2 D' U R' U' R D' U' F'",
+      "cubejs": {
+        "ms": 3.528180956840515,
+        "length": 19
+      },
+      "compact": {
+        "ms": 0.6562889814376831,
+        "length": 19,
+        "nodes": 8506
+      }
+    },
+    {
+      "trial": 132,
+      "scramble": "R B2 F' U' L R' D' R' F2 U2 F B' R B R' B' U F B2 R2 F B D' L2 R L' R' L2",
+      "compact": {
+        "ms": 1.6876239776611328,
+        "length": 23,
+        "nodes": 22292
+      },
+      "cubejs": {
+        "ms": 20.633294939994812,
+        "length": 22
+      }
+    },
+    {
+      "trial": 133,
+      "scramble": "R' D L D' U2 L2 D F L2 U' B' U B F D2 B F' L' D' R' F U2 L2 B' R' D' B2 U2 D2 R2 F2 D' R D2 U' F D' L' B R",
+      "cubejs": {
+        "ms": 11.596184968948364,
+        "length": 22
+      },
+      "compact": {
+        "ms": 32.854888916015625,
+        "length": 24,
+        "nodes": 1071527
+      }
+    },
+    {
+      "trial": 134,
+      "scramble": "R' D2 B R2 B2 F' R2 D2 F2 R' D U D F2 R' F2 D U' R2 L F2 B' D2 B' L2 U' R U' L U",
+      "compact": {
+        "ms": 0.20512306690216064,
+        "length": 19,
+        "nodes": 3424
+      },
+      "cubejs": {
+        "ms": 3.7787939310073853,
+        "length": 20
+      }
+    },
+    {
+      "trial": 135,
+      "scramble": "F2 B L2 D B U2 D U' B2 R L2 U F L F B2 R L R' U2 L' B L' D' B2 D F2 D2 F' L R' B' L B D F' R' F D' R",
+      "cubejs": {
+        "ms": 26.943444967269897,
+        "length": 22
+      },
+      "compact": {
+        "ms": 11.174438953399658,
+        "length": 22,
+        "nodes": 321609
+      }
+    },
+    {
+      "trial": 136,
+      "scramble": "L2 R2 F B2 U2 D U' L2 R2 U2 D' B2 F' U F2 R' U R2 B2 F2 U D B2 F' R' L' B' D L D2 U2 D B2 L' F' L D' F2 L R2",
+      "compact": {
+        "ms": 7.683430075645447,
+        "length": 24,
+        "nodes": 243865
+      },
+      "cubejs": {
+        "ms": 76.59851396083832,
+        "length": 21
+      }
+    },
+    {
+      "trial": 137,
+      "scramble": "U' B' R L2 B F R' B' L R2 D' L B R U F B' F R2 B2 U' R2 F B' U B' F2 B2",
+      "cubejs": {
+        "ms": 3.3630679845809937,
+        "length": 22
+      },
+      "compact": {
+        "ms": 1.2112269401550293,
+        "length": 22,
+        "nodes": 14821
+      }
+    },
+    {
+      "trial": 138,
+      "scramble": "F2 B' U2 D L F L' U2 F U' F B L F2 B2 D2 L2 B U D L U' D U2 D2 B' F' B L' U2 R2 D U' F U' R B2 L R",
+      "compact": {
+        "ms": 28.28563404083252,
+        "length": 24,
+        "nodes": 890615
+      },
+      "cubejs": {
+        "ms": 45.24681603908539,
+        "length": 21
+      }
+    },
+    {
+      "trial": 139,
+      "scramble": "F L2 D' B2 L U B2 U2 L2 R D' U2 F L' B2 U' L B' L2 D2",
+      "cubejs": {
+        "ms": 17.6013320684433,
+        "length": 22
+      },
+      "compact": {
+        "ms": 3.694922924041748,
+        "length": 24,
+        "nodes": 75517
+      }
+    },
+    {
+      "trial": 140,
+      "scramble": "B U L U R' B' L F R2 D' R' L' R' F D' B2 L F L' U2 D2 F L2 R2",
+      "compact": {
+        "ms": 2.2070720195770264,
+        "length": 23,
+        "nodes": 53598
+      },
+      "cubejs": {
+        "ms": 29.896976947784424,
+        "length": 22
+      }
+    },
+    {
+      "trial": 141,
+      "scramble": "L' F L' U2 B2 F R' L2 R2 D U2 R' U2 R' F L2 B F' U R2 U' D' F L2",
+      "cubejs": {
+        "ms": 20.67460596561432,
+        "length": 22
+      },
+      "compact": {
+        "ms": 1.8034659624099731,
+        "length": 23,
+        "nodes": 25145
+      }
+    },
+    {
+      "trial": 142,
+      "scramble": "F2 D2 R U2 L U2 L' F D2 U R' L2 B R2 U2 L' F B L' R' U' F2",
+      "compact": {
+        "ms": 4.814559102058411,
+        "length": 25,
+        "nodes": 127954
+      },
+      "cubejs": {
+        "ms": 68.01733195781708,
+        "length": 22
+      }
+    },
+    {
+      "trial": 143,
+      "scramble": "B F2 U2 D2 L' B L R2 F2 R2 F2 B' F' R2 L' U D2 R2 D2 U R' D2 R D2 B2 D2 U R' L2 D' R' D2 L2 B' U' L' B' R'",
+      "cubejs": {
+        "ms": 18.330772042274475,
+        "length": 21
+      },
+      "compact": {
+        "ms": 4.937319993972778,
+        "length": 23,
+        "nodes": 113840
+      }
+    },
+    {
+      "trial": 144,
+      "scramble": "L' F' L2 F' B' R U B2 F U' R2 F' R F2 R' F2 R F2 R2 F2 R' U' D2 R2 D' L2 D' R",
+      "compact": {
+        "ms": 10.111124038696289,
+        "length": 22,
+        "nodes": 334390
+      },
+      "cubejs": {
+        "ms": 52.916576981544495,
+        "length": 22
+      }
+    },
+    {
+      "trial": 145,
+      "scramble": "B2 U' R U B L2 F L U2 F' B' L2 U B2 F R' U' B' L F' D F D2 B2 L' U' F' U2 R B2",
+      "cubejs": {
+        "ms": 21.802950978279114,
+        "length": 22
+      },
+      "compact": {
+        "ms": 5.682500958442688,
+        "length": 24,
+        "nodes": 131169
+      }
+    },
+    {
+      "trial": 146,
+      "scramble": "B2 F L' B D2 R D R' D2 F' D' L F2 R2 B' F B2 U' L' R' B R2 D' L2 F2 L' D' F U B2 D2 B2 U R' L2 D U F'",
+      "compact": {
+        "ms": 13.358000993728638,
+        "length": 25,
+        "nodes": 459362
+      },
+      "cubejs": {
+        "ms": 80.05092298984528,
+        "length": 22
+      }
+    },
+    {
+      "trial": 147,
+      "scramble": "L' D2 R B D' L2 R2 L2 D F D' L2 D2 R2 D2 B2 R D U R' D L2 B2 R L2 D' B'",
+      "cubejs": {
+        "ms": 12.399688005447388,
+        "length": 22
+      },
+      "compact": {
+        "ms": 2.6925179958343506,
+        "length": 22,
+        "nodes": 53876
+      }
+    },
+    {
+      "trial": 148,
+      "scramble": "B R2 U' F' L2 U D2 F' U2 B R U B' R2 D' L D' L2 F' B' L F' L' U2 D2 L B L R2 D' R' D",
+      "compact": {
+        "ms": 2.178061008453369,
+        "length": 23,
+        "nodes": 35894
+      },
+      "cubejs": {
+        "ms": 142.50561606884003,
+        "length": 22
+      }
+    },
+    {
+      "trial": 149,
+      "scramble": "R2 L2 U' L2 U2 F2 U' B F' D' R U2 F2 D L F' B2 F2 R' B2 U' R U2 R U' L U' F' U2 D F' D B F2 L2 B' D2 F2 L2",
+      "cubejs": {
+        "ms": 12.857982993125916,
+        "length": 22
+      },
+      "compact": {
+        "ms": 5.959485054016113,
+        "length": 24,
+        "nodes": 146680
+      }
+    },
+    {
+      "trial": 150,
+      "scramble": "F2 R2 B' U' R2 L' R D2 F2 B2 R2 D F D2 F L' B D' F L R2 L2",
+      "compact": {
+        "ms": 5.4884480237960815,
+        "length": 25,
+        "nodes": 151264
+      },
+      "cubejs": {
+        "ms": 1062.3170570135117,
+        "length": 22
+      }
+    },
+    {
+      "trial": 151,
+      "scramble": "F B2 F D' R L2 B L2 F U2 D U' L D L D' R F2 L2 D' B L' R2 U'",
+      "cubejs": {
+        "ms": 28.188032031059265,
+        "length": 22
+      },
+      "compact": {
+        "ms": 11.325942039489746,
+        "length": 25,
+        "nodes": 280009
+      }
+    },
+    {
+      "trial": 152,
+      "scramble": "R2 U' R2 B R' U2 L' U D' R U2 F2 L' R U' D2 F D' B2 L' B' F U",
+      "compact": {
+        "ms": 12.183714032173157,
+        "length": 23,
+        "nodes": 407984
+      },
+      "cubejs": {
+        "ms": 130.48360395431519,
+        "length": 20
+      }
+    },
+    {
+      "trial": 153,
+      "scramble": "B R' D2 R2 F2 U' B' L2 R F' R2 L R2 D' B U2 F2 D2 L2 B2 L' U L R L2 D2 U2 B2 D",
+      "cubejs": {
+        "ms": 30.983832001686096,
+        "length": 21
+      },
+      "compact": {
+        "ms": 17.485430002212524,
+        "length": 23,
+        "nodes": 539880
+      }
+    },
+    {
+      "trial": 154,
+      "scramble": "L R' B L' F2 L R F' U L D2 F2 D' B2 R' B L R2 L' B' U2 B F' B L D'",
+      "compact": {
+        "ms": 1.875606894493103,
+        "length": 22,
+        "nodes": 49383
+      },
+      "cubejs": {
+        "ms": 10.868175983428955,
+        "length": 22
+      }
+    },
+    {
+      "trial": 155,
+      "scramble": "D R2 U' D2 L B2 D2 U D' B2 U2 R D' R2 F' R D L' B L2 D2 U2 B2 D2 U2 R' F2 B2 D2 U L F2 R' D' U' D' U2",
+      "cubejs": {
+        "ms": 88.61908602714539,
+        "length": 22
+      },
+      "compact": {
+        "ms": 5.228415012359619,
+        "length": 23,
+        "nodes": 101565
+      }
+    },
+    {
+      "trial": 156,
+      "scramble": "B F' R' L D2 L F D' U B U2 F' L' U' R U2 R B2 U L D' R' F U B' L' B R D F' U R2 F' B2 R D2 R D2 B D'",
+      "compact": {
+        "ms": 15.08645510673523,
+        "length": 22,
+        "nodes": 510112
+      },
+      "cubejs": {
+        "ms": 53.362972021102905,
+        "length": 22
+      }
+    },
+    {
+      "trial": 157,
+      "scramble": "D' U R U B' U L2 B D B' L2 D2 U L' F2 D B2 U' D U' B' L'",
+      "cubejs": {
+        "ms": 34.20594894886017,
+        "length": 21
+      },
+      "compact": {
+        "ms": 3.872175931930542,
+        "length": 22,
+        "nodes": 75383
+      }
+    },
+    {
+      "trial": 158,
+      "scramble": "U2 R2 B2 F2 B2 L F' B U' R' D' B U F B' L2 D F' L' F R' U' B2 L U2 D2 R' B2 D' L R F2 B R2 U2 L' D2 R' B R2",
+      "compact": {
+        "ms": 4.556215047836304,
+        "length": 23,
+        "nodes": 107641
+      },
+      "cubejs": {
+        "ms": 36.12036597728729,
+        "length": 22
+      }
+    },
+    {
+      "trial": 159,
+      "scramble": "B U2 L D R L' U F2 B2 R B2 U2 F U2 R' F U2 F U' B'",
+      "cubejs": {
+        "ms": 19.082033038139343,
+        "length": 22
+      },
+      "compact": {
+        "ms": 13.01621699333191,
+        "length": 24,
+        "nodes": 367022
+      }
+    },
+    {
+      "trial": 160,
+      "scramble": "D B D2 F' L2 F' B2 F' U2 R L R2 F2 L2 D2 B U' D2 R' F B F2 D' B L F D2 R' D2 F U B' U'",
+      "compact": {
+        "ms": 0.8455719947814941,
+        "length": 22,
+        "nodes": 19380
+      },
+      "cubejs": {
+        "ms": 2.9762229919433594,
+        "length": 22
+      }
+    },
+    {
+      "trial": 161,
+      "scramble": "L D2 R D' L2 F' B' L' R' U F' U L2 R L2 R B D' F2 B L2 D F D2 R2 L2 R2 D' L B2 L F' B2 R' F'",
+      "cubejs": {
+        "ms": 42.99135398864746,
+        "length": 22
+      },
+      "compact": {
+        "ms": 13.61140501499176,
+        "length": 23,
+        "nodes": 389861
+      }
+    },
+    {
+      "trial": 162,
+      "scramble": "L' B R' D U R2 D U2 L' F' D2 B2 D F2 R U' R F' B2 L F' L2 U2 D' L' F' B R L2 U2 D' R'",
+      "compact": {
+        "ms": 3.7690839767456055,
+        "length": 23,
+        "nodes": 118769
+      },
+      "cubejs": {
+        "ms": 31.384858012199402,
+        "length": 22
+      }
+    },
+    {
+      "trial": 163,
+      "scramble": "D2 B' D2 U' B D2 L B' R2 U R2 L2 B U' R2 B D' R' F R F2 L' B2 D2 B' F' B' F2 R B2 U' D2 R B' D' B'",
+      "cubejs": {
+        "ms": 9.734608888626099,
+        "length": 22
+      },
+      "compact": {
+        "ms": 1.2811790704727173,
+        "length": 21,
+        "nodes": 21231
+      }
+    },
+    {
+      "trial": 164,
+      "scramble": "B F' R2 L' R' F2 B R2 F L' D2 F2 D' L D2 F U' L2 U' L B' R2 U' F2 R2 D2",
+      "compact": {
+        "ms": 1.0973960161209106,
+        "length": 20,
+        "nodes": 13932
+      },
+      "cubejs": {
+        "ms": 3.506850004196167,
+        "length": 20
+      }
+    },
+    {
+      "trial": 165,
+      "scramble": "L R L R2 B' D2 L B R' U' B R L2 R' D B' R' B2 R' B D' L2 R2 F2 D L' R' F",
+      "cubejs": {
+        "ms": 10.799763917922974,
+        "length": 22
+      },
+      "compact": {
+        "ms": 5.123613953590393,
+        "length": 23,
+        "nodes": 137463
+      }
+    },
+    {
+      "trial": 166,
+      "scramble": "U2 D U' R' U R' D U' R' U2 B F2 U2 B R2 D R U2 R F' R' U' L U'",
+      "compact": {
+        "ms": 0.7441610097885132,
+        "length": 20,
+        "nodes": 16718
+      },
+      "cubejs": {
+        "ms": 3.917896032333374,
+        "length": 20
+      }
+    },
+    {
+      "trial": 167,
+      "scramble": "R F2 B' R' B' L D B D2 R' L' R D F D L B' F2 D2 L2 D L2 U2 R2 D'",
+      "cubejs": {
+        "ms": 25.44745397567749,
+        "length": 22
+      },
+      "compact": {
+        "ms": 6.8987380266189575,
+        "length": 23,
+        "nodes": 200573
+      }
+    },
+    {
+      "trial": 168,
+      "scramble": "U' L' B' D U' B2 D2 F U' L D' L2 D' R L R2 D2 R D' L2 R U L2 D' U2 R F' L' R D2",
+      "compact": {
+        "ms": 2.890020966529846,
+        "length": 22,
+        "nodes": 81925
+      },
+      "cubejs": {
+        "ms": 16.431164979934692,
+        "length": 22
+      }
+    },
+    {
+      "trial": 169,
+      "scramble": "L2 R B2 R2 F2 B' D2 R2 U' B2 L F B D F' D R D' F' B2 L R2 L2",
+      "cubejs": {
+        "ms": 213.47011995315552,
+        "length": 22
+      },
+      "compact": {
+        "ms": 5.372115969657898,
+        "length": 21,
+        "nodes": 128139
+      }
+    },
+    {
+      "trial": 170,
+      "scramble": "F' L R U F L2 D' R B2 R' L D' U2 B2 L2 D U' R' L2 D2 B2 R' U",
+      "compact": {
+        "ms": 3.74802303314209,
+        "length": 22,
+        "nodes": 80616
+      },
+      "cubejs": {
+        "ms": 16.81656002998352,
+        "length": 21
+      }
+    },
+    {
+      "trial": 171,
+      "scramble": "F' U2 L' F' D2 U' B' L R D B2 R' F U2 R' D2 B F R' L' F' R2 U D2 U B' R F2 U B' D R F B L D2 U2 L D'",
+      "cubejs": {
+        "ms": 11.172999024391174,
+        "length": 22
+      },
+      "compact": {
+        "ms": 1.1473159790039062,
+        "length": 21,
+        "nodes": 17850
+      }
+    },
+    {
+      "trial": 172,
+      "scramble": "R F U' F B' L2 R B' R2 F2 D' R' B D' U2 B U' B2 R B' U2 L' U2 F2",
+      "compact": {
+        "ms": 6.7465269565582275,
+        "length": 24,
+        "nodes": 197752
+      },
+      "cubejs": {
+        "ms": 15.110975980758667,
+        "length": 22
+      }
+    },
+    {
+      "trial": 173,
+      "scramble": "R2 D U D' F2 U D F2 D' B2 R2 D R2 B D2 F' L R L' F B' L2 U L F' L U F U2 D2 F R B L",
+      "cubejs": {
+        "ms": 158.77956807613373,
+        "length": 22
+      },
+      "compact": {
+        "ms": 1.78575599193573,
+        "length": 21,
+        "nodes": 20732
+      }
+    },
+    {
+      "trial": 174,
+      "scramble": "L2 B' L U B D U2 L B2 F2 D2 F L2 F L' D' B2 F2 D2 R F B2 L D L' U D'",
+      "compact": {
+        "ms": 0.6469190120697021,
+        "length": 21,
+        "nodes": 7226
+      },
+      "cubejs": {
+        "ms": 10.19673502445221,
+        "length": 21
+      }
+    },
+    {
+      "trial": 175,
+      "scramble": "F' R' L R2 L' R' L F' R F B2 D' R' U D B' U' R F R' B' U B L' R' D U' L F2 R' F R' F' R2 B R' U L R' D2",
+      "cubejs": {
+        "ms": 14.235773086547852,
+        "length": 22
+      },
+      "compact": {
+        "ms": 3.052953004837036,
+        "length": 22,
+        "nodes": 68154
+      }
+    },
+    {
+      "trial": 176,
+      "scramble": "F2 U2 D2 F2 R2 B' R2 D2 U2 D2 B L' U2 R2 B' R2 D U' B2 R D2 U' B' L2 R' D2 F' L2 D U B L' R' B' R' F2 R2",
+      "compact": {
+        "ms": 20.311360001564026,
+        "length": 24,
+        "nodes": 641060
+      },
+      "cubejs": {
+        "ms": 55.73297703266144,
+        "length": 22
+      }
+    },
+    {
+      "trial": 177,
+      "scramble": "B' L' D L2 D2 B2 R' U' F U2 F' B2 L U2 L U B2 R' B' L F B' R2 F D R2 B2 L B D'",
+      "cubejs": {
+        "ms": 6.789296984672546,
+        "length": 22
+      },
+      "compact": {
+        "ms": 2.136230945587158,
+        "length": 22,
+        "nodes": 32309
+      }
+    },
+    {
+      "trial": 178,
+      "scramble": "R' D F R2 U2 R2 L' D2 F L R' F' L F U D' R L' B U2 B' U2 F R' L2 U2 L2 R' U B' R D2 F2 U2 D U' L'",
+      "compact": {
+        "ms": 16.868051052093506,
+        "length": 24,
+        "nodes": 532482
+      },
+      "cubejs": {
+        "ms": 74.27172100543976,
+        "length": 22
+      }
+    },
+    {
+      "trial": 179,
+      "scramble": "U' D' L R' U F U2 F B2 L' B2 L D' U F' R2 U' F' U F D2 R' U' B' F R' F2 U F' B2 D' U D2 R2 B R",
+      "cubejs": {
+        "ms": 92.07387506961823,
+        "length": 22
+      },
+      "compact": {
+        "ms": 17.339067935943604,
+        "length": 25,
+        "nodes": 489339
+      }
+    },
+    {
+      "trial": 180,
+      "scramble": "L2 B U L2 D' U F U D' R F R' L D2 F2 B' F' L U2 D' R2 L2 R'",
+      "compact": {
+        "ms": 17.686923027038574,
+        "length": 22,
+        "nodes": 601918
+      },
+      "cubejs": {
+        "ms": 105.79013204574585,
+        "length": 21
+      }
+    },
+    {
+      "trial": 181,
+      "scramble": "B' F2 D U B' U L' F' D' F2 R D U D U2 D' R' D U R'",
+      "cubejs": {
+        "ms": 232.1957370042801,
+        "length": 21
+      },
+      "compact": {
+        "ms": 37.352813959121704,
+        "length": 25,
+        "nodes": 1184680
+      }
+    },
+    {
+      "trial": 182,
+      "scramble": "L2 R' L2 R' F2 D B L' U2 L' D R2 U' F' U D2 U' F' L D' F D R' D R F R' B' F' R B R' D L2",
+      "compact": {
+        "ms": 4.43548309803009,
+        "length": 23,
+        "nodes": 142489
+      },
+      "cubejs": {
+        "ms": 19.9074649810791,
+        "length": 22
+      }
+    },
+    {
+      "trial": 183,
+      "scramble": "F' U D2 B' R2 D2 L' U' F U L2 U B R' U' R B R2 U2 D' U D' R2 B F L R2 D2 R B'",
+      "cubejs": {
+        "ms": 43.886497020721436,
+        "length": 22
+      },
+      "compact": {
+        "ms": 6.953959941864014,
+        "length": 23,
+        "nodes": 155354
+      }
+    },
+    {
+      "trial": 184,
+      "scramble": "B' R' U D U R' B R2 U2 F2 B2 L B F D L B L U R2 D2 F R F' D' L2 D2 F' R F B' R B' U' F L2 U",
+      "compact": {
+        "ms": 6.582394003868103,
+        "length": 23,
+        "nodes": 194245
+      },
+      "cubejs": {
+        "ms": 63.80038106441498,
+        "length": 22
+      }
+    },
+    {
+      "trial": 185,
+      "scramble": "B F2 U' R F' R' U' F2 B F' D F2 D' R2 U R' F' U2 D U2 B' D2 U' B' R' B' D2 L2 F' D R F2 D R F2 U",
+      "cubejs": {
+        "ms": 54.34695589542389,
+        "length": 21
+      },
+      "compact": {
+        "ms": 5.028572082519531,
+        "length": 24,
+        "nodes": 99826
+      }
+    },
+    {
+      "trial": 186,
+      "scramble": "U D B R2 B2 R2 B' R F2 D2 U' R D2 L2 F U' D R' F' B U' L B R2 B U' D' L' F U2 F U R2 U D2 F' U L B' L2",
+      "compact": {
+        "ms": 3.7991440296173096,
+        "length": 23,
+        "nodes": 92475
+      },
+      "cubejs": {
+        "ms": 53.89918005466461,
+        "length": 22
+      }
+    },
+    {
+      "trial": 187,
+      "scramble": "B L' B2 F R2 F2 U' B' D' U2 F D F' L' D R B2 R U B R' B2 F' R2 L'",
+      "cubejs": {
+        "ms": 134.552591919899,
+        "length": 22
+      },
+      "compact": {
+        "ms": 6.856817960739136,
+        "length": 23,
+        "nodes": 158511
+      }
+    },
+    {
+      "trial": 188,
+      "scramble": "U2 B U2 R2 L' F B2 U2 L2 B R U2 L' F2 U B F2 D' B D' R U L' R F' D F' L2 R' D2 B2 F' D' R' F' U'",
+      "compact": {
+        "ms": 10.59079098701477,
+        "length": 24,
+        "nodes": 328363
+      },
+      "cubejs": {
+        "ms": 7.444566965103149,
+        "length": 22
+      }
+    },
+    {
+      "trial": 189,
+      "scramble": "F2 L2 R' U2 L F2 U2 F' D' L' U' F2 R2 B' R2 D2 L2 B R2 F' R F' B L' R' U' R' U' L2 D L R' D L2 F L U' F B'",
+      "cubejs": {
+        "ms": 50.25159692764282,
+        "length": 22
+      },
+      "compact": {
+        "ms": 4.1743000745773315,
+        "length": 24,
+        "nodes": 77188
+      }
+    },
+    {
+      "trial": 190,
+      "scramble": "D2 L2 D B U D' B2 R' L R' F2 B' F' D' U2 D B2 D2 U' D2 R D L2 D2 L2 R2 B' R' U F' R' B R2 L' B D' U'",
+      "compact": {
+        "ms": 11.644127011299133,
+        "length": 23,
+        "nodes": 364564
+      },
+      "cubejs": {
+        "ms": 22.343500018119812,
+        "length": 21
+      }
+    },
+    {
+      "trial": 191,
+      "scramble": "D2 F2 D' F R U D' R2 F2 R D' R2 B' D2 B2 D2 L2 F2 L2 U2 R2 U F B' D2 U2 B2 D F' L R' F2 D F2",
+      "cubejs": {
+        "ms": 40.33013606071472,
+        "length": 22
+      },
+      "compact": {
+        "ms": 9.804010033607483,
+        "length": 22,
+        "nodes": 233342
+      }
+    },
+    {
+      "trial": 192,
+      "scramble": "U R' F R2 D L' R2 B2 U2 L' B2 R U2 B R2 U D' L2 F' R' U2 L' D' U2 B' F' U F2 B2 F B R2 B F2 L U2 D F' L",
+      "compact": {
+        "ms": 2.192860960960388,
+        "length": 22,
+        "nodes": 52918
+      },
+      "cubejs": {
+        "ms": 11.79748809337616,
+        "length": 22
+      }
+    },
+    {
+      "trial": 193,
+      "scramble": "F2 U2 L2 R F' L' B L2 R' U2 R U2 B L' U2 F2 D2 R2 F' L B2 F R' D B2 F' U' F",
+      "cubejs": {
+        "ms": 432.61133003234863,
+        "length": 22
+      },
+      "compact": {
+        "ms": 35.20795297622681,
+        "length": 25,
+        "nodes": 769546
+      }
+    },
+    {
+      "trial": 194,
+      "scramble": "B F B' U' B2 R2 B' U2 B R F D L D R2 L' U2 D2 L B L R U D L' F' U2",
+      "compact": {
+        "ms": 2.165960907936096,
+        "length": 22,
+        "nodes": 63528
+      },
+      "cubejs": {
+        "ms": 15.905387997627258,
+        "length": 22
+      }
+    },
+    {
+      "trial": 195,
+      "scramble": "D U2 R2 F2 L U' F' B2 R F' D' L2 F' R2 F2 D2 B' D' R2 B' D F2 R U F U' R' U2 L'",
+      "cubejs": {
+        "ms": 52.678202986717224,
+        "length": 22
+      },
+      "compact": {
+        "ms": 2.290701985359192,
+        "length": 23,
+        "nodes": 32153
+      }
+    },
+    {
+      "trial": 196,
+      "scramble": "R' U F' U F R' L' R2 D2 B2 F' U2 D L2 F' R2 F2 D F L' U' D2 L D2 L2 B2 L B' R2",
+      "compact": {
+        "ms": 28.917722940444946,
+        "length": 25,
+        "nodes": 948614
+      },
+      "cubejs": {
+        "ms": 203.4850070476532,
+        "length": 22
+      }
+    },
+    {
+      "trial": 197,
+      "scramble": "R2 B2 F L' D' R' B R2 D2 U' F' R2 D2 B' R D2 B' R2 U L2 F",
+      "cubejs": {
+        "ms": 463.3112690448761,
+        "length": 22
+      },
+      "compact": {
+        "ms": 88.87527000904083,
+        "length": 23,
+        "nodes": 2991981
+      }
+    },
+    {
+      "trial": 198,
+      "scramble": "B F' L2 B2 R F2 R U' R2 U L2 U' F D2 B2 U D' U B2 D' L U' B U2",
+      "compact": {
+        "ms": 4.4603739976882935,
+        "length": 23,
+        "nodes": 132428
+      },
+      "cubejs": {
+        "ms": 32.881749987602234,
+        "length": 22
+      }
+    },
+    {
+      "trial": 199,
+      "scramble": "U F2 U' L2 B2 L' U2 B2 L F' D' B D B R2 F B R' L2 U' L D B' R2 B2 F2 U'",
+      "cubejs": {
+        "ms": 88.84278905391693,
+        "length": 22
+      },
+      "compact": {
+        "ms": 6.185097932815552,
+        "length": 23,
+        "nodes": 139500
+      }
+    }
+  ]
+}

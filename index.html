@@ -50,6 +50,7 @@ h1 { font-family: var(--f-display); font-weight: 800; font-size: clamp(28px, 4vw
 .field { display: grid; gap: 5px; min-width: 0; }
 .field > span { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
 .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; }
+#algoSeg { flex-wrap: wrap; }
 .seg button { border: 0; background: transparent; color: var(--ink); padding: 7px 12px; font: 500 14px var(--f-body); cursor: pointer; }
 .seg button + button { border-left: 1px solid var(--line); }
 .seg button[aria-pressed="true"] { background: var(--ink); color: var(--panel); }
@@ -155,7 +156,7 @@ select { font: 13px var(--f-body); color: var(--ink); background: var(--bg); bor
   <header>
     <div>
       <h1>Rubik's Graph Lab</h1>
-      <p class="lede">Every cube position is a vertex, every face turn is an edge. Solving the cube means finding a shortest path to the solved vertex. Watch the search explore the graph, then step along the path it finds.</p>
+      <p class="lede">Every cube position is a vertex, every face turn is an edge. Find a practical solution to a long scramble, or explore shortest-path searches on smaller problems. Then step through the verified moves on the cube.</p>
     </div>
     <div class="facts" id="facts"></div>
   </header>
@@ -169,7 +170,8 @@ select { font: 13px var(--f-body); color: var(--ink); background: var(--bg); bor
     </label>
     <label class="field"><span>Algorithm</span>
       <div class="seg" id="algoSeg">
-        <button type="button" data-a="bidir" aria-pressed="true">Bidirectional BFS</button>
+        <button type="button" data-a="compact" aria-pressed="true">Compact two-phase</button>
+        <button type="button" data-a="bidir" aria-pressed="false">Bidirectional BFS</button>
         <button type="button" data-a="bfs" aria-pressed="false">BFS</button>
         <button type="button" data-a="astar" aria-pressed="false">A*</button>
       </div>
@@ -182,6 +184,7 @@ select { font: 13px var(--f-body); color: var(--ink); background: var(--bg); bor
     </label>
     <button type="button" class="btn" id="newBtn">Random scramble</button>
     <button type="button" class="btn primary" id="solveBtn">Solve</button>
+    <button type="button" class="btn" id="stopBtn" disabled>Stop</button>
     <div class="movepad-row">
       <span class="field-label">Make your own scramble</span>
       <div class="movepad" id="movepad"></div>
@@ -194,7 +197,7 @@ select { font: 13px var(--f-body); color: var(--ink); background: var(--bg); bor
   <div class="status" id="status" role="status"></div>
 
   <details class="scan" id="scanBox">
-    <summary><span class="s-title">Scan a real cube</span><span class="hint">Two photos of three sides each. The page reads the colors and solves the cube with Kociemba's two-phase algorithm.</span></summary>
+    <summary><span class="s-title">Scan a real cube</span><span class="hint">Two photos of three sides each. Read the colors and find a verified solution with compact two-phase search.</span></summary>
     <div class="scan-body">
       <div class="slot">
         <div class="card-head"><h2>Photo 1</h2><span class="hint">Three sides around one corner</span></div>
@@ -271,7 +274,7 @@ select { font: 13px var(--f-body); color: var(--ink); background: var(--bg); bor
           <h2>Search cost</h2>
           <div class="stats">
             <div class="stat"><span>Path length</span><b id="sLen">–</b></div>
-            <div class="stat"><span>States visited</span><b id="sNodes">–</b></div>
+            <div class="stat"><span id="sNodesLabel">Stored entries</span><b id="sNodes">–</b></div>
             <div class="stat"><span>Time</span><b id="sTime">–</b></div>
             <div class="stat"><span id="sDepthLabel">Deepest level</span><b id="sDepth">–</b></div>
           </div>
@@ -354,34 +357,66 @@ function buildPuzzle(N) {
   return { N, m, stickers, S, moves, solved, corners, edges, moveIndex };
 }
 
-const dec = new TextDecoder('latin1');
-const toKey = arr => dec.decode(arr);
-function fromKey(key, out) { for (let i = 0; i < key.length; i++) out[i] = key.charCodeAt(i); return out; }
+// Five 3-bit colors per UTF-16 code unit: exact keys, not probabilistic hashes.
+const keyChar = String.fromCharCode;
+function toKey(arr) {
+  let key = '', i = 0;
+  for (; i + 4 < arr.length; i += 5) {
+    key += keyChar((arr[i] - 48) | ((arr[i + 1] - 48) << 3) |
+      ((arr[i + 2] - 48) << 6) | ((arr[i + 3] - 48) << 9) | ((arr[i + 4] - 48) << 12));
+  }
+  if (i < arr.length) {
+    let word = 0, shift = 0;
+    for (; i < arr.length; i++, shift += 3) word |= (arr[i] - 48) << shift;
+    key += keyChar(word);
+  }
+  return key;
+}
+const keyColor = (key, i) => 48 + ((key.charCodeAt((i / 5) | 0) >> (3 * (i % 5))) & 7);
+function fromKey(key, out) {
+  let i = 0;
+  for (let j = 0; j < key.length; j++) {
+    let word = key.charCodeAt(j);
+    for (let k = 0; k < 5 && i < out.length; k++, i++, word >>= 3) out[i] = 48 + (word & 7);
+  }
+  return out;
+}
 function applyMove(P, state, mi) { const perm = P.moves[mi].perm, out = new Uint8Array(P.S); for (let k = 0; k < P.S; k++) out[k] = state[perm[k]]; return out; }
 const inverse = mi => mi - (mi % 3) + (2 - (mi % 3));
 
 function heuristic(P, key) {
   let bc = 0, be = 0;
-  for (const g of P.corners) for (const i of g) if (key.charCodeAt(i) !== P.solved[i]) { bc++; break; }
-  for (const g of P.edges) for (const i of g) if (key.charCodeAt(i) !== P.solved[i]) { be++; break; }
+  for (const g of P.corners) for (const i of g) if (keyColor(key, i) !== P.solved[i]) { bc++; break; }
+  for (const g of P.edges) for (const i of g) if (keyColor(key, i) !== P.solved[i]) { be++; break; }
   return Math.max(Math.ceil(bc / 4), Math.ceil(be / 4));
 }
 
 // ---------- Search (runs in slices so the graph can grow on screen) ----------
-function createSearch(P, startKey, algo) {
-  const cap = CAP[P.N];
+function createSearch(P, startKey, algo, cap = CAP[P.N]) {
   const par = new Int32Array(cap + 64), mv = new Int8Array(cap + 64), dep = new Uint8Array(cap + 64);
   const sd = new Uint8Array(cap + 64), rk = new Int32Array(cap + 64), keys = new Array(cap + 64);
-  const counts = [[], []], maps = [new Map(), new Map()];
+  const counts = [[], []], ranks = [[], []], maps = [new Map(), new Map()], samples = [[], []];
   const solvedKey = toKey(P.solved);
-  const S = { algo, n: 0, par, mv, dep, sd, rk, keys, counts, maps, startKey, solvedKey, done: false, result: null, error: null, side: 0, levelDepth: 0, expanded: 0 };
+  const S = { algo, n: 0, par, mv, dep, sd, rk, keys, counts, maps, samples, startKey, solvedKey, done: false, result: null, error: null, side: 0, levelDepth: 0, expanded: 0 };
   const buf = new Uint8Array(P.S), out = new Uint8Array(P.S);
 
+  function sample(i) {
+    const side = sd[i], depth = dep[i];
+    const layer = samples[side][depth] || (samples[side][depth] = { stride: 1, ids: [] });
+    if (rk[i] % layer.stride === 0) layer.ids.push(i);
+    if (layer.ids.length > 420) {
+      layer.stride *= 2;
+      layer.ids = layer.ids.filter(j => dep[j] === depth && rk[j] % layer.stride === 0);
+    }
+  }
   function add(key, parent, move, depth, side) {
+    if (S.n >= cap) { S.done = true; S.error = 'cap'; return -1; }
     const i = S.n++;
     keys[i] = key; par[i] = parent; mv[i] = move; dep[i] = depth; sd[i] = side;
     const c = counts[side]; while (c.length <= depth) c.push(0);
-    rk[i] = c[depth]++;
+    c[depth]++;
+    rk[i] = ranks[side][depth] || 0; ranks[side][depth] = rk[i] + 1;
+    sample(i);
     maps[side].set(key, i);
     return i;
   }
@@ -389,6 +424,7 @@ function createSearch(P, startKey, algo) {
     fromKey(keys[i], buf);
     const lastFace = mv[i] >= 0 ? (mv[i] / 3) | 0 : -1;
     for (let mi = 0; mi < P.moves.length; mi++) {
+      if (S.done) break;
       if (((mi / 3) | 0) === lastFace) continue;
       const perm = P.moves[mi].perm;
       for (let k = 0; k < P.S; k++) out[k] = buf[perm[k]];
@@ -403,12 +439,11 @@ function createSearch(P, startKey, algo) {
   if (algo === 'bidir' || algo === 'bfs') {
     const frontier = [[root], []], next = [];
     if (algo === 'bidir') frontier[1].push(add(solvedKey, -1, -1, 0, 1));
-    let ptr = 0, best = null;
+    let ptr = 0;
     S.step = (budget) => {
       while (budget-- > 0 && !S.done) {
         if (ptr >= frontier[S.side].length) {
           frontier[S.side] = next.splice(0);
-          if (best) return finishBidir(best);
           S.side = algo === 'bfs' ? 0 : (frontier[0].length <= frontier[1].length ? 0 : 1);
           ptr = 0;
           if (!frontier[S.side].length) { S.done = true; S.error = 'Frontier emptied without reaching the goal.'; return; }
@@ -420,6 +455,7 @@ function createSearch(P, startKey, algo) {
         children(i, (key, mi) => {
           if (S.done || maps[side].has(key)) return;
           const ci = add(key, i, mi, d, side);
+          if (ci < 0) return;
           next.push(ci);
           if (algo === 'bfs') {
             if (key === solvedKey) { const c = chain(ci); S.done = true; S.result = { fchain: c, bchain: [], moves: c.slice(1).map(x => mv[x]) }; }
@@ -427,8 +463,10 @@ function createSearch(P, startKey, algo) {
           }
           const other = maps[1 - side].get(key);
           if (other !== undefined) {
-            const total = d + dep[other];
-            if (!best || total < best.total) best = { f: side ? other : ci, b: side ? ci : other, total };
+            // Both visited sets contain complete balls before this layer starts.
+            // With radii r and s and no overlap, distance is at least r+s+1.
+            // The first crossing attains that bound; no remaining layer is needed.
+            finishBidir({ f: side ? other : ci, b: side ? ci : other });
           }
         });
         if (S.n >= cap && !S.done) { S.done = true; S.error = 'cap'; }
@@ -459,10 +497,13 @@ function createSearch(P, startKey, algo) {
         const g = dep[i] + 1; S.levelDepth = dep[i];
         children(i, (key, mi) => {
           const ex = maps[0].get(key);
-          if (ex === undefined) { const ci = add(key, i, mi, g, 0); push(ci, (g + heuristic(P, key)) * 100 - g); }
+          if (ex === undefined) { const ci = add(key, i, mi, g, 0); if (ci >= 0) push(ci, (g + heuristic(P, key)) * 100 - g); }
           else if (!closed[ex] && dep[ex] > g) {
+            counts[0][dep[ex]]--;
             dep[ex] = g; par[ex] = i; mv[ex] = mi;
-            const c = counts[0]; while (c.length <= g) c.push(0); rk[ex] = c[g]++;
+            const c = counts[0]; while (c.length <= g) c.push(0); c[g]++;
+            rk[ex] = ranks[0][g] || 0; ranks[0][g] = rk[ex] + 1;
+            sample(ex);
             push(ex, (g + heuristic(P, key)) * 100 - g);
           }
         });
@@ -475,7 +516,7 @@ function createSearch(P, startKey, algo) {
 
 // ---------- App state ----------
 const $ = id => document.getElementById(id);
-const app = { mode: 'search', scanInfo: null, N: 3, algo: 'bidir', P: null, search: null, running: false, sol: null, pos: 0, states: [], cur: null, startState: null, selected: -1, playing: false, busy: false, drawn: [], t0: 0, elapsed: 0 };
+const app = { mode: 'search', scanInfo: null, N: 3, algo: 'compact', P: null, search: null, running: false, sol: null, pos: 0, states: [], cur: null, startState: null, selected: -1, playing: false, busy: false, drawn: [], t0: 0, elapsed: 0 };
 
 function tok(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
 const fmt = n => n.toLocaleString('en-US');
@@ -597,7 +638,6 @@ const cube3 = (() => {
 // ---------- Search graph canvas ----------
 const graph = (() => {
   const cv = $('graph'), ctx = cv.getContext('2d');
-  const PER_LAYER = 420;
   let hover = -1;
   function size() { const r = cv.getBoundingClientRect(), d = window.devicePixelRatio || 1; cv.width = Math.round(r.width * d); cv.height = Math.round(r.height * d); ctx.setTransform(d, 0, 0, d, 0, 0); return r; }
   function geometry(S, W, H) {
@@ -639,13 +679,14 @@ const graph = (() => {
       }
     }
     // pick nodes to draw
-    const n = S.n, onPath = new Set();
+    const onPath = new Set();
     if (S.result) { S.result.fchain.forEach(i => onPath.add(i)); S.result.bchain.forEach(i => onPath.add(i)); }
-    const drawn = [];
-    for (let i = 0; i < n; i++) {
-      const cnt = S.counts[S.sd[i]][S.dep[i]], stride = Math.max(1, Math.ceil(cnt / PER_LAYER));
-      if ((S.rk[i] % stride) === 0 || onPath.has(i)) drawn.push(i);
+    const visible = new Set(onPath);
+    for (const side of S.samples) for (let d = 0; d < side.length; d++) {
+      const layer = side[d];
+      if (layer) for (const i of layer.ids) if (S.dep[i] === d) visible.add(i);
     }
+    const drawn = [...visible];
     // edges
     ctx.lineWidth = 0.6;
     for (const side of [0, 1]) {
@@ -858,12 +899,13 @@ function drawChart() {
 function cumulative(arr, d) { let s = 0; for (let k = 0; k <= Math.min(d, arr.length - 1); k++) s += arr[k]; return s; }
 function updateStats() {
   const S = app.search;
+  $('sNodesLabel').textContent = app.mode === 'scan' ? 'Search node visits' : 'Stored entries';
   $('sDepthLabel').textContent = app.mode === 'scan' ? 'Phase 1 + phase 2' : 'Deepest level';
   if (app.mode === 'scan') {
     const L = app.sol ? app.sol.length : 0, k1 = app.scanInfo.split;
-    $('sLen').textContent = `${L} turns`; $('sNodes').textContent = 'n/a';
+    $('sLen').textContent = `${L} turns`; $('sNodes').textContent = fmt(app.scanInfo.nodes);
     $('sTime').textContent = `${Math.round(app.scanInfo.ms)} ms`; $('sDepth').textContent = `${k1} + ${L - k1}`;
-    $('compare').innerHTML = `A photographed cube can be up to 20 turns from solved, far beyond what breadth-first search can reach. Kociemba's algorithm first finds a path into the subgroup <b>H</b> (${k1} turns here), where every edge and corner is oriented. It then solves inside H using only the 10 moves that keep it there (${L - k1} turns). The result is short, though not guaranteed to be the shortest.`;
+    $('compare').innerHTML = `The project's compact two-phase implementation reaches subgroup <b>H</b> in ${k1} turns, then solves inside H in ${L - k1} turns. It uses generated distance tables and bounds work per subgroup candidate. Every returned move is verified. This is a practical solution, <b>not a shortest-path guarantee</b>.`;
     return;
   }
   $('sNodes').textContent = S ? fmt(S.n) : '–';
@@ -876,7 +918,7 @@ function updateStats() {
   if (L === 0) { cmp.textContent = 'The scramble is already solved.'; return; }
   const one = cumulative(D, L), two = cumulative(D, Math.ceil(L / 2)) + cumulative(D, Math.floor(L / 2));
   const algoName = { bidir: 'Bidirectional BFS', bfs: 'BFS', astar: 'A*' }[S.algo];
-  cmp.innerHTML = `Positions within ${L} turns of any vertex: <b>${fmt(one)}</b>. That is the cost of one-way BFS. Two half-depth trees cost about <b>${fmt(two)}</b>. ${algoName} visited <b>${fmt(S.n)}</b>.`;
+  cmp.innerHTML = `Complete distance balls: <b>${fmt(one)}</b> positions within ${L} turns, or <b>${fmt(two)}</b> entries across two half-depth balls. Searches can stop partway through the final level. ${algoName} stored <b>${fmt(S.n)}</b> entries${S.algo === 'bidir' ? ' across both trees (the meeting state occurs in both)' : ''}.`;
 }
 
 // ---------- Playback ----------
@@ -936,21 +978,79 @@ $('toStart').onclick = () => jumpTo(0);
 $('toEnd').onclick = () => app.sol && jumpTo(app.sol.length);
 
 // ---------- Running a search ----------
+let compactWorker = null, compactJob = null;
+function runCompact(state, progress) {
+  if (compactJob) return Promise.reject(new Error('A solver job is already running.'));
+  return new Promise((resolve, reject) => {
+    let timer, settled = false;
+    function finish(error, result) {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer); compactJob = null;
+      if (error) { compactWorker?.terminate(); compactWorker = null; reject(error); }
+      else resolve(result);
+    }
+    try {
+      if (!compactWorker) compactWorker = new Worker('solver-worker.js');
+      compactJob = { cancel: () => finish(new Error('Stopped. No solution is being claimed.')) };
+      compactWorker.onmessage = ({ data }) => {
+        if (data.type === 'progress') progress(data);
+        else if (data.type === 'error') finish(new Error(data.message));
+        else if (data.type === 'result') finish(null, data.result);
+      };
+      compactWorker.onerror = () => finish(new Error('The solver worker could not run. Serve this folder over HTTP and check that solver-worker.js and compact-solver.js are available.'));
+      timer = setTimeout(() => finish(new Error('Solver time limit reached. No solution is being claimed.')), 45000);
+      compactWorker.postMessage({ puzzle: buildPuzzle(3), state, timeoutMs: 30000 });
+    } catch (error) { finish(error); }
+  });
+}
+function runningControls(running) {
+  app.running = running;
+  $('solveBtn').disabled = running; $('newBtn').disabled = running;
+  $('stopBtn').disabled = !running; $('scanSolve').disabled = running;
+  $('scramble').disabled = running; syncPlay();
+}
+async function solveCompactScramble() {
+  app.search = null; app.mode = 'search';
+  graph.draw(); drawChart(); updateStats(); runningControls(true);
+  const started = performance.now();
+  setStatus('Preparing compact two-phase solver…');
+  try {
+    const result = await runCompact(app.startState, p => setStatus(p.stage || `Searching two-phase coordinates · ${fmt(p.nodes)} nodes`));
+    if (toKey(stateFrom(app.startState, result.moves)) !== toKey(app.P.solved)) throw new Error('Solution verification failed.');
+    app.mode = 'scan'; app.scanInfo = { split: result.split, ms: performance.now() - started, nodes: result.nodes };
+    setLegend(); setSolution(result.moves); graph.draw(); drawChart(); updateStats();
+    setStatus(`Verified solution: ${result.moves.length} turns. Compact two-phase; shortest path not guaranteed.`);
+  } catch (error) { setStatus(error.message, true); }
+  finally { runningControls(false); }
+}
+$('stopBtn').onclick = () => {
+  if (compactJob) { compactJob.cancel(); return; }
+  if (app.search && app.running) { app.search.done = true; app.search.error = 'Stopped.'; }
+  runningControls(false); setStatus('Stopped. No solution is being claimed.');
+};
 function solve() {
   if (app.running) return;
+  clearTimeout(typeTimer);
   let moves;
   try { moves = parseScramble($('scramble').value); } catch (e) { setStatus(e.message, true); return; }
   app.playing = false; app.sol = null; app.selected = -1; app.mode = 'search'; setLegend();
   app.startState = stateFrom(app.P.solved, moves); app.cur = app.startState; cube3.paint(app.cur);
   renderChips();
+  if (app.algo === 'compact') { solveCompactScramble(); return; }
   const S = createSearch(app.P, toKey(app.startState), app.algo);
   app.search = S; app.running = true; app.t0 = performance.now(); app.elapsed = 0;
-  $('solveBtn').disabled = true; $('newBtn').disabled = true; syncPlay();
+  runningControls(true);
   const sideName = s => (s ? 'backward' : 'forward');
   function tick() {
+    if (!app.running || app.search !== S) return;
     const tEnd = performance.now() + 14;
-    while (!S.done && performance.now() < tEnd) S.step(400);
+    while (!S.done && performance.now() < tEnd) S.step(32);
     app.elapsed = performance.now() - app.t0;
+    if (S.done && S.result && toKey(stateFrom(app.startState, S.result.moves)) !== toKey(app.P.solved)) {
+      S.result = null;
+      S.error = 'Search verification failed: the returned moves do not solve this cube.';
+    }
     graph.draw(); drawChart(); updateStats();
     if (!S.done) {
       setStatus(app.algo === 'astar'
@@ -958,10 +1058,10 @@ function solve() {
         : `Expanding ${sideName(S.side)} level ${S.levelDepth} · ${fmt(S.n)} states discovered`);
       requestAnimationFrame(tick); return;
     }
-    app.running = false; $('solveBtn').disabled = false; $('newBtn').disabled = false;
+    runningControls(false);
     if (S.error) {
       setStatus(S.error === 'cap'
-        ? `Stopped at ${fmt(S.n)} states, the memory budget for this page. Each level is about ${app.N === 3 ? '13' : '6'}× larger than the last; try Bidirectional BFS or a shorter scramble.`
+        ? `Stopped at ${fmt(S.n)} states, the memory budget for this page. Try ${app.N === 3 ? 'Compact two-phase for a verified solution without a shortest-path guarantee' : 'Bidirectional BFS or a shorter scramble'}.`
         : S.error, true);
       syncPlay(); updateStats(); return;
     }
@@ -987,8 +1087,10 @@ function resetView() {
 
 function setPuzzle(N) {
   app.N = N; app.P = buildPuzzle(N); cube3.build(app.P); renderMovepad();
+  document.querySelector('[data-a="compact"]').disabled = N !== 3;
+  if (N !== 3 && app.algo === 'compact') setAlgo('bidir');
   document.querySelectorAll('#puzzleSeg button').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.n === N)));
-  const len = $('len'); len.max = N === 2 ? 11 : 10; len.value = N === 2 ? 8 : 7; $('lenOut').textContent = len.value;
+  const len = $('len'); len.max = N === 2 ? 11 : 30; len.value = N === 2 ? 8 : 20; $('lenOut').textContent = len.value;
   $('facts').innerHTML = N === 3
     ? '<span><b>4.3 × 10<sup>19</sup></b> vertices</span><span><b>18</b> edges per vertex</span><span>God\'s number <b>20</b></span>'
     : '<span><b>3,674,160</b> vertices</span><span><b>9</b> edges per vertex (U R F)</span><span>God\'s number <b>11</b></span>';
@@ -1045,7 +1147,7 @@ $('len').addEventListener('input', () => { $('lenOut').textContent = $('len').va
 $('len').addEventListener('change', () => { if (!app.running) newScramble(); });
 $('newBtn').onclick = newScramble;
 $('solveBtn').onclick = solve;
-$('scramble').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); resetView(); solve(); } });
+$('scramble').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); if (!app.running) { resetView(); solve(); } } });
 let typeTimer = 0;
 $('scramble').addEventListener('input', () => { clearTimeout(typeTimer); typeTimer = setTimeout(() => { if (!app.running) resetView(); }, 350); });
 
@@ -1234,59 +1336,31 @@ const scan = (() => {
     return moves.length;
   }
 
-  // Kociemba two-phase solver (cubejs), built in a worker so the page stays responsive.
-  const LIB = ['https://cdn.jsdelivr.net/npm/cubejs@1.3.2/lib/cube.js', 'https://cdn.jsdelivr.net/npm/cubejs@1.3.2/lib/solve.js'];
-  let solverP = null;
-  function loadMain() {
-    return LIB.reduce((p, src) => p.then(() => new Promise((res, rej) => { const el = document.createElement('script'); el.src = src; el.onload = res; el.onerror = () => rej(new Error('Could not load the solver library. Check the internet connection.')); document.head.appendChild(el); })), Promise.resolve())
-      .then(() => { window.Cube.initSolver(); return { solve: s => Promise.resolve(window.Cube.fromString(s).solve()) }; });
-  }
-  function getSolver() {
-    if (solverP) return solverP;
-    solverP = new Promise((resolve) => {
-      let w;
-      try {
-        const src = `importScripts(${LIB.map(u => JSON.stringify(u)).join(',')});Cube.initSolver();postMessage({ready:1});onmessage=e=>{try{postMessage({id:e.data.id,sol:Cube.fromString(e.data.s).solve()})}catch(err){postMessage({id:e.data.id,error:String(err)})}};`;
-        w = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
-      } catch (e) { resolve(loadMain()); return; }
-      const pending = new Map(); let id = 0, ready = false;
-      w.onmessage = e => {
-        if (e.data.ready) { ready = true; resolve({ solve: s => new Promise((ok, no) => { pending.set(++id, { ok, no }); w.postMessage({ id, s }); }) }); return; }
-        const p = pending.get(e.data.id); pending.delete(e.data.id);
-        e.data.error ? p.no(new Error(e.data.error)) : p.ok(e.data.sol);
-      };
-      w.onerror = () => { if (!ready) { w.terminate(); resolve(loadMain()); } };
-    }).catch(e => { solverP = null; throw e; });
-    return solverP;
-  }
-
   async function solveScanned() {
     if (app.running) return;
     const err = validate(colors);
     if (err) return fail(err);
-    say('Loading the two-phase solver. The first run builds its lookup tables, which takes a few seconds.');
-    $('scanSolve').disabled = true;
+    say('Preparing compact two-phase tables…');
+    app.playing = false; runningControls(true);
     try {
-      const solver = await getSolver();
-      say('Solving…');
-      const ks = new Array(54); colors.forEach((c, i) => ks[kIndex[i]] = 'URFDLB'[c - 48]);
+      const input = new Uint8Array(colors);
       const t0 = performance.now();
-      const solStr = (await solver.solve(ks.join(''))) || '';
+      const result = await runCompact(input, p => say(p.stage || `Searching · ${fmt(p.nodes)} nodes`));
       const ms = performance.now() - t0;
       if (app.N !== 3) setPuzzle(3);
-      const moves = solStr.trim() ? solStr.trim().split(/\s+/).map(n => app.P.moveIndex.get(n)) : [];
-      if (moves.some(m => m === undefined) || toKey(stateFrom(colors, moves)) !== toKey(app.P.solved)) throw new Error('The solver returned a sequence that does not solve this cube.');
+      const moves = result.moves;
+      if (toKey(stateFrom(input, moves)) !== toKey(app.P.solved)) throw new Error('The solver returned a sequence that does not solve this cube.');
       app.search = null; app.selected = -1; app.playing = false; app.mode = 'scan';
-      app.startState = new Uint8Array(colors);
+      app.startState = input;
       $('scramble').value = moves.slice().reverse().map(m => app.P.moves[inverse(m)].name).join(' ');
       const states = [app.startState]; for (const m of moves) states.push(applyMove(app.P, states[states.length - 1], m));
-      app.scanInfo = { split: phaseSplit(states, moves), ms };
+      app.scanInfo = { split: result.split, ms, nodes: result.nodes };
       setLegend(); setSolution(moves); graph.draw(); drawChart(); updateStats();
       say(`Solved: ${moves.length} turns. Press Play next to the cube to watch it.`);
-      setStatus(`Scanned cube solved in ${moves.length} turns with Kociemba's two-phase algorithm. The scramble box now holds a sequence that recreates this cube.`);
+      setStatus(`Scanned cube: verified ${moves.length}-turn solution from compact two-phase. Shortest path not guaranteed. The scramble box recreates this cube.`);
       document.querySelector('.main').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
     } catch (e) { fail(e.message); }
-    finally { $('scanSolve').disabled = false; }
+    finally { runningControls(false); }
   }
 
   // ----- UI: photo canvases, face pickers, net editor -----
@@ -1424,7 +1498,7 @@ const scan = (() => {
   $('scanBox').addEventListener('toggle', () => {
     if (!$('scanBox').open) return;
     slots.forEach(drawSlot);
-    if (!opened) { opened = true; samplePhotos(); getSolver().catch(() => {}); }
+    if (!opened) { opened = true; samplePhotos(); }
   });
   renderNet();
   return { validate, inH, phaseSplit, kIndex, colors, readColors, slots };
@@ -1436,7 +1510,7 @@ matchMedia('(prefers-color-scheme: dark)').addEventListener('change', redraw);
 new MutationObserver(redraw).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 window.addEventListener('resize', drawChart);
 
-setAlgo('bidir');
+setAlgo('compact');
 setPuzzle(3);
 solve();
 })();

@@ -1,0 +1,11 @@
+{
+  "baselineCommit": "54b37a92fed869a00cf5ce1e1617cd19f5aa3545",
+  "runtime": "Node 18.19.1",
+  "repetitions": 3,
+  "timing": "Median milliseconds, search only; final local rerun",
+  "rows": [
+    { "N": 2, "scramble": "R U F2 R' U2 F R2 U'", "before": { "states": 770, "expanded": 128, "medianMs": 20 }, "after": { "states": 585, "expanded": 97, "medianMs": 13 }, "solutionLength": 6 },
+    { "N": 3, "scramble": "R U F2 L D B' R2 U'", "before": { "states": 93482, "expanded": 7004, "medianMs": 109 }, "after": { "states": 58251, "expanded": 4363, "medianMs": 124 }, "solutionLength": 8 },
+    { "N": 3, "scramble": "R U F2 L D B' R2 U' F D2", "before": { "states": 1243298, "expanded": 93482, "medianMs": 1957 }, "after": { "states": 775168, "expanded": 58251, "medianMs": 1590 }, "solutionLength": 10 }
+  ]
+}
