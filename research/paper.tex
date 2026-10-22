@@ -1,51 +1,33 @@
+% Uses the official CVPR 2026 author-kit style for layout only.
+% This independent paper is not a CVPR submission or publication.
 \documentclass[10pt,twocolumn,letterpaper]{article}
-\usepackage[margin=0.75in,columnsep=0.25in]{geometry}
+\usepackage[pagenumbers]{cvpr}
 \usepackage{fontspec}
 \setmainfont{Liberation Serif}
 \setsansfont{Liberation Sans}
 \setmonofont{Liberation Mono}[Scale=0.85]
-\usepackage{amsmath,amssymb,graphicx,booktabs,tabularx,array}
-\usepackage{microtype,fvextra,caption,titlesec,enumitem,float}
-\usepackage{xcolor}
-\usepackage[unicode,colorlinks=true,linkcolor=black,citecolor=black,urlcolor=blue!45!black]{hyperref}
+\usepackage{tabularx,array,fvextra,float,microtype}
+\definecolor{cvprblue}{rgb}{0.21,0.49,0.74}
+\usepackage[breaklinks,colorlinks,allcolors=cvprblue]{hyperref}
 \usepackage{newunicodechar}
 \newunicodechar{→}{\ensuremath{\rightarrow}}
 \newunicodechar{↓}{\ensuremath{\downarrow}}
 \newunicodechar{∎}{\ensuremath{\square}}
-\setlength{\parindent}{1em}
-\setlength{\parskip}{0pt}
-\setlength{\emergencystretch}{2em}
-\setlist{nosep,leftmargin=1.3em}
-\titleformat{\section}{\large\bfseries}{\thesection.}{0.5em}{}
-\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection.}{0.5em}{}
-\titlespacing*{\section}{0pt}{9pt}{5pt}
-\titlespacing*{\subsection}{0pt}{7pt}{3pt}
-\captionsetup{font=small,labelfont=bf,skip=5pt}
-\renewcommand{\abstractname}{Abstract}
 \providecommand{\tightlist}{\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 \providecommand{\passthrough}[1]{#1}
 \newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\setlength{\emergencystretch}{2em}
 \setcounter{topnumber}{3}
 \setcounter{dbltopnumber}{3}
 \renewcommand{\topfraction}{0.95}
 \renewcommand{\dbltopfraction}{0.95}
 \renewcommand{\textfraction}{0.05}
 \renewcommand{\floatpagefraction}{0.8}
-\pagestyle{plain}
+\title{COVE-3: Compact Output-Verified Two-Phase Search\\
+for Interactive Rubik's Cube Solving}
+\author{Rubik's Graph Lab}
 \begin{document}
-\twocolumn[{
-\centering
-{\LARGE\bfseries COVE-3: Compact Output-Verified Two-Phase Search\\[3pt]
-for Interactive Rubik's Cube Solving\par}
-\vspace{10pt}
-{\large Rubik's Graph Lab\par}
-\vspace{4pt}
-{\small Technical manuscript \quad October 22, 2026\par}
-\vspace{5pt}
-{\small\href{https://nahin333.github.io/rubikscube/}{Project page}
-\quad\href{https://github.com/nahin333/rubikscube}{Code and reproducibility materials}\par}
-\vspace{16pt}
-}]
+\maketitle
 \begin{abstract}
 
 Interactive combinatorial solvers must balance response time, solution
@@ -219,8 +201,8 @@ and fixed-center orientation. Under the conventional fixed-frame model,
 The established 20-move diameter {[}8{]} concerns optimal solutions. A
 non-optimal procedure can validly return a longer sequence.
 
-\hypertarget{method}{%
-\section{Method}\label{method}}
+\hypertarget{methodology}{%
+\section{Methodology}\label{methodology}}
 
 \hypertarget{system-overview}{%
 \subsection{System overview}\label{system-overview}}
@@ -500,8 +482,8 @@ mobile-sized viewports, playback, notation validation, generated photo
 samples, cancellation/restart, and worker failure. A mobile viewport is
 not a physical-phone performance measurement.
 
-\hypertarget{results}{%
-\section{Results}\label{results}}
+\hypertarget{evaluation}{%
+\section{Evaluation}\label{evaluation}}
 
 \hypertarget{practical-latency-and-solution-quality}{%
 \subsection{Practical latency and solution quality}\label{practical-latency-and-solution-quality}}
@@ -596,8 +578,8 @@ the advantage over cubejs. A matched-length comparison and a
 candidate-budget sweep are necessary to separate search-policy effects
 from implementation effects.
 
-\hypertarget{discussion-and-limitations}{%
-\section{Discussion and Limitations}\label{discussion-and-limitations}}
+\hypertarget{limitations}{%
+\section{Limitations}\label{limitations}}
 
 \textbf{Scope of the contribution.} COVE-3 names this verified
 application configuration and its reproducible comparison. It does not
@@ -711,4 +693,30 @@ documentation. \href{https://www.cube20.org/}{Source}.
 The figure script requires NumPy and Matplotlib; the recorded rendering
 uses Matplotlib 3.10.7. It exports SVG, PDF, and PNG. The plots contain
 all 200 observations and do not synthesize data or error bars.
+
+\hypertarget{appendix-b.-resource-and-implementation-details}{%
+\section{Resource and Implementation Details}\label{appendix-b.-resource-and-implementation-details}}
+
+\begin{table}[H]
+\caption{Resource and implementation settings.}
+\centering\small
+\begin{tabularx}{\columnwidth}{@{}Lr@{}}
+\toprule Setting & Value \\\midrule
+Phase-1 maximum depth & 12 \\
+Phase-2 maximum depth & 18 \\
+Phase-2 visits per endpoint & 250,000 \\
+Global node budget & 20,000,000 \\
+Search deadline & 30 s \\
+Worker watchdog & 45 s \\
+Distance tables & 4,031,685 bytes \\
+Transition tables & 1,783,560 bytes \\
+Display sample limit & 420 per side/depth \\\bottomrule
+\end{tabularx}
+\end{table}
+
+A budget-exceeding guard can count the visit that triggers termination;
+these settings are search policies rather than exact peak-memory or hard
+real-time guarantees. The deployment needs only static files and a
+browser. Solver code is local; the renderer and fonts still use external
+CDN assets.
 \end{document}

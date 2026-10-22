@@ -108,7 +108,7 @@ Paired practical experiment & 200 shared states, two solvers & All outputs verif
 Chromium integration & Desktop/mobile viewport, playback, sample photos, invalid input, cancellation, failure handling & Passed locally and deployed \\\bottomrule
 \end{tabularx}
 \end{table*}]],
-[[\begin{table}[ht]
+[[\begin{table}[H]
 \caption{Resource and implementation settings.}
 \centering\small
 \begin{tabularx}{\columnwidth}{@{}Lr@{}}
@@ -166,10 +166,6 @@ function Pandoc(doc)
       if text:match('^Optional comparison') then
         table.insert(out, raw([[\noindent\textbf{Additional reproduction.} The \href{https://github.com/nahin333/rubikscube/blob/main/research/REPORT.md}{Markdown companion} specifies optional baseline and browser commands. The \href{https://github.com/nahin333/rubikscube/blob/main/research/plot_results.py}{figure script} redraws both vector figures from archived data without rerunning the benchmark.]]))
       end
-    elseif block.t == 'Header' and text:match('^Appendix B') then
-      -- Detailed parameter table is retained in the Markdown supplement;
-      -- all search budgets and table sizes are already specified in Method.
-      break
     elseif block.t == 'Header' then
       if text:match('^Appendix A') then
         if in_references then table.insert(out, raw('\\endgroup')); in_references = false end

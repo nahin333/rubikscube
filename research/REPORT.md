@@ -1,7 +1,5 @@
 # COVE-3: Compact Output-Verified Two-Phase Search for Interactive Rubik’s Cube Solving
 
-**Rubik’s Graph Lab · Technical manuscript · October 22, 2026**
-
 [Typeset PDF](paper.pdf) · [Project page](https://nahin333.github.io/rubikscube/) · [Code](../compact-solver.js) · [Measurements](results/solver-comparison.json) · [Vector figures](figures/)
 
 ## Abstract
@@ -84,7 +82,7 @@ $$
 
 The established 20-move diameter [8] concerns optimal solutions. A non-optimal procedure can validly return a longer sequence.
 
-## 4. Method
+## 4. Methodology
 
 ### 4.1. System overview
 
@@ -254,7 +252,7 @@ We report median, nearest-rank P95, maximum observed latency, mean and maximum m
 
 For RQ3, Playwright 1.51.1 and Chromium 134 exercise desktop and mobile-sized viewports, playback, notation validation, generated photo samples, cancellation/restart, and worker failure. A mobile viewport is not a physical-phone performance measurement.
 
-## 6. Results
+## 6. Evaluation
 
 ### 6.1. Practical latency and solution quality
 
@@ -311,7 +309,7 @@ These results support RQ3 within the tested configurations. Generated photo exam
 
 No controlled ablation currently isolates paired-table choice, candidate budgeting, canonical move ordering, or termination policy. The observed latency differences therefore cannot be causally attributed to any one component. In particular, accepting longer solutions may explain part of the advantage over cubejs. A matched-length comparison and a candidate-budget sweep are necessary to separate search-policy effects from implementation effects.
 
-## 7. Discussion and Limitations
+## 7. Limitations
 
 <a id="limitations-and-claims-we-do-not-make"></a>
 

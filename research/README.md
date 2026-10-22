@@ -17,4 +17,4 @@ pandoc REPORT.md --from=markdown+tex_math_dollars --to=latex --standalone --temp
 tectonic paper.tex
 ```
 
-`paper.tex` is included, so the PDF can also be rebuilt with Tectonic alone. The template uses Liberation Serif/Sans/Mono fonts. The PDF omits shell transcripts and the redundant parameter appendix for readable two-column typesetting; the complete commands and parameter table remain in the Markdown manuscript. The figures are generated from the archived comparison data, not from new benchmark runs.
+`paper.tex` is included, so the PDF can also be rebuilt with Tectonic alone. The layout uses the [official CVPR 2026 author-kit style](https://github.com/cvpr-org/author-kit) at commit `291758547e923160eb4d37079b7b9f0dfce82355`, with Liberation Serif/Sans/Mono for Unicode-capable typesetting. This is a formatting choice only: the paper has not been submitted to or accepted by CVPR. The PDF omits shell transcripts for readable two-column typesetting; exact commands remain in the Markdown manuscript. The figures are generated from the archived comparison data, not from new benchmark runs.

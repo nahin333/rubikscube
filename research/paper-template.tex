@@ -1,50 +1,32 @@
+% Uses the official CVPR 2026 author-kit style for layout only.
+% This independent paper is not a CVPR submission or publication.
 \documentclass[10pt,twocolumn,letterpaper]{article}
-\usepackage[margin=0.75in,columnsep=0.25in]{geometry}
+\usepackage[pagenumbers]{cvpr}
 \usepackage{fontspec}
 \setmainfont{Liberation Serif}
 \setsansfont{Liberation Sans}
 \setmonofont{Liberation Mono}[Scale=0.85]
-\usepackage{amsmath,amssymb,graphicx,booktabs,tabularx,array}
-\usepackage{microtype,fvextra,caption,titlesec,enumitem,float}
-\usepackage{xcolor}
-\usepackage[unicode,colorlinks=true,linkcolor=black,citecolor=black,urlcolor=blue!45!black]{hyperref}
+\usepackage{tabularx,array,fvextra,float,microtype}
+\definecolor{cvprblue}{rgb}{0.21,0.49,0.74}
+\usepackage[breaklinks,colorlinks,allcolors=cvprblue]{hyperref}
 \usepackage{newunicodechar}
 \newunicodechar{→}{\ensuremath{\rightarrow}}
 \newunicodechar{↓}{\ensuremath{\downarrow}}
 \newunicodechar{∎}{\ensuremath{\square}}
-\setlength{\parindent}{1em}
-\setlength{\parskip}{0pt}
-\setlength{\emergencystretch}{2em}
-\setlist{nosep,leftmargin=1.3em}
-\titleformat{\section}{\large\bfseries}{\thesection.}{0.5em}{}
-\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection.}{0.5em}{}
-\titlespacing*{\section}{0pt}{9pt}{5pt}
-\titlespacing*{\subsection}{0pt}{7pt}{3pt}
-\captionsetup{font=small,labelfont=bf,skip=5pt}
-\renewcommand{\abstractname}{Abstract}
 \providecommand{\tightlist}{\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 \providecommand{\passthrough}[1]{#1}
 \newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\setlength{\emergencystretch}{2em}
 \setcounter{topnumber}{3}
 \setcounter{dbltopnumber}{3}
 \renewcommand{\topfraction}{0.95}
 \renewcommand{\dbltopfraction}{0.95}
 \renewcommand{\textfraction}{0.05}
 \renewcommand{\floatpagefraction}{0.8}
-\pagestyle{plain}
+\title{COVE-3: Compact Output-Verified Two-Phase Search\\
+for Interactive Rubik's Cube Solving}
+\author{Rubik's Graph Lab}
 \begin{document}
-\twocolumn[{
-\centering
-{\LARGE\bfseries COVE-3: Compact Output-Verified Two-Phase Search\\[3pt]
-for Interactive Rubik's Cube Solving\par}
-\vspace{10pt}
-{\large Rubik's Graph Lab\par}
-\vspace{4pt}
-{\small Technical manuscript \quad October 22, 2026\par}
-\vspace{5pt}
-{\small\href{https://nahin333.github.io/rubikscube/}{Project page}
-\quad\href{https://github.com/nahin333/rubikscube}{Code and reproducibility materials}\par}
-\vspace{16pt}
-}]
+\maketitle
 $body$
 \end{document}
