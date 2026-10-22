@@ -166,7 +166,7 @@ select { font: 13px var(--f-body); color: var(--ink); background: var(--bg); bor
   <header>
     <div>
       <h1>Rubik's Graph Lab</h1>
-      <p class="lede">Every cube position is a vertex, every face turn is an edge. Find a practical solution to a long scramble, or explore shortest-path searches on smaller problems. Then step through the verified moves on the cube.</p>
+      <p class="lede">Every cube position is a vertex, every face turn is an edge. Use COVE-3 to solve a long 3×3 scramble, or explore shortest-path searches on smaller problems. Then step through the verified moves on the cube.</p>
     </div>
     <div class="facts" id="facts"></div>
   </header>
@@ -180,7 +180,7 @@ select { font: 13px var(--f-body); color: var(--ink); background: var(--bg); bor
     </label>
     <label class="field"><span>Algorithm</span>
       <div class="seg" id="algoSeg">
-        <button type="button" data-a="compact" aria-pressed="true">Compact two-phase</button>
+        <button type="button" data-a="compact" aria-pressed="true" title="COVE-3: verified two-phase solving for 3×3">COVE-3 (two-phase)</button>
         <button type="button" data-a="bidir" aria-pressed="false">Bidirectional BFS</button>
         <button type="button" data-a="bfs" aria-pressed="false">BFS</button>
         <button type="button" data-a="astar" aria-pressed="false">A*</button>
@@ -207,7 +207,7 @@ select { font: 13px var(--f-body); color: var(--ink); background: var(--bg); bor
   <div class="status" id="status" role="status"></div>
 
   <details class="scan" id="scanBox">
-    <summary><span class="s-title">Scan a real cube</span><span class="hint">Two photos of three sides each. Read the colors and find a verified solution with compact two-phase search.</span></summary>
+    <summary><span class="s-title">Scan a real cube</span><span class="hint">Two photos of three sides each. Correct the colors and find a verified solution with COVE-3.</span></summary>
     <div class="scan-body">
       <div class="slot">
         <div class="card-head"><h2>Photo 1</h2><span class="hint">Three sides around one corner</span></div>
@@ -301,6 +301,7 @@ select { font: 13px var(--f-body); color: var(--ink); background: var(--bg); bor
       <p><strong>Breadth-first search</strong>BFS visits vertices in rings of equal distance, so the first time it touches the solved state it has found a shortest path. The catch is the ring sizes: 18, 243, 3,240, 43,239… roughly ×13 per level.</p>
       <p><strong>Meeting in the middle</strong>Bidirectional BFS grows one tree from the scramble and one from solved, and stops when they touch. Two trees of depth d/2 are far smaller than one of depth d, which is why it reaches scrambles that plain BFS cannot.</p>
       <p><strong>A* with a lower bound</strong>One face turn moves at most 4 corners and 4 edges, so ⌈misplaced corners ÷ 4⌉ is a distance that can never be overestimated. A* uses it to expand promising vertices first, while still guaranteeing a shortest path.</p>
+      <p><strong>COVE-3 (3×3 only)</strong>Our compact, output-verified implementation uses established two-phase search with generated distance tables and bounded work. It aims for a responsive verified solution, not a shortest-path guarantee.</p>
     </div>
   </section>
 </div>
@@ -864,7 +865,7 @@ function drawChart() {
   $('chartLegend').hidden = true;
   if (app.mode === 'scan') {
     svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.onmousemove = null;
-    svg.innerHTML = `<text x="${W / 2}" y="${H / 2 - 8}" text-anchor="middle" fill="var(--muted)" font-size="13">The two-phase solver uses iterative deepening, not a breadth-first tree,</text><text x="${W / 2}" y="${H / 2 + 12}" text-anchor="middle" fill="var(--muted)" font-size="13">so there are no per-depth counts to chart.</text>`;
+    svg.innerHTML = `<text x="${W / 2}" y="${H / 2 - 8}" text-anchor="middle" fill="var(--muted)" font-size="13">COVE-3 uses iterative deepening, not a breadth-first tree,</text><text x="${W / 2}" y="${H / 2 + 12}" text-anchor="middle" fill="var(--muted)" font-size="13">so there are no per-depth counts to chart.</text>`;
     return;
   }
   if (!S) { svg.innerHTML = `<text x="${W / 2}" y="${H / 2}" text-anchor="middle" fill="var(--muted)" font-size="13">No search yet</text>`; return; }
@@ -915,7 +916,7 @@ function updateStats() {
     const L = app.sol ? app.sol.length : 0, k1 = app.scanInfo.split;
     $('sLen').textContent = `${L} turns`; $('sNodes').textContent = fmt(app.scanInfo.nodes);
     $('sTime').textContent = `${Math.round(app.scanInfo.ms)} ms`; $('sDepth').textContent = `${k1} + ${L - k1}`;
-    $('compare').innerHTML = `The project's compact two-phase implementation reaches subgroup <b>H</b> in ${k1} turns, then solves inside H in ${L - k1} turns. It uses generated distance tables and bounds work per subgroup candidate. Every returned move is verified. This is a practical solution, <b>not a shortest-path guarantee</b>.`;
+    $('compare').innerHTML = `COVE-3 reaches subgroup <b>H</b> in ${k1} turns, then solves inside H in ${L - k1} turns. It uses generated distance tables and bounds work per subgroup candidate. Every returned move is verified. This is a practical solution, <b>not a shortest-path guarantee</b>.`;
     return;
   }
   $('sNodes').textContent = S ? fmt(S.n) : '–';
@@ -1024,13 +1025,13 @@ async function solveCompactScramble() {
   app.search = null; app.mode = 'search';
   graph.draw(); drawChart(); updateStats(); runningControls(true);
   const started = performance.now();
-  setStatus('Preparing compact two-phase solver…');
+  setStatus('Preparing COVE-3 solver…');
   try {
     const result = await runCompact(app.startState, p => setStatus(p.stage || `Searching two-phase coordinates · ${fmt(p.nodes)} nodes`));
     if (toKey(stateFrom(app.startState, result.moves)) !== toKey(app.P.solved)) throw new Error('Solution verification failed.');
     app.mode = 'scan'; app.scanInfo = { split: result.split, ms: performance.now() - started, nodes: result.nodes };
     setLegend(); setSolution(result.moves); graph.draw(); drawChart(); updateStats();
-    setStatus(`Verified solution: ${result.moves.length} turns. Compact two-phase; shortest path not guaranteed.`);
+    setStatus(`COVE-3 verified solution: ${result.moves.length} turns. Shortest path not guaranteed.`);
   } catch (error) { setStatus(error.message, true); }
   finally { runningControls(false); }
 }
@@ -1071,7 +1072,7 @@ function solve() {
     runningControls(false);
     if (S.error) {
       setStatus(S.error === 'cap'
-        ? `Stopped at ${fmt(S.n)} states, the memory budget for this page. Try ${app.N === 3 ? 'Compact two-phase for a verified solution without a shortest-path guarantee' : 'Bidirectional BFS or a shorter scramble'}.`
+        ? `Stopped at ${fmt(S.n)} states, the memory budget for this page. Try ${app.N === 3 ? 'COVE-3 for a verified solution without a shortest-path guarantee' : 'Bidirectional BFS or a shorter scramble'}.`
         : S.error, true);
       syncPlay(); updateStats(); return;
     }
@@ -1117,8 +1118,8 @@ function setLegend() {
   $('legB').textContent = scan ? 'Phase 2 (finish inside H)' : 'Backward tree (from solved)';
   $('legP').textContent = scan ? 'Solution path' : 'Shortest path';
   $('bwdLegend').hidden = !(scan || app.algo === 'bidir');
-  $('graphTitle').textContent = scan ? 'Two-phase route' : 'Explored state graph';
-  $('pathLabel').textContent = scan ? 'Two-phase solution (half-turn metric)' : 'Shortest path (half-turn metric)';
+  $('graphTitle').textContent = scan ? 'COVE-3 route' : 'Explored state graph';
+  $('pathLabel').textContent = scan ? 'COVE-3 solution (half-turn metric)' : 'Shortest path (half-turn metric)';
   $('inspect').textContent = scan
     ? 'Phase 1 searches for any path into H, the positions reachable with U, D, R2, L2, F2 and B2. Phase 2 solves inside H.'
     : 'Columns are distance from the root. Hover a dot to see how the search reached it, click it to load that state onto the cube.';
@@ -1350,7 +1351,7 @@ const scan = (() => {
     if (app.running) return;
     const err = validate(colors);
     if (err) return fail(err);
-    say('Preparing compact two-phase tables…');
+    say('Preparing COVE-3 tables…');
     app.playing = false; runningControls(true);
     try {
       const input = new Uint8Array(colors);
@@ -1367,7 +1368,7 @@ const scan = (() => {
       app.scanInfo = { split: result.split, ms, nodes: result.nodes };
       setLegend(); setSolution(moves); graph.draw(); drawChart(); updateStats();
       say(`Solved: ${moves.length} turns. Press Play next to the cube to watch it.`);
-      setStatus(`Scanned cube: verified ${moves.length}-turn solution from compact two-phase. Shortest path not guaranteed. The scramble box recreates this cube.`);
+      setStatus(`Scanned cube: COVE-3 verified a ${moves.length}-turn solution. Shortest path not guaranteed. The scramble box recreates this cube.`);
       document.querySelector('.main').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
     } catch (e) { fail(e.message); }
     finally { runningControls(false); }

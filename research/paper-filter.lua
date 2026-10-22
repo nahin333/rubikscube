@@ -3,9 +3,27 @@ local stringify = pandoc.utils.stringify
 local raw = function(s) return pandoc.RawBlock('latex', s) end
 local table_index = 0
 local figure_index = 0
-local in_abstract = false
-local appendix = false
-local in_references = false
+local skipping_manual_references = false
+local citation_keys = {
+  ['1'] = 'korf1997',
+  ['2'] = 'kociemba_coordinates',
+  ['3'] = 'kociemba_pruning',
+  ['4'] = 'cubejs',
+  ['5'] = 'mcaleer2018',
+  ['6'] = 'fridrich',
+  ['7'] = 'demaine2011',
+  ['8'] = 'rokicki_gods_number',
+}
+
+function Str(el)
+  local before, number, after = el.text:match('^(.-)%[(%d+)%](.*)$')
+  if not number or not citation_keys[number] then return el end
+  local out = {}
+  if before ~= '' then table.insert(out, pandoc.Str(before)) end
+  table.insert(out, pandoc.RawInline('latex', '\\cite{' .. citation_keys[number] .. '}'))
+  if after ~= '' then table.insert(out, pandoc.Str(after)) end
+  return out
+end
 
 function Link(el)
   if not el.target:match('^https?://') and not el.target:match('^#') then
@@ -63,8 +81,6 @@ return explicit search failure
 \vspace{3pt}\hrule
 \end{figure}]])
   end
-  -- The companion Markdown retains shell transcripts; the paper summarizes
-  -- reproducibility in prose to preserve readable two-column typesetting.
   return {}
 end
 
@@ -108,22 +124,6 @@ Paired practical experiment & 200 shared states, two solvers & All outputs verif
 Chromium integration & Desktop/mobile viewport, playback, sample photos, invalid input, cancellation, failure handling & Passed locally and deployed \\\bottomrule
 \end{tabularx}
 \end{table*}]],
-[[\begin{table}[H]
-\caption{Resource and implementation settings.}
-\centering\small
-\begin{tabularx}{\columnwidth}{@{}Lr@{}}
-\toprule Setting & Value \\\midrule
-Phase-1 maximum depth & 12 \\
-Phase-2 maximum depth & 18 \\
-Phase-2 visits per endpoint & 250,000 \\
-Global node budget & 20,000,000 \\
-Search deadline & 30 s \\
-Worker watchdog & 45 s \\
-Distance tables & 4,031,685 bytes \\
-Transition tables & 1,783,560 bytes \\
-Display sample limit & 420 per side/depth \\\bottomrule
-\end{tabularx}
-\end{table}]],
   }
   return raw(tables[table_index])
 end
@@ -132,15 +132,19 @@ function Pandoc(doc)
   local out = {}
   for _, block in ipairs(doc.blocks) do
     local text = stringify(block)
-    if block.t == 'Header' and block.level == 1 then
+    if block.t == 'Header' and text == 'References' then
+      table.insert(out, raw('\\bibliographystyle{ieeenat_fullname}\n\\bibliography{references}'))
+      skipping_manual_references = true
+    elseif skipping_manual_references and block.t ~= 'Header' then
+      -- The Markdown bibliography remains readable on GitHub; BibTeX
+      -- supplies the CVPR-formatted bibliography in the PDF.
+    elseif block.t == 'Header' and block.level == 1 then
       -- The template supplies the full-width paper title.
     elseif block.t == 'Para' and (text:match('^Rubik’s Graph Lab') or text:match('^Typeset PDF') or text:match('^Project page')) then
     elseif block.t == 'Header' and text == 'Abstract' then
       table.insert(out, raw('\\begin{abstract}'))
-      in_abstract = true
     elseif block.t == 'Para' and text:match('^Keywords:') then
       table.insert(out, raw('\\end{abstract}'))
-      in_abstract = false
     elseif block.t == 'Para' and (text:match('^Table %d') or text:match('^Algorithm 1')) then
     elseif block.t == 'Figure' or (block.t == 'Para' and block.content[1] and block.content[1].t == 'Image') then
       figure_index = figure_index + 1
@@ -158,29 +162,11 @@ function Pandoc(doc)
 \end{figure*}]]))
       end
     elseif block.t == 'Para' and text:match('^Figure %d') then
-    elseif block.t == 'Para' and text:match('^The practical comparison is implemented') then
-      table.insert(out, raw([[\noindent\textbf{Artifacts.} The \href{https://github.com/nahin333/rubikscube/blob/main/research/results/solver-comparison.json}{per-case archive} records scrambles, timings, move counts, environment details, and source hashes. The \href{https://github.com/nahin333/rubikscube/blob/main/tests/compare-solvers.cjs}{comparison script} and \href{https://github.com/nahin333/rubikscube/blob/main/research/REPORT.md}{Markdown supplement} provide exact commands and commit identifiers.]]))
-    elseif block.t == 'Para' and text:match('^Core verification:') then
-      table.insert(out, raw([[\noindent\textbf{Core verification.} The exact-search and COVE-3 regression suites are \href{https://github.com/nahin333/rubikscube/blob/main/tests/search.cjs}{search.cjs} and \href{https://github.com/nahin333/rubikscube/blob/main/tests/compact-solver.cjs}{compact-solver.cjs}. Both independently replay returned moves.]]))
-    elseif block.t == 'Para' and (text:match('^Optional comparison') or text:match('^Serve the project using') or text:match('^Reproduce the figures')) then
-      if text:match('^Optional comparison') then
-        table.insert(out, raw([[\noindent\textbf{Additional reproduction.} The \href{https://github.com/nahin333/rubikscube/blob/main/research/REPORT.md}{Markdown companion} specifies optional baseline and browser commands. The \href{https://github.com/nahin333/rubikscube/blob/main/research/plot_results.py}{figure script} redraws both vector figures from archived data without rerunning the benchmark.]]))
-      end
     elseif block.t == 'Header' then
-      if text:match('^Appendix A') then
-        if in_references then table.insert(out, raw('\\endgroup')); in_references = false end
-        table.insert(out, raw('\\appendix'))
-        appendix = true
-      end
       block.level = block.level - 1
-      local title = text:gsub('^%d+%.%d+%.?%s*', ''):gsub('^%d+%.%s*', ''):gsub('^Appendix %u%.%s*', '')
+      local title = text:gsub('^%d+%.%d+%.?%s*', ''):gsub('^%d+%.%s*', '')
       block.content = pandoc.Inlines({pandoc.Str(title)})
-      if text == 'References' then
-        block.classes:insert('unnumbered')
-        table.insert(out, block)
-        table.insert(out, raw('\\begingroup\\small\\setlength{\\parskip}{4pt}'))
-        in_references = true
-      else table.insert(out, block) end
+      table.insert(out, block)
     elseif block.t ~= 'RawBlock' or block.format ~= 'html' then
       table.insert(out, block)
     end

@@ -1,4 +1,4 @@
-# COVE-3: Compact Output-Verified Two-Phase Search for Interactive Rubik’s Cube Solving
+# COVE-3: Compact Output-Verified Exploration for Interactive 3×3 Cube Solving
 
 [Typeset PDF](paper.pdf) · [Project page](https://nahin333.github.io/rubikscube/) · [Code](../compact-solver.js) · [Measurements](results/solver-comparison.json) · [Vector figures](figures/)
 
@@ -153,7 +153,7 @@ Phase-1 depth increases from its heuristic lower bound to 12. At a subgroup endp
 
 The global budget is 20 million node visits, with a 30-second search deadline checked periodically. The UI applies a separate 45-second watchdog that also covers worker initialization. These are bounded-effort policies, not completeness guarantees. Consecutive moves on the same face are excluded; commuting opposite-face moves use a canonical order.
 
-**Algorithm 1. Compact two-phase search with verification**
+**Algorithm 1. COVE-3 budgeted two-phase search with verification.** The two-phase decomposition is established work [2]; the pseudocode specifies our implementation and its resource policy.
 
 ~~~text
 Input: valid state s0; transition and distance tables
@@ -198,7 +198,32 @@ $$
 
 Thus $M_D+M_T=5,815,245$ bytes, approximately 5.55 MiB. This is persistent numeric-table storage; temporary queues, JavaScript objects, rendering resources, and peak process memory are excluded. Tables are reused across jobs in a worker. Cancellation terminates the worker rather than waiting for a search to finish.
 
-### 4.6. Exact-search implementation
+### 4.6. Time and space complexity
+
+COVE-3 is **our implementation and bounded configuration**, not a newly invented two-phase algorithm. Let $b_1\le18$ and $b_2\le10$ be upper bounds on phase branching, $d_1\le12$ and $d_2\le18$ the depth caps, $B=250{,}000$ the phase-2 visit budget per subgroup endpoint, and $G=20{,}000{,}000$ the global visit budget. These bounds apply to the implemented 3×3 search; they are not complexity claims for arbitrary $N\times N\times N$ cubes.
+
+Iterative deepening can revisit nodes at successive depths. An upper bound on visits for one phase without resource limits is
+
+$$
+R_j(d)=\sum_{k=0}^{d}\sum_{i=0}^{k}b_j^i
+=O\!\left((d+1)b_j^d\right),\qquad j\in\{1,2\}.
+$$
+
+If $C$ is the number of phase-1 subgroup endpoints attempted, counting repeated endpoints across iterations, then $C\le R_1(d_1)$. The actual DFS visit count obeys
+
+$$
+\begin{aligned}
+N_{\mathrm{visits}}&\le G+1,\\
+N_{\mathrm{visits}}&\le R_1(d_1)
+  +C\min\{B+1,R_2(d_2)\}.
+\end{aligned}
+$$
+
+The $+1$ terms allow the visit that triggers a budget guard. Thus the worst-case search remains exponential in depth before caps, while the node budgets bound attempted work and may return failure on a valid cube. This is a bound on DFS visits, not a hard wall-clock guarantee: endpoint conversion costs $O(d_1)$ per attempt, and input/output verification costs $O(54L)$ sticker operations for a returned path of length $L\le d_1+d_2$.
+
+Let $S_1=2187+2048+495$ and $S_2=40320+40320+24$ be the transition-table coordinate counts, and let $D_1=2187\cdot495+2048\cdot495$ and $D_2=2(40320\cdot24)$ be the paired distance-table counts. Table construction takes $O(18S_1+10S_2+18D_1+10D_2)$ coordinate transitions and BFS edge checks. Persistent table space is $O(18S_1+10S_2+D_1+D_2)$, with the exact 5.55 MiB allocation given above. Each distance-table build also allocates a temporary Uint32 queue of at most $\max(2187\cdot495,2048\cdot495,40320\cdot24)=1{,}082{,}565$ entries; this is not a measured peak JavaScript heap. Search itself uses $O(d_1+d_2)$ stack/path space beyond the tables. For a fixed 3×3 cube these dimensions are constants; the parameterized expressions explain the resource tradeoff rather than claiming asymptotic superiority over prior two-phase solvers.
+
+### 4.7. Exact-search implementation
 
 The application retains exact modes for educational exploration. We modify bidirectional BFS to stop at the first meeting while preserving complete-layer side selection.
 
@@ -218,7 +243,7 @@ $$
 
 which is injective for a fixed sticker count. The renderer maintains at most 420 sampled nodes per side and depth, with the solution path included separately. Search retains its full visited sets. Storage caps are enforced before insertion, and A* depth statistics are updated when a shorter parent path is discovered.
 
-### 4.7. Verification contract
+### 4.8. Verification contract
 
 The practical solver verifies its completion in cubie coordinates. The UI separately evaluates Eq. (1) on all stickers before displaying success. This establishes a conditional acceptance contract: assuming correct transition models, accepted results solve the supplied symbolic state. Test coverage supports the implementation of this contract; it is not a formal proof of the entire software stack.
 
@@ -251,6 +276,8 @@ Experiments use Node **18.19.1**, Linux x64, and an **AMD EPYC 9254 24-Core Proc
 We report median, nearest-rank P95, maximum observed latency, mean and maximum move counts, and observed verification success. For 200 observations, the archived implementation selects the sorted element at zero-based index 100 as its median and index 189 as P95. Initialization is measured once per solver. We report no confidence intervals or significance tests from these single-run measurements.
 
 For RQ3, Playwright 1.51.1 and Chromium 134 exercise desktop and mobile-sized viewports, playback, notation validation, generated photo samples, cancellation/restart, and worker failure. A mobile viewport is not a physical-phone performance measurement.
+
+Source revisions, archived measurements, and commands for reproducing the figures, comparisons, and paper are documented in the [project README](../README.md).
 
 ## 6. Evaluation
 
@@ -350,53 +377,3 @@ Future work should evaluate uniform random states, repeated trials on multiple d
 [7] Erik D. Demaine, Martin L. Demaine, Sarah Eisenstat, Anna Lubiw, and Andrew Winslow. **Algorithms for Solving Rubik’s Cubes.** ESA, 2011. [Paper](https://erikdemaine.org/papers/Rubik_ESA2011/paper.pdf).
 
 [8] Tomas Rokicki, Herbert Kociemba, Morley Davidson, and John Dethridge. **God’s Number is 20.** Computational result and project documentation. [Source](https://www.cube20.org/).
-
-## Appendix A. Reproducibility
-
-The practical comparison is implemented in [compare-solvers.cjs](../tests/compare-solvers.cjs). [Archived JSON](results/solver-comparison.json) includes every input scramble, timing, move count, candidate node count, environment description, and the candidate source SHA-256. The exact baseline revision is pinned in [search.cjs](../tests/search.cjs). The published implementation is commit **c2b7ba33d85df189d7096aef7236b949fbc70507**; this manuscript revision does not change the solver.
-
-Core verification:
-
-~~~sh
-node tests/search.cjs
-node tests/compact-solver.cjs
-node tests/search.cjs --benchmark
-~~~
-
-Optional comparison and browser tooling:
-
-~~~sh
-npm install --prefix /tmp/rubiks-tools playwright@1.51.1 cubejs@1.3.2
-/tmp/rubiks-tools/node_modules/.bin/playwright install chromium
-CUBEJS_MODULE=/tmp/rubiks-tools/node_modules/cubejs node tests/compare-solvers.cjs
-~~~
-
-Serve the project using <code>python3 -m http.server 8000</code>, then run:
-
-~~~sh
-PLAYWRIGHT_MODULE=/tmp/rubiks-tools/node_modules/playwright node tests/browser.cjs
-~~~
-
-Reproduce the figures from archived data and deterministic diagram code, without rerunning the solver benchmark:
-
-~~~sh
-python3 research/plot_results.py
-~~~
-
-The figure script requires NumPy and Matplotlib; the recorded rendering uses Matplotlib 3.10.7. It exports SVG, PDF, and PNG. The plots contain all 200 observations and do not synthesize data or error bars.
-
-## Appendix B. Resource and Implementation Details
-
-| Setting | Value |
-| :--- | :--- |
-| Phase-1 maximum depth | 12 |
-| Phase-2 maximum depth | 18 |
-| Phase-2 budget per endpoint | 250,000 node visits |
-| Global search budget | 20,000,000 node visits |
-| Search time limit | 30 s, checked periodically |
-| Worker watchdog | 45 s, including initialization |
-| Persistent distance tables | 4,031,685 bytes |
-| Persistent transition tables | 1,783,560 bytes |
-| Display sample limit | 420 node IDs per side/depth, plus solution path |
-
-A budget-exceeding guard can count the visit that triggers termination; these settings are search policies rather than exact peak-memory or hard real-time guarantees. The deployment needs only static files and a browser. Solver code is local; the renderer and fonts still use external CDN assets.

@@ -7,9 +7,9 @@
   &nbsp; · &nbsp; <a href="research/results/solver-comparison.json">Inspect the raw results</a>
 </p>
 
-A visual laboratory for cube solving: turn a scramble into a graph, watch algorithms explore it, and replay a verified solution on a 3D cube. Choose exact search to study shortest paths, or the project's compact two-phase solver for longer 3×3 scrambles.
+A visual laboratory for cube solving: turn a scramble into a graph, watch algorithms explore it, and replay a verified solution on a 3D cube. Choose exact search to study shortest paths, or **COVE-3 (two-phase)** for longer 3×3 scrambles.
 
-> **Measured, not assumed.** On 200 shared test scrambles, compact two-phase had a **5.97 ms median** versus **34.05 ms** for the previous cubejs solver. The tradeoff: **22.77 versus 21.71 moves on average**. These are local Node measurements, not a universal speed or optimality claim.
+> **Measured, not assumed.** On 200 shared test scrambles, COVE-3 had a **5.97 ms median** versus **34.05 ms** for the previous cubejs solver. The tradeoff: **22.77 versus 21.71 moves on average**. These are local Node measurements, not a universal speed or optimality claim.
 
 ## Our contributions
 
@@ -23,11 +23,11 @@ The comparison shows a latency advantage for our configuration and a move-count 
 
 | What you want to do | Choose | What the result means |
 | :--- | :--- | :--- |
-| Solve a longer 3×3 scramble | **Compact two-phase** | Verified solution; shortest path not guaranteed |
+| Solve a longer 3×3 scramble | **COVE-3 (two-phase)** | Verified solution; shortest path not guaranteed |
 | Find a shortest path on a manageable problem | **Bidirectional BFS** | Optimal in the half-turn metric when it completes |
 | See why exhaustive search becomes expensive | **BFS** | Optimal when it completes; strict storage budget |
 | Explore heuristic search | **A\*** | Optimal when it completes; admissible misplaced-piece bound |
-| Solve a photographed 3×3 | **Scan a real cube** | Validate the stickers, then use compact two-phase |
+| Solve a photographed 3×3 | **Scan a real cube** | Validate the stickers, then use COVE-3 |
 
 All four modes run in the browser. GitHub Pages serves the files; it does not perform the solving.
 
@@ -38,7 +38,7 @@ All four modes run in the browser. GitHub Pages serves the files; it does not pe
 - **Build a scramble.** Use the move pad, type notation, or generate up to 30 turns on the 3×3.
 - **Scan a cube.** Upload two corner-view photos, adjust their outlines, correct colors on the sticker map, and check twist, flip, and permutation parity. Sample photos are included.
 - **Stay in control.** Practical solving runs in a Web Worker. Stop a job without freezing the interface; failures never become claimed solutions.
-- **Compare 2×2 and 3×3.** The 2×2 fixes one corner and uses U, R, and F. Compact two-phase is available for 3×3 only.
+- **Compare 2×2 and 3×3.** The 2×2 fixes one corner and uses U, R, and F. COVE-3 is available for 3×3 only.
 
 ## Inside the practical solver
 
@@ -55,13 +55,15 @@ flowchart LR
 
 The four paired distance tables guide a bounded depth-first search. Persistent typed-array tables total **5,815,245 bytes (5.55 MiB)**, excluding JavaScript objects and temporary initialization memory. A per-candidate search budget prevents one difficult subgroup endpoint from consuming the entire job.
 
+**Complexity:** COVE-3 is an implementation of established two-phase search, not a new asymptotic algorithm. With phase branching bounds $b_1\le18$ and $b_2\le10$ and depth caps $d_1\le12$, $d_2\le18$, unrestricted iterative-deepening search is exponential in depth. The implementation caps phase-2 visits at 250,000 per subgroup endpoint and total DFS visits at 20 million, so it may fail rather than claim a solution. Its search stack/path space is $O(d_1+d_2)$ beyond the precomputed tables. The [paper's complexity analysis](research/REPORT.md#46-time-and-space-complexity) derives the visit and preprocessing bounds; none applies to arbitrary-size cubes.
+
 This is original implementation work, **not a claim that two-phase search or pattern databases were invented here**. The [report](research/REPORT.md) attributes prior work and develops the correctness arguments.
 
 ## Results you can reproduce
 
-Same 200 seeded, 20–40-turn scrambles; cubejs **1.3.2** versus compact two-phase; every result replayed against all 54 stickers. The scrambles are not uniformly sampled cube states.
+Same 200 seeded, 20–40-turn scrambles; cubejs **1.3.2** versus COVE-3; every result replayed against all 54 stickers. The scrambles are not uniformly sampled cube states.
 
-| Metric | Previous cubejs solver | Compact two-phase |
+| Metric | Previous cubejs solver | COVE-3 |
 | :--- | ---: | ---: |
 | Verified cases | 200 / 200 | 200 / 200 |
 | Median warm solve | 34.05 ms | **5.97 ms** |
@@ -114,14 +116,44 @@ CUBEJS_MODULE=/tmp/rubiks-tools/node_modules/cubejs node tests/compare-solvers.c
 
 The exact-search benchmark pins the original repository revision, so committing these changes does not silently change the baseline.
 
+### Reproduce the paper artifacts
+
+The [paired-results archive](research/results/solver-comparison.json) records each scramble, latency, move count, candidate node count, environment description, and COVE-3 source SHA-256. The comparison script is [tests/compare-solvers.cjs](tests/compare-solvers.cjs); the exact-search baseline is pinned in [tests/search.cjs](tests/search.cjs). The evaluated solver implementation is commit `c2b7ba33d85df189d7096aef7236b949fbc70507`. The local measurements used Node 18.19.1 on Linux x64 with an AMD EPYC 9254 processor; they are not cross-device benchmarks.
+
+| Implementation setting | Value |
+| :--- | :--- |
+| Phase-1 / phase-2 maximum depth | 12 / 18 |
+| Phase-2 budget per subgroup endpoint | 250,000 node visits |
+| Global search budget | 20,000,000 node visits |
+| Search deadline / worker watchdog | 30 s / 45 s |
+| Persistent distance / transition tables | 4,031,685 / 1,783,560 bytes |
+| Display sample limit | 420 node IDs per side and depth, plus the solution path |
+
+The budget guard may count the visit that triggers it. These values specify search policy, not peak JavaScript heap or a hard real-time guarantee. The deployment needs only static files and a browser; the solver is local, while the renderer and fonts use external CDN assets.
+
+To regenerate both paper figures from the archived data, install NumPy and Matplotlib (the recorded rendering used Matplotlib 3.10.7), then run:
+
+```sh
+python3 research/plot_results.py
+```
+
+This redraws SVG, PDF, and PNG figures without rerunning the solver comparison or inventing error bars. To rebuild the paper, install Pandoc and Tectonic, then run from `research/`:
+
+```sh
+pandoc REPORT.md --from=markdown+tex_math_dollars --to=latex --standalone --template=paper-template.tex --lua-filter=paper-filter.lua --number-sections --no-highlight -o paper.tex
+tectonic paper.tex
+```
+
+The generated [LaTeX source](research/paper.tex), [BibTeX database](research/references.bib), and pinned CVPR author-kit style are included. The paper's conference styling is for presentation only; it has not been submitted to or accepted by CVPR.
+
 ## Honest boundaries
 
 **Supported:** 2×2 and 3×3. **Not implemented:** arbitrary-size reduction, inner-layer turns, or a 4×4–100×100 solver.
 
-Compact two-phase has node, candidate, and time budgets. It may report exhaustion on a valid cube; that does not mean the cube is impossible. It does not guarantee a shortest solution. Exact searches retain their guarantees only when they complete within their storage limits.
+COVE-3 has node, candidate, and time budgets. It may report exhaustion on a valid cube; that does not mean the cube is impossible. It does not guarantee a shortest solution. Exact searches retain their guarantees only when they complete within their storage limits.
 
 Chromium tests include a mobile-sized viewport, not a physical phone or a cross-browser performance study. Finite tests establish observed behavior; they do not prove success on every reachable cube. No state-of-the-art or scientific novelty claim is made.
 
 ---
 
-**Read next:** [Conference-style PDF paper →](research/paper.pdf) · [Markdown manuscript and full reproducibility appendix](research/REPORT.md) · [Paper build instructions](research/README.md)
+**Read next:** [Conference-style PDF paper →](research/paper.pdf) · [Markdown manuscript](research/REPORT.md) · [Paper build instructions](research/README.md)
