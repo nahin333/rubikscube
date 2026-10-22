@@ -1,266 +1,404 @@
-# Efficient, Verified Cube Solving in a Static Web Application
+# COVE-3: Compact Output-Verified Two-Phase Search for Interactive Rubik’s Cube Solving
 
-**An implementation and experimental report for Rubik's Graph Lab**  
-**Date:** October 22, 2026  
-**Scope:** exact-search improvements for 2×2/3×3, and a practical browser-side 3×3 solver
+**Rubik’s Graph Lab · Technical manuscript · October 22, 2026**
 
-[Live application](https://nahin333.github.io/rubikscube/) · [Project overview](../README.md) · [Raw comparison data](results/solver-comparison.json)
+[Typeset PDF](paper.pdf) · [Project page](https://nahin333.github.io/rubikscube/) · [Code](../compact-solver.js) · [Measurements](results/solver-comparison.json) · [Vector figures](figures/)
 
 ## Abstract
 
-Rubik's Graph Lab originally exposed breadth-first search (BFS), bidirectional BFS, and A* for typed scrambles, while a separate photo-scanning feature used cubejs. Increasing scramble difficulty caused the exact searches to exhaust their storage budgets. We improved their stopping behavior, state representation, and rendering, then implemented a compact two-phase solver for longer 3×3 inputs. The practical solver generates its tables from the application's move geometry and runs in a cancellable Web Worker.
+Interactive combinatorial solvers must balance response time, solution quality, and correctness under limited computational resources. We study this tradeoff in a browser-based Rubik’s Cube application and present COVE-3 (Compact Output-Verified Exploration for 3×3), a named implementation of established two-phase search. It derives coordinate transitions from a geometric sticker model, uses four paired pattern databases, and allocates a bounded search budget to each subgroup candidate. Returned solutions are verified in both cubie and sticker representations. The persistent numeric tables require 5.55 MiB, and a background worker supports cancellable execution. On 200 shared, seeded 20–40-turn scrambles, COVE-3 achieves a median solve latency of 5.97 ms, compared with 34.05 ms for cubejs 1.3.2, while increasing mean solution length from 21.71 to 22.77 turns. Both configurations solve and pass sticker verification on all evaluated cases. Separately, improvements to bidirectional BFS reduce stored entries by 37.65% on a fixed ten-turn instance while preserving optimality. These findings demonstrate an application-specific latency–solution-length tradeoff, rather than a new search paradigm or a state-of-the-art optimal solver. We release source code, deterministic evaluation procedures, and per-instance measurements.
 
-On 200 shared, seeded 20–40-turn scrambles, the new implementation and cubejs 1.3.2 both returned solutions that passed independent sticker replay. Median warm solve times were 5.97 ms and 34.05 ms respectively, while mean solution lengths were 22.77 and 21.71 moves. Thus the measured advantage is lower latency at a modest increase in move count, not superiority in every objective. Persistent transition and distance tables occupy 5,815,245 bytes. Separately, an exact 10-turn benchmark required about 38% fewer stored entries after the bidirectional-search changes. This report provides mathematical arguments, reproducible procedures, raw data, and explicit limits. It does not claim a new mathematical solving paradigm or support for arbitrary cube sizes.
+**Keywords:** heuristic search; pattern databases; two-phase solving; interactive systems; verification; computational puzzles.
 
-## 1. Problem and objectives
+## 1. Introduction
 
-The application's computation happens on the visitor's device. GitHub Pages supplies static files; moving to a Python library on a developer's machine would not give the deployed page a Python execution environment.
+A useful interactive solver must do more than produce a mathematically valid sequence of actions. It must return results within a practical latency and memory budget, preserve interface responsiveness, and communicate whether its answer is optimal. These requirements are especially relevant to static web applications, where computation executes on the visitor’s device rather than a dedicated server.
 
-Two objectives must be separated:
+Rubik’s Cube provides a structured setting for studying these requirements. Exact graph search exposes the relationship between state-space exploration and shortest paths, but its resource requirements increase rapidly with solution depth. In contrast, practical solvers can exchange additional moves for reduced computation. Conflating these objectives can lead to misleading demonstrations: a quickly obtained solution need not be shortest, and a search timeout does not imply that a state is unsolvable.
 
-1. **Exact exploration:** return a shortest path and show how a search discovers it.
-2. **Practical solving:** return a verified solution to a harder state using bounded resources and a responsive interface.
+We examine these distinctions in Rubik’s Graph Lab, which supports 2×2 and 3×3 cubes. The original application used BFS, bidirectional BFS, and A* for typed scrambles, while a separate photo-input interface relied on cubejs. We introduce a project-owned compact two-phase implementation and integrate it with both input modalities. The solver does not use learned parameters, training data, or a neural perception model. The photo interface supplies a validated symbolic state; visual recognition accuracy is outside the evaluated contribution.
 
-The first objective can require far more computation. A practical solver may deliberately accept extra moves. The interface now states which guarantee applies, rather than calling every returned path shortest.
+### 1.1. Contributions of this work
 
-We use the **half-turn metric**: a quarter turn, its inverse, and a half turn each cost one. The solved frame is fixed. The 2×2 model fixes one corner and permits U, R, and F; the 3×3 model permits the 18 outer-face turns. Neither model in this project supports arbitrary inner-layer moves.
+The work makes three implementation and evaluation contributions:
 
-## 2. Existing approaches and attribution
+1. **COVE-3, a resource-bounded practical solver configuration.** We combine geometric transition generation, paired pattern databases, and per-candidate search limits in a browser-executable 3×3 implementation. The name identifies this exact configuration; it does not designate an independently novel two-phase algorithm.
+2. **Verified exact and practical execution.** We separate shortest-path guarantees from solution validity, establish the stopping condition used by bidirectional BFS, and verify practical outputs through sticker replay.
+3. **A reproducible tradeoff study.** We compare the practical solver against the former application dependency on identical states, report latency together with solution length, and release measurements and integration tests.
 
-| Approach | Objective and strengths | Relevance and limitations here |
-| --- | --- | --- |
-| BFS | Explore increasing distance; establish shortest paths | Frontier and visited-set growth make deeper states expensive |
-| Bidirectional BFS | Meet between two exact searches | Much smaller depth on each side, but still exponential growth |
-| A* / IDA* with pattern databases | Use lower bounds to prune search | Stronger bounds require preprocessing and memory; optimal solving remains a different objective |
-| Kociemba two-phase | Reach a subgroup, then solve under restricted moves | The mathematical foundation of our practical solver; not invented in this project |
-| Human methods such as CFOP | Organize recognizable steps for human execution | Human recognition and turning speed do not directly measure software latency |
-| Generalized cube algorithms / reduction | Solve larger cube models | Require additional piece orbits, inner moves, center/edge handling, and parity reasoning |
+These contributions belong to the application implementation and its evaluation. Two-phase decomposition, pattern databases, and bidirectional search are prior techniques, as detailed in Section 2. We do not claim to have invented them.
 
-Korf's 1997 work combines IDA* with pattern databases for optimal cube solving. This establishes important prior art for lower-bound lookup tables; our use of them is not a novelty claim. [Korf, 1997](https://www.cs.princeton.edu/courses/archive/fall06/cos402/papers/korfrubik.pdf)
+## 2. Related Work
 
-Kociemba describes solving through the subgroup generated by U, D, R2, L2, F2, and B2. His published coordinates separate orientation and slice membership from subgroup permutations. We follow that established decomposition. [Two-phase coordinates](https://kociemba.org/math/twophase.htm)
+### 2.1. Optimal search and pattern databases
 
-Kociemba's documentation also explains pruning tables and sophisticated symmetry-based alternatives. Our small paired tables are an engineering choice, not evidence that the broader two-phase family has been surpassed. [Pruning tables](https://kociemba.org/math/pruning.htm)
+BFS provides shortest paths in an unweighted state graph, while bidirectional BFS reduces the depth explored from either endpoint. Heuristic search further restricts exploration using lower bounds on remaining cost. Korf’s work on Rubik’s Cube combines IDA* with pattern databases to find optimal solutions [1]. These tables encode exact distances in abstract state spaces and motivate the lower bounds used here. Our practical method uses this established principle, but its stopping policy does not establish global optimality.
 
-The former scanner dependency, cubejs, is an existing JavaScript two-phase implementation and therefore a directly relevant application baseline. The experiment pins version 1.3.2, matching the old page. We did not copy its implementation or tables into the new solver. [cubejs source and documentation](https://github.com/ldez/cubejs)
+### 2.2. Two-phase solving
 
-Human methods can be implemented in software; saying they are inherently impossible or always inefficient would be too strong. Their usual design goals differ from ours. Fridrich's published method is useful context, but human speedcubing rankings do not establish a computer-solver benchmark. [Fridrich's system](https://ws2.binghamton.edu/fridrich/system.html)
+Kociemba decomposes solving into reaching a subgroup and then solving within it [2]. His documentation describes coordinate encodings and pruning-table constructions, including symmetry-based representations [3]. Our implementation follows this decomposition using smaller paired coordinate tables. It is not a replacement for the underlying two-phase mathematics.
 
-For larger cubes, Demaine and collaborators give generalized algorithms and asymptotic results. That work shows why “any N” is a distinct research and engineering problem. We do not infer an arbitrary-size solver from our 3×3 implementation. [Demaine et al., 2011](https://erikdemaine.org/papers/Rubik_ESA2011/paper.pdf)
+The most directly relevant software baseline is cubejs [4], previously used by this application. We evaluate its pinned version 1.3.2 with default settings. Because the baseline and our implementation use different solution-length targets and termination policies, their comparison measures a configuration-level tradeoff.
 
-## 3. What changed
+### 2.3. Learning-based and human-oriented methods
 
-### 3.1 Exact search and visualization
+McAleer et al. investigate reinforcement learning for cube solving through Autodidactic Iteration [5]. This represents a different approach to constructing search guidance. We neither train such a model nor evaluate against it; therefore, our results do not establish an advantage over learning-based solvers.
 
-The original bidirectional implementation recorded a meeting but finished the whole active layer before returning. We stop at the first meeting while preserving complete-layer side selection. The proof appears below.
+Human-oriented procedures, including Fridrich’s method [6], optimize recognition and execution by a person. Those objectives do not directly determine software latency, although such methods can be implemented computationally. Our comparison concerns machine execution under a specified resource policy, rather than human speedcubing performance.
 
-We pack five colors into each string code unit rather than storing one character per sticker. The renderer maintains at most 420 sampled node IDs per side and depth, rather than scanning all stored states at every redraw. The solution path is always included separately. Sampling changes the visualization, not the search's visited sets.
+### 2.4. Generalized cubes
 
-Other corrections enforce storage caps before insertion, update A* depth counts when a parent improves, shorten scheduling batches from 400 to 32 expansions, and prevent input events from resetting an active or just-completed solution. These are implementation and correctness improvements, not new graph-search algorithms.
+Demaine et al. study algorithms for generalized Rubik’s Cubes [7]. Supporting arbitrary sizes requires a broader move model and additional reasoning about centers, edge pieces, and parity. Our implementation is restricted to 2×2 and 3×3 models, with the practical two-phase solver restricted to 3×3.
 
-### 3.2 Practical 3×3 search
+## 3. Problem Formulation
 
-The project now includes its own implementation in [compact-solver.js](../compact-solver.js). Rather than enumerate millions of full sticker states, it searches integer coordinates using precomputed transitions and paired distance bounds. Tables are generated from the same geometric face-turn definitions used by the renderer.
+Let $G=(V,E)$ denote the cube’s state graph, $s_0\in V$ the input state, and $s_\star\in V$ the solved state. The action set $\mathcal A$ contains the 18 outer-face moves for a 3×3 cube. Each action has unit cost in the **half-turn metric**, including a half turn.
 
-Each phase-1 endpoint receives at most 250,000 phase-2 node visits, accumulated across its depth iterations. Difficult endpoints are skipped so other candidates can be tried. The overall job allows at most 20 million node visits and checks a 30-second search limit periodically. A 45-second main-thread watchdog includes worker initialization. The worker can be terminated through Stop. These policies bound effort; they sacrifice completeness under those limits.
+A solution is a sequence $\pi=(a_1,\ldots,a_L)$ satisfying
 
-The solver accepts the first verified completion found within its policies. It does not search until it has proved that no shorter complete solution exists. The same implementation now handles typed scrambles and scanned states; the deployed app no longer downloads cubejs as a solver dependency.
+$$
+T(s_0,\pi)=s_\star,
+\qquad
+L^\star(s_0)=\min_{\pi:T(s_0,\pi)=s_\star}|\pi|.
+\tag{1}
+$$
 
-## 4. Mathematical model and arguments
+Here, $T$ is the move transition function. Exact solving seeks $L^\star$; practical solving seeks a valid sequence subject to computational limits. We evaluate practical configurations using solve time $t$, length $L$, and observed verification success. We do not combine these quantities into a single optimized scalar objective or claim a measured optimality gap, since $L^\star$ is unknown for the long-scramble evaluation set.
 
-### 4.1 Cube coordinates
+A 3×3 state is represented as $s=(p_c,o_c,p_e,o_e)$, comprising corner and edge permutations and orientations. Legal states satisfy
 
-Represent a 3×3 state by corner permutation and orientation, and edge permutation and orientation:
+$$
+\sum_{i=0}^{7}o_{c,i}\equiv0\pmod3,\quad
+\sum_{i=0}^{11}o_{e,i}\equiv0\pmod2,\quad
+\operatorname{parity}(p_c)=\operatorname{parity}(p_e).
+\tag{2}
+$$
 
-$$s=(p_c,o_c,p_e,o_e).$$
+The implementation also checks piece identity, uniqueness, color counts, and fixed-center orientation. Under the conventional fixed-frame model,
 
-The validity constraints used by the implementation are
+$$
+|V|=\frac{8!\,3^7\,12!\,2^{11}}{2}
+=43,252,003,274,489,856,000.
+\tag{3}
+$$
 
-$$\sum_{i=0}^{7}o_{c,i}\equiv0\pmod3,\qquad
-\sum_{i=0}^{11}o_{e,i}\equiv0\pmod2,\qquad
-\operatorname{parity}(p_c)=\operatorname{parity}(p_e).$$
+The established 20-move diameter [8] concerns optimal solutions. A non-optimal procedure can validly return a longer sequence.
 
-Together with distinct, correctly colored pieces and fixed centers, these exclude isolated twists, flips, and mismatched permutation parity. The resulting conventional 3×3 state count is
+## 4. Method
 
-$$|G|=8!\,3^7\,12!\,2^{11}/2
-=43,252,003,274,489,856,000.$$
+### 4.1. System overview
 
-This agrees with the state space discussed by the cube-diameter computation. Its 20-move optimal bound does not prohibit our non-optimal solver from returning 26 moves. [Rokicki, Kociemba, Davidson, and Dethridge](https://www.cube20.org/)
+We call the complete practical configuration **COVE-3**: **C**ompact **O**utput-**V**erified **E**xploration for 3×3. The system converts a typed scramble or corrected photo-derived sticker map into a symbolic cube state. A worker validates that state, searches compact coordinates, and returns a move sequence. Before displaying success, the interface replays every move on the sticker model. The named configuration consists of generated coordinate tables, paired distance bounds, a per-subgroup-endpoint work budget, global limits, and independent output replay; none of these ingredients alone is claimed as a new general search algorithm.
 
-### 4.2 Why the first bidirectional meeting is optimal
+**Pipeline:** input state → validity checks → phase-1 search → phase-2 search → cubie verification → sticker replay → displayed solution.
 
-Let the source and target be s and t. Immediately before expanding a layer, the visited sets are complete distance balls B(s,r) and B(t,q), and they are disjoint. If the shortest distance d(s,t) were at most r+q, a vertex on a shortest path would belong to both balls. Therefore
+![Validated symbolic input passes through two bounded search phases and independent output verification](figures/system-pipeline.svg)
 
-$$d(s,t)\ge r+q+1.$$
+**Figure 1.** System pipeline. The worker generates and reuses compact search tables; candidate budgets and cancellation prevent a single search from indefinitely blocking the interface. The photo path produces corrected symbolic stickers and is not evaluated as an autonomous vision model. [PDF](figures/system-pipeline.pdf) · [PNG](figures/system-pipeline.png)
 
-The next generated meeting supplies a path with length at most r+1+q. The lower and upper bounds agree, so its length is exactly optimal. It is unnecessary to finish that layer.
+The photo interface is an input mechanism, not a learned component. The reported solver timings begin after symbolic input construction and do not measure image interpretation.
 
-The implementation chooses the next side only after completing a layer. The argument must not be applied to an arbitrary node-by-node switching policy with incomplete balls. Removing consecutive same-face turns does not remove a shortest path: such turns combine into at most one allowed move.
+### 4.2. Coordinate decomposition
 
-### 4.3 Exact packed keys
+Following two-phase solving [2], define
 
-For colors c_i in {0,…,5}, store five at a time as
+$$
+H=\langle U,D,R^2,L^2,F^2,B^2\rangle.
+\tag{4}
+$$
 
-$$w_j=\sum_{k=0}^{4}c_{5j+k}\,2^{3k}.$$
+Phase 1 reaches $H$ by solving corner orientation, edge orientation, and membership of the four middle-slice edges. These coordinates have cardinalities
 
-Each color occupies three disjoint bits. Decoding uses a right shift and a mask of 7, so encoding is injective for a fixed sticker count. There are 11 words for 54 stickers and 5 for 24. Padding in the final word is ignored using the known puzzle size. This is exact encoding, not a hash with a collision probability. JavaScript heap savings are not inferred directly from character counts because string implementations differ.
+$$
+n_c=3^7=2187,\qquad
+n_e=2^{11}=2048,\qquad
+n_s=\binom{12}{4}=495.
+\tag{5}
+$$
 
-### 4.4 The subgroup decomposition
+Phase 2 uses the ten moves that preserve $H$. Its coordinates describe the eight corners, eight non-slice edges, and four slice edges, with cardinalities $8!$, $8!$, and $4!$.
 
-Let
+Move tables are generated from the application’s geometric facelet permutations. Permutation coordinates use the Lehmer rank,
 
-$$H=\langle U,D,R^2,L^2,F^2,B^2\rangle.$$
+$$
+\operatorname{rank}(p)=
+\sum_{i=0}^{n-1}
+\left|\{j>i:p_j<p_i\}\right|(n-i-1)!.
+\tag{6}
+$$
 
-The phase-1 coordinates in our code are corner orientation, edge orientation, and the four slice-edge locations. Their sizes follow directly from seven independent ternary orientations, eleven independent binary orientations, and a choice of four positions among twelve:
+This approach keeps the search representation linked to the same legal actions used for visualization while avoiding full-state successor allocation in the main practical search.
 
-$$C=3^7=2187,\qquad E=2^{11}=2048,\qquad S=\binom{12}{4}=495.$$
+### 4.3. Paired pattern databases
 
-Phase 1 seeks zero orientation and solved slice membership. Phase 2 uses the ten moves preserving H. Its coordinates are eight-corner permutation, the eight non-slice edges, and the four slice edges, with sizes 8!, 8!, and 4! respectively. These coordinate choices implement the established two-phase construction cited above.
+We construct four exact abstract-distance tables by BFS. For phase 1, let $D_{cs}$ and $D_{es}$ describe corner-orientation/slice and edge-orientation/slice pairs. For phase 2, let $D_{Cq}$ and $D_{Eq}$ describe corner-permutation/slice-permutation and non-slice-edge-permutation/slice-permutation pairs. The heuristics are
 
-For a permutation p of size n, our transition-table index is the Lehmer rank
+$$
+h_1(c,e,s)=\max\{D_{cs}(c,s),D_{es}(e,s)\},
+\tag{7}
+$$
 
-$$\operatorname{rank}(p)=\sum_{i=0}^{n-1}\left|\{j>i:p_j<p_i\}\right|(n-i-1)!.$$
+$$
+h_2(C,E,q)=\max\{D_{Cq}(C,q),D_{Eq}(E,q)\}.
+\tag{8}
+$$
 
-The implementation's ranking and unranking routines are exhaustively checked for all 40,320 eight-element permutations.
+**Proposition 1 — Admissible phase bounds.** If an abstraction maps every legal full-state move to a legal abstract move and maps the phase goal to its abstract goal, its shortest abstract distance is a lower bound on the full-state distance to that goal.
 
-### 4.5 Why the distance bounds are admissible
+*Proof.* Any full-state path of length $L$ projects to an abstract path of length at most $L$. The shortest abstract path therefore has length at most $L$, including when the full-state path is shortest. Taking the maximum of two lower bounds preserves this inequality. ∎
 
-For an abstraction φ, every legal full-state path projects to a path in the abstract graph. Consequently its exact abstract distance D cannot exceed the corresponding full-state distance:
+The tables satisfy this move-projection construction. A branch is pruned when its phase heuristic exceeds the remaining depth. The bounds are not added because one move may improve both abstractions. Their admissibility justifies this pruning rule, not the global optimality of the final two-phase solution.
 
-$$D(\phi(s))\le d(s,\text{phase goal}).$$
+### 4.4. Budgeted subgroup-candidate search
 
-We build each abstract distance table by BFS from its goal. Phase 1 uses
+Phase-1 depth increases from its heuristic lower bound to 12. At a subgroup endpoint, phase 2 searches depths from its lower bound to 18. The endpoint is abandoned after a budget of 250,000 phase-2 node visits, accumulated across its depth iterations. Search then continues with other phase-1 candidates.
 
-$$h_1(c,e,s)=\max\{D_{CS}(c,s),D_{ES}(e,s)\},$$
+The global budget is 20 million node visits, with a 30-second search deadline checked periodically. The UI applies a separate 45-second watchdog that also covers worker initialization. These are bounded-effort policies, not completeness guarantees. Consecutive moves on the same face are excluded; commuting opposite-face moves use a canonical order.
 
-and phase 2 uses
+**Algorithm 1. Compact two-phase search with verification**
 
-$$h_2(p_c,p_e,p_s)=\max\{D_{CP}(p_c,p_s),D_{EP}(p_e,p_s)\}.$$
+~~~text
+Input: valid state s0; transition and distance tables
+       endpoint budget B; global node/time budgets
+Output: verified move sequence, or explicit search failure
 
-The maximum of valid lower bounds remains a lower bound. We do **not** add them: one move can improve both projections, so an unqualified sum could overestimate. A branch with h greater than its remaining depth cannot reach that phase's goal and is safely pruned. This establishes the pruning rule, but not overall shortest-path optimality for the bounded two-phase procedure.
+for d1 = h1(s0), …, 12:
+    enumerate depth-d1 phase-1 paths π1 using h1 pruning
+    for each endpoint sH = T(s0, π1) in H:
+        reset the phase-2 node counter
+        for d2 = h2(sH), …, 18:
+            search for π2 using h2 pruning and moves preserving H
+            if a completion is found:
+                π ← π1 concatenated with π2
+                verify cubie state and replay π on the sticker state
+                return π only if verification succeeds
+            if the endpoint budget is exceeded:
+                break
+        enforce the global node/time budgets throughout
+return explicit search failure
+~~~
 
-### 4.6 Storage accounting
+The first accepted completion is returned. The algorithm does not exhaust all shorter combined paths, so its output is not labeled shortest.
 
-Our four Uint8 distance arrays contain
+### 4.5. Memory and execution
 
-$$2187\cdot495+2048\cdot495+2(40320\cdot24)
-=4,031,685\text{ bytes}.$$
+The four Uint8 distance arrays require
 
-The Uint16 transition arrays contain
+$$
+M_D=2187\cdot495+2048\cdot495+2(40320\cdot24)
+=4,031,685\ \text{bytes}.
+\tag{9}
+$$
 
-$$2\left[18(2187+2048+495)+10(40320+40320+24)\right]
-=1,783,560\text{ bytes}.$$
+The Uint16 transition arrays require
 
-Their sum is **5,815,245 bytes**, or about **5.55 MiB**. This is persistent typed-array storage, not measured peak process memory. Temporary BFS queues, cubie objects, browser graphics, and the separate exact-search modes are excluded.
+$$
+M_T=2\left[18(2187+2048+495)+10(40320+40320+24)\right]
+=1,783,560\ \text{bytes}.
+\tag{10}
+$$
 
-### 4.7 Soundness versus completeness
+Thus $M_D+M_T=5,815,245$ bytes, approximately 5.55 MiB. This is persistent numeric-table storage; temporary queues, JavaScript objects, rendering resources, and peak process memory are excluded. Tables are reused across jobs in a worker. Cancellation terminates the worker rather than waiting for a search to finish.
 
-The worker validates the input and checks the result in cubie coordinates. The UI independently applies the returned turns to all 54 stickers and compares with the solved state before displaying success. Tests also replay both solvers' outputs through the geometric sticker model.
+### 4.6. Exact-search implementation
 
-These checks support **soundness**: accepted results solve the represented input. They do not prove that bounded search succeeds on every valid input. The per-endpoint cap, overall node/time limits, and depth bounds can cause an explicit failure. Exhaustion is never described as an impossible cube. Shortest-path claims belong only to the exact modes when they complete.
+The application retains exact modes for educational exploration. We modify bidirectional BFS to stop at the first meeting while preserving complete-layer side selection.
 
-## 5. Experimental design
+**Proposition 2 — Optimal first meeting under complete-layer expansion.** Suppose the two visited sets are disjoint complete balls $B(s_0,r)$ and $B(s_\star,q)$ immediately before a layer is expanded. The first meeting produced by that expansion supplies a shortest path.
 
-### Practical-solver comparison
+*Proof.* If $d(s_0,s_\star)\le r+q$, some vertex of a shortest path belongs to both balls, contradicting disjointness. Therefore $d(s_0,s_\star)\ge r+q+1$. The new meeting constructs a path of length at most $r+1+q$. The bounds agree. ∎
 
-- Baseline: cubejs **1.3.2**, the version previously used in the scanner, with its default solve settings.
-- Candidate: the checked-in compact solver, default budgets.
-- Environment: Node **18.19.1**, Linux x64, **AMD EPYC 9254 24-Core Processor**; the solver itself is single-threaded.
-- Inputs: 200 deterministic scrambles, each 20–40 turns, no consecutive same-face turns. Seed **0x74bc39**; exact generator and every scramble are preserved.
-- Both solvers receive the same state, with explicit facelet-order conversion for cubejs.
-- Tables are built once. Setup duration is reported separately. The solver execution order alternates between cases.
-- Timed solving excludes input conversion, external replay verification, and rendering. Compact's internal checks remain part of its timed call.
-- Every result is independently replayed; a mismatch aborts the experiment.
-- Median is the sorted element at index floor(n/2); P95 uses nearest rank ceil(0.95n). Each case is timed once after initialization.
+This result relies on complete layers and does not justify arbitrary switching between partially expanded frontiers.
 
-This is a comparison of practical configurations, not a controlled equal-solution-quality contest. cubejs seeks solutions within its default 22-move maximum; compact accepts an earlier completion, potentially longer. Input states are not uniform random samples from G. No statistical confidence interval is claimed.
+We additionally encode five sticker colors in a code unit,
 
-### Exact-search comparison
+$$
+w_j=\sum_{k=0}^{4}c_{5j+k}\,2^{3k},
+\quad c_i\in\{0,\ldots,5\},
+\tag{11}
+$$
 
-The baseline is original commit **54b37a92fed869a00cf5ce1e1617cd19f5aa3545**. The same fixed scrambles run through old and current bidirectional BFS, three times per configuration. Timings exclude drawing and replay checks. Each returned path is replayed, and lengths must match. The original revision is pinned in the script rather than referring to a moving HEAD.
+which is injective for a fixed sticker count. The renderer maintains at most 420 sampled nodes per side and depth, with the solution path included separately. Search retains its full visited sets. Storage caps are enforced before insertion, and A* depth statistics are updated when a shorter parent path is discovered.
 
-### Browser checks
+### 4.7. Verification contract
 
-Playwright 1.51.1 with Chromium 134 checks desktop (1280×900) and mobile-sized (390×844) views. Tests cover startup, a long typed scramble, 2×2/3×3 exact modes, step/jump playback, the solved state, invalid notation, generated sample photos, both search and worker cancellation/restart, and worker-load failure. Test-only access to internal state is injected into intercepted HTML; no such debug hook ships in the app.
+The practical solver verifies its completion in cubie coordinates. The UI separately evaluates Eq. (1) on all stickers before displaying success. This establishes a conditional acceptance contract: assuming correct transition models, accepted results solve the supplied symbolic state. Test coverage supports the implementation of this contract; it is not a formal proof of the entire software stack.
+
+Validity, completeness, and optimality are distinct. Input-validity checks reject illegal piece configurations. Resource exhaustion returns a failure without claiming that a valid cube is impossible. Practical results are verified solutions; exact results are shortest paths only when the corresponding search completes.
+
+## 5. Experimental Setup
+
+### 5.1. Research questions
+
+We evaluate three questions: **RQ1**, how the practical implementation trades solve latency against move count; **RQ2**, whether exact-search changes reduce stored entries without changing solution length; and **RQ3**, whether the deployed system preserves solution validity and expected interaction behavior.
+
+### 5.2. Evaluation corpus
+
+For RQ1, we generate 200 deterministic scrambles with lengths between 20 and 40 turns, excluding consecutive turns on the same face. The generator seed is **0x74bc39**. Each solver receives the same resulting cube state. This is a synthetic scramble corpus, not uniform sampling from the cube group. Written scramble length is not assumed to equal optimal solution length.
+
+There is no training/validation/test split because the implementation is not learned. These 200 cases form a fixed evaluation corpus; we do not claim a preregistered or independently held-out study. The separate regression suite uses another seeded corpus and is reported separately rather than pooled into benchmark statistics.
+
+### 5.3. Baselines and controls
+
+The practical baseline is **cubejs 1.3.2**, the application’s previous scanner dependency, using its default solve settings. Both solvers generate their own tables once before timed evaluation. Execution order alternates between configurations across cases. Every output undergoes the same external sticker replay; a mismatch aborts the evaluation.
+
+This is not an equal-quality comparison. cubejs searches within its default 22-move maximum; COVE-3 accepts its first verified completion under the stated budgets and can return longer paths. No comparison against neural solvers or optimized native implementations is performed.
+
+For RQ2, we compare against original repository commit **54b37a92fed869a00cf5ce1e1617cd19f5aa3545** on three fixed instances. Each configuration is run three times. The script checks replay and equality of returned lengths.
+
+### 5.4. Metrics and implementation details
+
+Experiments use Node **18.19.1**, Linux x64, and an **AMD EPYC 9254 24-Core Processor**. Each solver executes single-threaded. Warm solve time excludes table construction, input conversion, external replay, and rendering; the candidate’s internal validation remains included. “Warm” refers to table reuse, not a separately controlled steady-state JIT warmup.
+
+We report median, nearest-rank P95, maximum observed latency, mean and maximum move counts, and observed verification success. For 200 observations, the archived implementation selects the sorted element at zero-based index 100 as its median and index 189 as P95. Initialization is measured once per solver. We report no confidence intervals or significance tests from these single-run measurements.
+
+For RQ3, Playwright 1.51.1 and Chromium 134 exercise desktop and mobile-sized viewports, playback, notation validation, generated photo samples, cancellation/restart, and worker failure. A mobile viewport is not a physical-phone performance measurement.
 
 ## 6. Results
 
-### 6.1 Practical solving
+### 6.1. Practical latency and solution quality
 
-| Metric | cubejs 1.3.2 | Compact two-phase |
-| --- | ---: | ---: |
-| Verified solutions | 200/200 | 200/200 |
-| Median warm solve | 34.047 ms | 5.965 ms |
-| P95 warm solve | 203.485 ms | 28.918 ms |
-| Maximum observed solve | 1,062.317 ms | 88.875 ms |
-| Initialization, one measurement | 1,265.989 ms | 538.343 ms |
-| Mean solution length | 21.71 | 22.77 |
-| Maximum observed length | 22 | 26 |
+**Table 1.** Practical solver comparison on the same 200 states. Lower latency and fewer moves are preferable. Numeric-table memory is reported for our implementation only; no baseline heap comparison was measured.
 
-The ratio of the medians is approximately **5.71**, and the candidate's median latency is about **82.5% lower** in this experiment. Mean solution length increases by **1.06 turns**, about **4.9%**. These results favor compact for the application's quick-response objective, while cubejs wins on the reported move-count metrics. They do not establish a win over optimized native solvers or other two-phase implementations.
+| Metric | cubejs 1.3.2 | COVE-3 |
+| :--- | ---: | ---: |
+| Verified completions | 200/200 | 200/200 |
+| Median warm latency, ms ↓ | 34.047 | **5.965** |
+| P95 warm latency, ms ↓ | 203.485 | **28.918** |
+| Maximum observed latency, ms ↓ | 1,062.317 | **88.875** |
+| Initialization, ms ↓ | 1,265.989 | **538.343** |
+| Mean solution length, turns ↓ | **21.71** | 22.77 |
+| Maximum observed length, turns ↓ | **22** | 26 |
 
-Raw per-case timings, move counts, scrambles, candidate node counts, and the candidate source SHA-256 are available in [solver-comparison.json](results/solver-comparison.json). There is no discarded failure set: all 200 cases completed and verified in this run.
+The ratio of median latencies is 5.71, corresponding to an 82.5% lower median for COVE-3 in this corpus. Mean move count increases by 1.06 turns, or approximately 4.9%. This answers RQ1 as a latency–length tradeoff rather than an across-the-board improvement.
 
-### 6.2 Exact search
+![Paired latency, empirical latency distributions, and per-case solution-length differences](figures/solver-comparison.svg)
 
-The final local rerun yielded:
+**Figure 2.** Measurements for all 200 paired cases. **(a)** Each point compares the same input; points below the diagonal favor COVE-3 in latency. Both axes are logarithmic. **(b)** Empirical cumulative latency distributions, with a logarithmic time axis. **(c)** Difference in solution length; positive values indicate additional moves from COVE-3. COVE-3 is faster on 197 cases and returns longer, equal-length, and shorter paths on 133, 58, and 9 cases, respectively. Figures are descriptive summaries of archived observations, not new benchmark runs or significance tests. [PDF](figures/solver-comparison.pdf) · [PNG](figures/solver-comparison.png)
 
-| Fixed scramble | Stored entries before → after | Median ms before → after | Optimal length |
-| --- | ---: | ---: | ---: |
-| 2×2: R U F2 R' U2 F R2 U' | 770 → 585 | 20 → 13 | 6 |
-| 3×3: R U F2 L D B' R2 U' | 93,482 → 58,251 | 109 → 124 | 8 |
-| 3×3: R U F2 L D B' R2 U' F D2 | 1,243,298 → 775,168 | 1,957 → 1,590 | 10 |
+All 200 outputs from both configurations pass replay. This observed completion rate is not proof of universal success. In particular, the resource limits can produce failure on other valid inputs.
 
-The largest example uses **37.65% fewer entries** and takes about **18.8% less search time** in this rerun. The 8-turn example is slower despite storing fewer states. Earlier runs of the 10-turn case showed about 31% less time, illustrating why a single timing should not be presented as a universal speedup. [Recorded rerun](results/exact-search.json)
+### 6.2. Exact-search comparison
 
-The rendering change removes a full-state scan from every redraw. Its work for selecting visible nodes now depends on the number of sampled side/depth layers plus the solution length. We have not isolated that change in a rendering-only benchmark, so no numeric rendering speedup is asserted.
+**Table 2.** Bidirectional BFS before and after the combined implementation changes. Latencies are medians of three runs. These experiments are not component-wise ablations.
 
-### 6.3 Correctness and integration evidence
+| Instance | Entries: before → after ↓ | Latency: before → after, ms ↓ | Optimal length |
+| :--- | ---: | ---: | ---: |
+| 2×2, fixed eight-turn scramble | 770 → 585 | 20 → 13 | 6 |
+| 3×3, fixed eight-turn scramble | 93,482 → 58,251 | 109 → 124 | 8 |
+| 3×3, fixed ten-turn scramble | 1,243,298 → 775,168 | 1,957 → 1,590 | 10 |
 
-- **2,013 exact-search checks:** shallow states exhaustively compared with an independent unpruned BFS oracle, plus seeded deeper cross-checks; move inverses, encoding round trips, replay, chains, counts, samples, and cap boundaries.
-- **219 compact-solver cases:** solved, all 18 single turns, and 200 separately seeded 20–40-turn scrambles. Every solution is checked on stickers, and phase boundaries and restricted phase-2 moves are checked.
-- **1,000 transition comparisons:** cubie transitions agree with geometric sticker transitions along a seeded trajectory.
-- **40,320 ranking round trips:** every eight-piece permutation rank is tested.
-- **200 paired benchmark cases:** both solvers verified on the same inputs.
-- **Chromium integration suite:** passed on desktop and a mobile-sized viewport. One local initial-load observation was approximately 1.18 seconds, including page and worker startup; this is not a cross-device performance result.
+The ten-turn instance uses 37.65% fewer entries and approximately 18.8% less search time in the recorded rerun. However, the eight-turn 3×3 instance is slower despite storing fewer entries. The result supports reduced storage on these instances, not a universal timing improvement. Earlier timing runs differed; Table 2 uses the archived final rerun. Complete scrambles and measurements are available in [exact-search.json](results/exact-search.json).
 
-The tests caught real integration problems during development: an obsolete startup selection, a removed solver loader still called by the scanner, and a delayed input reset that could clear a fast result. These were corrected before the final passing browser run.
+Rendering no longer scans the entire visited set to select visible nodes. Its selection cost depends on sampled layers and the returned path. Because this change was not isolated in a rendering benchmark, we do not assign it a numeric speedup.
 
-## Limitations and claims we do not make
+### 6.3. Correctness and system evaluation
 
-1. **No scientific novelty claim.** Two-phase decomposition, pattern databases, iterative deepening, compact encodings, and bidirectional search are established ideas. The contribution is their project-specific implementation, integration, resource policy, and measured evaluation.
-2. **No universal fastest-solver claim.** Only the pinned application baseline was measured. Solution-quality targets differ. No causal ablation separates table choice, endpoint limits, implementation language details, and stopping policy.
-3. **No shortest-path guarantee for compact mode.** Admissible phase bounds do not make first-completion two-phase search globally optimal.
-4. **No completeness claim under budgets.** Some valid inputs may exhaust the work limits.
-5. **No arbitrary-N implementation.** Centers, wings, inner-layer moves, and large-cube parity are not implemented. The supplied model and UI remain 2×2/3×3.
-6. **Limited experimental coverage.** One CPU/runtime, one comparative run over a finite seeded corpus, no uniform random-state sampling, no confidence intervals, no physical-mobile measurement, and no Firefox/Safari test.
-7. **Limited memory accounting.** The 5.55 MiB number covers persistent numeric tables, not peak heap or the entire app.
-8. **Shared model assumptions.** Sticker replay is independent of the cubie transition implementation but uses the same underlying face-turn definitions. A common geometric modeling error would need additional external validation to detect.
+**Table 3.** Verification evidence. Counts describe different tests and should not be combined as independent samples from one population.
 
-## 7. Reproduction
+| Evaluation | Coverage | Recorded outcome |
+| :--- | :--- | :--- |
+| Exact-search regression | 2,013 searches; shallow independent BFS oracle and deeper cross-checks | Passed |
+| Practical-solver regression | 219 solved, single-turn, and seeded long-scramble cases | Passed sticker replay and phase checks |
+| Representation consistency | 1,000 cubie/sticker transition comparisons | Matched |
+| Permutation indexing | All 40,320 eight-piece rank/unrank pairs | Matched |
+| Paired practical experiment | 200 shared states, two solvers | All outputs verified |
+| Chromium integration | Desktop/mobile viewport, playback, sample photos, invalid input, cancellation, failure handling | Passed locally and on the deployed site |
 
-From the repository root:
+These results support RQ3 within the tested configurations. Generated photo examples validate the interface path, not real-world image recognition accuracy. Likewise, replay tests cannot exclude all possible shared errors in the underlying move definitions.
 
-```sh
+### 6.4. Component attribution
+
+No controlled ablation currently isolates paired-table choice, candidate budgeting, canonical move ordering, or termination policy. The observed latency differences therefore cannot be causally attributed to any one component. In particular, accepting longer solutions may explain part of the advantage over cubejs. A matched-length comparison and a candidate-budget sweep are necessary to separate search-policy effects from implementation effects.
+
+## 7. Discussion and Limitations
+
+<a id="limitations-and-claims-we-do-not-make"></a>
+
+**Scope of the contribution.** COVE-3 names this verified application configuration and its reproducible comparison. It does not introduce two-phase search, pattern databases, or bidirectional BFS. The evidence is insufficient for a state-of-the-art or new-algorithm claim.
+
+**Optimality and completeness.** The practical solver has admissible phase bounds but returns a first completion and applies resource limits. It is neither globally optimal nor complete under those limits. Its 200/200 observed success rate must not be generalized to every valid cube.
+
+**Evaluation coverage.** Results concern one hardware/runtime configuration and a finite, non-uniform scramble corpus. Each practical case is timed once, without controlled repeated JIT warmup, confidence intervals, or cross-device replication. Initialization is a single observation. A mobile viewport does not characterize performance on a physical phone, and Firefox/Safari were not evaluated.
+
+**Comparator fairness.** The two configurations pursue different solution-quality targets. Our method wins on reported latency metrics; cubejs wins on aggregate move counts. Ratios of medians should not be interpreted as per-instance guarantees or equal-quality algorithmic speedups.
+
+**Memory interpretation.** The 5.55 MiB figure is calculated persistent typed-array storage. It excludes initialization queues, object overhead, graphics resources, and peak heap. No claim of lower total memory than cubejs is established.
+
+**Vision and learning.** No learned model is introduced. There is no labeled photo dataset, perception-accuracy measurement, or end-to-end vision benchmark. The photo interface requires user alignment and correction. This paper should be positioned as a search/systems study with a visual interface, not as a new recognition method.
+
+**Generalization.** Arbitrary-size reduction, inner-layer moves, and large-cube center/edge procedures are not implemented. Results apply to the documented 2×2/3×3 models. Verification assumes that the move models correctly represent those puzzles.
+
+## 8. Conclusion
+
+We presented a compact, resource-bounded implementation of two-phase cube solving with explicit output verification and browser integration. On the recorded evaluation corpus, it reduces median latency relative to the previous application dependency while producing modestly longer solutions. Complementary exact-search changes reduce stored entries on fixed test instances without changing optimal solution lengths. The results support a practical interactive-solving configuration, while leaving global optimality, universal completion, matched-quality comparisons, and arbitrary-size generalization unresolved.
+
+Future work should evaluate uniform random states, repeated trials on multiple devices, matched solution-quality targets, and controlled component ablations. A separate perception study would be required before drawing conclusions about image-based cube recognition.
+
+## References
+
+[1] Richard E. Korf. **Finding Optimal Solutions to Rubik’s Cube Using Pattern Databases.** AAAI, 1997. [Publisher PDF](https://aaai.org/Papers/AAAI/1997/AAAI97-109.pdf).
+
+[2] Herbert Kociemba. **The Two-Phase Algorithm Coordinates.** Technical documentation. [Source](https://kociemba.org/math/twophase.htm).
+
+[3] Herbert Kociemba. **Pruning Tables.** Technical documentation. [Source](https://kociemba.org/math/pruning.htm).
+
+[4] cubejs contributors. **cubejs: Rubik’s Cube Solver and Simulator.** Software, evaluated version 1.3.2. [Repository](https://github.com/ldez/cubejs).
+
+[5] Stephen McAleer, Forest Agostinelli, Alexander Shmakov, and Pierre Baldi. **Solving the Rubik’s Cube Without Human Knowledge.** arXiv:1805.07470, 2018. [Paper](https://arxiv.org/abs/1805.07470).
+
+[6] Jessica Fridrich. **My System for Solving Rubik’s Cube.** Method documentation. [Source](https://ws2.binghamton.edu/fridrich/system.html).
+
+[7] Erik D. Demaine, Martin L. Demaine, Sarah Eisenstat, Anna Lubiw, and Andrew Winslow. **Algorithms for Solving Rubik’s Cubes.** ESA, 2011. [Paper](https://erikdemaine.org/papers/Rubik_ESA2011/paper.pdf).
+
+[8] Tomas Rokicki, Herbert Kociemba, Morley Davidson, and John Dethridge. **God’s Number is 20.** Computational result and project documentation. [Source](https://www.cube20.org/).
+
+## Appendix A. Reproducibility
+
+The practical comparison is implemented in [compare-solvers.cjs](../tests/compare-solvers.cjs). [Archived JSON](results/solver-comparison.json) includes every input scramble, timing, move count, candidate node count, environment description, and the candidate source SHA-256. The exact baseline revision is pinned in [search.cjs](../tests/search.cjs). The published implementation is commit **c2b7ba33d85df189d7096aef7236b949fbc70507**; this manuscript revision does not change the solver.
+
+Core verification:
+
+~~~sh
 node tests/search.cjs
 node tests/compact-solver.cjs
 node tests/search.cjs --benchmark
+~~~
 
+Optional comparison and browser tooling:
+
+~~~sh
 npm install --prefix /tmp/rubiks-tools playwright@1.51.1 cubejs@1.3.2
 /tmp/rubiks-tools/node_modules/.bin/playwright install chromium
 CUBEJS_MODULE=/tmp/rubiks-tools/node_modules/cubejs node tests/compare-solvers.cjs
-```
+~~~
 
-Serve the root with `python3 -m http.server 8000`, then in another terminal run:
+Serve the project using <code>python3 -m http.server 8000</code>, then run:
 
-```sh
+~~~sh
 PLAYWRIGHT_MODULE=/tmp/rubiks-tools/node_modules/playwright node tests/browser.cjs
-```
+~~~
 
-The comparison script prints JSON; the archived run is checked in alongside this report. No test dependency is required to deploy the static application. External 3D-renderer and font assets remain CDN dependencies, but the solver code and generated tables are local to the application.
+Reproduce the figures from archived data and deterministic diagram code, without rerunning the solver benchmark:
 
-## 8. Further research
+~~~sh
+python3 research/plot_results.py
+~~~
 
-A stronger study would add independently generated uniform random states, repeated and randomized benchmark blocks, physical mobile devices, and comparisons at matched solution-quality targets. Ablations should vary the endpoint budget and projected table combinations to determine which decisions explain the latency/length tradeoff. A separate arbitrary-size project would require a generalized move model and verified center/edge procedures before claims about reduction could be tested.
+The figure script requires NumPy and Matplotlib; the recorded rendering uses Matplotlib 3.10.7. It exports SVG, PDF, and PNG. The plots contain all 200 observations and do not synthesize data or error bars.
 
-The present evidence supports a narrower, useful conclusion: this application can now solve substantially longer 3×3 inputs without full-state breadth-first enumeration, and its compact configuration traded about one additional turn on average for markedly lower measured latency than the former scanner dependency on the recorded corpus.
+## Appendix B. Resource and Implementation Details
+
+| Setting | Value |
+| :--- | :--- |
+| Phase-1 maximum depth | 12 |
+| Phase-2 maximum depth | 18 |
+| Phase-2 budget per endpoint | 250,000 node visits |
+| Global search budget | 20,000,000 node visits |
+| Search time limit | 30 s, checked periodically |
+| Worker watchdog | 45 s, including initialization |
+| Persistent distance tables | 4,031,685 bytes |
+| Persistent transition tables | 1,783,560 bytes |
+| Display sample limit | 420 node IDs per side/depth, plus solution path |
+
+A budget-exceeding guard can count the visit that triggers termination; these settings are search policies rather than exact peak-memory or hard real-time guarantees. The deployment needs only static files and a browser. Solver code is local; the renderer and fonts still use external CDN assets.

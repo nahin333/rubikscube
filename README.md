@@ -2,13 +2,22 @@
 
 <p align="center">
   <a href="https://nahin333.github.io/rubikscube/"><strong>Open the live lab →</strong></a>
-  &nbsp; · &nbsp; <a href="research/REPORT.md">Read the research report</a>
+  &nbsp; · &nbsp; <a href="research/paper.pdf">Read the PDF paper</a>
+  &nbsp; · &nbsp; <a href="research/REPORT.md">Markdown version</a>
   &nbsp; · &nbsp; <a href="research/results/solver-comparison.json">Inspect the raw results</a>
 </p>
 
 A visual laboratory for cube solving: turn a scramble into a graph, watch algorithms explore it, and replay a verified solution on a 3D cube. Choose exact search to study shortest paths, or the project's compact two-phase solver for longer 3×3 scrambles.
 
 > **Measured, not assumed.** On 200 shared test scrambles, compact two-phase had a **5.97 ms median** versus **34.05 ms** for the previous cubejs solver. The tradeoff: **22.77 versus 21.71 moves on average**. These are local Node measurements, not a universal speed or optimality claim.
+
+## Our contributions
+
+1. **COVE-3, an application-owned practical solver configuration.** We implemented Compact Output-Verified Exploration for 3×3 in JavaScript: two-phase search with transition and distance tables generated from cube geometry, bounded work per subgroup candidate, independent output replay, and a cancellable worker. Two-phase solving and pattern databases are established methods; our contribution is this implementation and its resource policy, not a claim to have invented the underlying algorithm.
+2. **Correct, more economical exact-search demonstrations.** We proved when the bidirectional search may stop at its first meeting, packed sticker-state keys without collisions, and sampled graph nodes without changing the states searched. The fixed ten-turn comparison stored about 38% fewer entries and returned the same optimal length.
+3. **Verification and reproducible evidence.** The interface replays every proposed solution on all stickers before claiming success. We compared against the previous cubejs version on 200 shared scrambles, published the per-case results, and checked the app in desktop and mobile-sized browser sessions.
+
+The comparison shows a latency advantage for our configuration and a move-count advantage for cubejs. The [research paper](research/paper.pdf) explains the mathematics, prior work, protocol, and limitations.
 
 ## One lab. Two kinds of questions.
 
@@ -115,4 +124,4 @@ Chromium tests include a mobile-sized viewport, not a physical phone or a cross-
 
 ---
 
-**Read next:** [Mathematics, related work, experiment design, and results →](research/REPORT.md)
+**Read next:** [Conference-style PDF paper →](research/paper.pdf) · [Markdown manuscript and full reproducibility appendix](research/REPORT.md) · [Paper build instructions](research/README.md)
