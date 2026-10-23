@@ -6,7 +6,7 @@
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
     <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:date>2026-10-22T15:22:27.351568</dc:date>
+    <dc:date>2026-10-22T20:57:06.199786</dc:date>
     <dc:format>image/svg+xml</dc:format>
     <dc:creator>
      <cc:Agent>
@@ -40,7 +40,7 @@ Q 5.861777 59.414205 5.861777 66.378892
 L 5.861777 117.917576
 Q 5.861777 124.882264 13.015619 124.882264
 z
-" clip-path="url(#p11da6a3662)" style="fill: #eaf2fb; stroke: #344054; stroke-linejoin: miter"/>
+" clip-path="url(#p04a9c19e7d)" style="fill: #eaf2fb; stroke: #344054; stroke-linejoin: miter"/>
    </g>
    <g id="patch_3">
     <path d="M 191.146297 124.882264
@@ -53,7 +53,7 @@ Q 183.992454 59.414205 183.992454 66.378892
 L 183.992454 117.917576
 Q 183.992454 124.882264 191.146297 124.882264
 z
-" clip-path="url(#p11da6a3662)" style="fill: #eaf2fb; stroke: #344054; stroke-linejoin: miter"/>
+" clip-path="url(#p04a9c19e7d)" style="fill: #eaf2fb; stroke: #344054; stroke-linejoin: miter"/>
    </g>
    <g id="patch_4">
     <path d="M 342.092373 124.882264
@@ -66,7 +66,7 @@ Q 334.93853 59.414205 334.93853 66.378892
 L 334.93853 117.917576
 Q 334.93853 124.882264 342.092373 124.882264
 z
-" clip-path="url(#p11da6a3662)" style="fill: #e7f4f1; stroke: #344054; stroke-linejoin: miter"/>
+" clip-path="url(#p04a9c19e7d)" style="fill: #e7f4f1; stroke: #344054; stroke-linejoin: miter"/>
    </g>
    <g id="patch_5">
     <path d="M 493.038449 124.882264
@@ -79,7 +79,7 @@ Q 485.884606 59.414205 485.884606 66.378892
 L 485.884606 117.917576
 Q 485.884606 124.882264 493.038449 124.882264
 z
-" clip-path="url(#p11da6a3662)" style="fill: #e7f4f1; stroke: #344054; stroke-linejoin: miter"/>
+" clip-path="url(#p04a9c19e7d)" style="fill: #e7f4f1; stroke: #344054; stroke-linejoin: miter"/>
    </g>
    <g id="patch_6">
     <path d="M 643.984525 124.882264
@@ -92,7 +92,7 @@ Q 636.830682 59.414205 636.830682 66.378892
 L 636.830682 117.917576
 Q 636.830682 124.882264 643.984525 124.882264
 z
-" clip-path="url(#p11da6a3662)" style="fill: #fff0df; stroke: #344054; stroke-linejoin: miter"/>
+" clip-path="url(#p04a9c19e7d)" style="fill: #fff0df; stroke: #344054; stroke-linejoin: miter"/>
    </g>
    <g id="patch_7">
     <path d="M 794.9306 124.882264
@@ -105,57 +105,57 @@ Q 787.776758 59.414205 787.776758 66.378892
 L 787.776758 117.917576
 Q 787.776758 124.882264 794.9306 124.882264
 z
-" clip-path="url(#p11da6a3662)" style="fill: #eaf2fb; stroke: #344054; stroke-linejoin: miter"/>
+" clip-path="url(#p04a9c19e7d)" style="fill: #eaf2fb; stroke: #344054; stroke-linejoin: miter"/>
    </g>
    <g id="patch_8">
     <path d="M 163.81813 92.148234
 Q 174.694936 92.148234 184.006495 92.148234
-" clip-path="url(#p11da6a3662)" style="fill: none; stroke: #475467; stroke-width: 1.4; stroke-linecap: round"/>
+" clip-path="url(#p04a9c19e7d)" style="fill: none; stroke: #475467; stroke-width: 1.4; stroke-linecap: round"/>
     <path d="M 178.806495 89.548234
 L 184.006495 92.148234
 L 178.806495 94.748234
 z
-" clip-path="url(#p11da6a3662)" style="fill: #475467; stroke: #475467; stroke-width: 1.4; stroke-linecap: round"/>
+" clip-path="url(#p04a9c19e7d)" style="fill: #475467; stroke: #475467; stroke-width: 1.4; stroke-linecap: round"/>
    </g>
    <g id="patch_9">
     <path d="M 314.764205 92.148234
 Q 325.641012 92.148234 334.952571 92.148234
-" clip-path="url(#p11da6a3662)" style="fill: none; stroke: #475467; stroke-width: 1.4; stroke-linecap: round"/>
+" clip-path="url(#p04a9c19e7d)" style="fill: none; stroke: #475467; stroke-width: 1.4; stroke-linecap: round"/>
     <path d="M 329.752571 89.548234
 L 334.952571 92.148234
 L 329.752571 94.748234
 z
-" clip-path="url(#p11da6a3662)" style="fill: #475467; stroke: #475467; stroke-width: 1.4; stroke-linecap: round"/>
+" clip-path="url(#p04a9c19e7d)" style="fill: #475467; stroke: #475467; stroke-width: 1.4; stroke-linecap: round"/>
    </g>
    <g id="patch_10">
     <path d="M 465.710281 92.148234
 Q 476.587088 92.148234 485.898647 92.148234
-" clip-path="url(#p11da6a3662)" style="fill: none; stroke: #475467; stroke-width: 1.4; stroke-linecap: round"/>
+" clip-path="url(#p04a9c19e7d)" style="fill: none; stroke: #475467; stroke-width: 1.4; stroke-linecap: round"/>
     <path d="M 480.698647 89.548234
 L 485.898647 92.148234
 L 480.698647 94.748234
 z
-" clip-path="url(#p11da6a3662)" style="fill: #475467; stroke: #475467; stroke-width: 1.4; stroke-linecap: round"/>
+" clip-path="url(#p04a9c19e7d)" style="fill: #475467; stroke: #475467; stroke-width: 1.4; stroke-linecap: round"/>
    </g>
    <g id="patch_11">
     <path d="M 616.656357 92.148234
 Q 627.533164 92.148234 636.844723 92.148234
-" clip-path="url(#p11da6a3662)" style="fill: none; stroke: #475467; stroke-width: 1.4; stroke-linecap: round"/>
+" clip-path="url(#p04a9c19e7d)" style="fill: none; stroke: #475467; stroke-width: 1.4; stroke-linecap: round"/>
     <path d="M 631.644723 89.548234
 L 636.844723 92.148234
 L 631.644723 94.748234
 z
-" clip-path="url(#p11da6a3662)" style="fill: #475467; stroke: #475467; stroke-width: 1.4; stroke-linecap: round"/>
+" clip-path="url(#p04a9c19e7d)" style="fill: #475467; stroke: #475467; stroke-width: 1.4; stroke-linecap: round"/>
    </g>
    <g id="patch_12">
     <path d="M 767.602433 92.148234
 Q 778.47924 92.148234 787.790799 92.148234
-" clip-path="url(#p11da6a3662)" style="fill: none; stroke: #475467; stroke-width: 1.4; stroke-linecap: round"/>
+" clip-path="url(#p04a9c19e7d)" style="fill: none; stroke: #475467; stroke-width: 1.4; stroke-linecap: round"/>
     <path d="M 782.590799 89.548234
 L 787.790799 92.148234
 L 782.590799 94.748234
 z
-" clip-path="url(#p11da6a3662)" style="fill: #475467; stroke: #475467; stroke-width: 1.4; stroke-linecap: round"/>
+" clip-path="url(#p04a9c19e7d)" style="fill: #475467; stroke: #475467; stroke-width: 1.4; stroke-linecap: round"/>
    </g>
    <g id="text_1">
     <text style="font-weight: 700; font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #12243b" x="86.700197" y="85.390016" transform="rotate(-0 86.700197 85.390016)">Symbolic input</text>
@@ -179,7 +179,7 @@ z
     <text style="font-weight: 700; font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #12243b" x="553.130725" y="85.432985" transform="rotate(-0 553.130725 85.432985)">Phase 2</text>
    </g>
    <g id="text_8">
-    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #344054" x="553.130725" y="106.333671" transform="rotate(-0 553.130725 106.333671)">solve inside H</text>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #344054" x="553.130725" y="106.333671" transform="rotate(-0 553.130725 106.333671)">contours + budgets</text>
    </g>
    <g id="text_9">
     <text style="font-weight: 700; font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #12243b" x="704.076801" y="85.390016" transform="rotate(-0 704.076801 85.390016)">Verify</text>
@@ -194,15 +194,15 @@ z
     <text style="font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #344054" x="855.022877" y="106.333671" transform="rotate(-0 855.022877 106.333671)">solution or explicit failure</text>
    </g>
    <g id="text_13">
-    <text style="font-weight: 700; font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #344054" x="473.723074" y="30.793426" transform="rotate(-0 473.723074 30.793426)">Browser worker: generated transition tables + four paired distance tables</text>
+    <text style="font-weight: 700; font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #344054" x="473.723074" y="30.793426" transform="rotate(-0 473.723074 30.793426)">Browser worker: paired distances + dictionary contour signatures</text>
    </g>
    <g id="text_14">
-    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #475467" x="473.723074" y="157.313855" transform="rotate(-0 473.723074 157.313855)">Bounded candidate search; cancellation remains available. Solver timing excludes input interpretation and table setup.</text>
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #475467" x="473.723074" y="157.313855" transform="rotate(-0 473.723074 157.313855)">First response uses scalar tables; compilation follows in the worker. Later solves use selective generation.</text>
    </g>
   </g>
  </g>
  <defs>
-  <clipPath id="p11da6a3662">
+  <clipPath id="p04a9c19e7d">
    <rect x="3.00024" y="3.00024" width="929.99952" height="177.59952"/>
   </clipPath>
  </defs>

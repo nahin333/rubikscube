@@ -7,6 +7,18 @@ let browser;
 (async () => {
   browser = await chromium.launch({ headless: true, args: ['--no-sandbox', '--use-gl=angle', '--use-angle=swiftshader'] });
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  await page.addInitScript(() => {
+    window.__workerResults = [];
+    const OriginalWorker = window.Worker;
+    window.Worker = class extends OriginalWorker {
+      constructor(...args) {
+        super(...args);
+        this.addEventListener('message', event => {
+          if (event.data.type === 'result') window.__workerResults.push(event.data.result);
+        });
+      }
+    };
+  });
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
   // Expose read-only test access through the intercepted HTML, not production code.
@@ -26,9 +38,12 @@ let browser;
   const t0 = Date.now();
   await page.goto(baseURL);
   console.log('Initial browser solve', await finished(), 'wallMs', Date.now() - t0);
+  assert.equal(await page.evaluate(() => window.__workerResults[0].tableBytes), 5815245, 'First response must not wait for contour compilation');
   await page.locator('#scramble').fill("R U F2 L D B' R2 U' F D2 L2 B R' D F' U2 B2 L' D2 R F U' L2 B D'");
   await page.locator('#solveBtn').click();
   console.log('Long scramble', await finished());
+  assert.equal(await page.evaluate(() => window.__workerResults.at(-1).tableBytes), 7913041);
+  assert.ok(await page.evaluate(() => window.__workerResults.at(-1).skippedNodes > 0), 'Subsequent solves must use compiled contour pruning');
   await page.waitForTimeout(450); // Delayed input reset must not erase a fast result.
   assert.ok(await page.evaluate(() => window.__labTest.app.sol !== null));
   await page.locator('#toEnd').click();
@@ -67,7 +82,7 @@ let browser;
   await page.locator('#sampleBtn').click();
   await page.locator('#scanSolve').click();
   await finished();
-  assert.match(await page.locator('#status').innerText(), /Scanned cube: verified/);
+  assert.match(await page.locator('#status').innerText(), /Scanned cube: COVE-3 verified/);
   await page.setViewportSize({ width: 390, height: 844 });
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 2), 'Mobile layout must not overflow');
   await page.screenshot({ path: '/tmp/rubiks-mobile.png', fullPage: true });
@@ -75,14 +90,14 @@ let browser;
 
   // Failed worker loading must unlock controls without claiming success.
   const failure = await browser.newPage();
-  await failure.route('**/solver-worker.js', route => route.abort());
+  await failure.route('**/solver-worker.js*', route => route.abort());
   await failure.goto(baseURL);
   await failure.waitForFunction(() => document.getElementById('status').textContent.includes('worker could not run'));
   assert.ok(await failure.locator('#solveBtn').isEnabled());
   assert.ok(await failure.locator('#stopBtn').isDisabled());
   const cancel = await browser.newPage();
   let firstWorker = true;
-  await cancel.route('**/solver-worker.js', async route => {
+  await cancel.route('**/solver-worker.js*', async route => {
     if (firstWorker) { firstWorker = false; await new Promise(resolve => setTimeout(resolve, 750)); }
     await route.continue().catch(() => {});
   });
@@ -90,7 +105,7 @@ let browser;
   await cancel.locator('#stopBtn').click();
   await cancel.waitForFunction(() => document.getElementById('status').textContent.includes('Stopped'));
   await cancel.locator('#solveBtn').click();
-  await cancel.waitForFunction(() => document.getElementById('status').textContent.includes('Verified solution'));
+  await cancel.waitForFunction(() => document.getElementById('status').textContent.includes('COVE-3 verified solution'));
   await browser.close();
   console.log('PASS: desktop/mobile, long and solved scrambles, exact modes, playback, cancellation, invalid input, sample-photo solving, and worker failure.');
 })().catch(async error => { console.error(error); await browser?.close(); process.exitCode = 1; });

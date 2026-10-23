@@ -46,4 +46,10 @@ function summary(name) {
   const times=rows.map(r=>r[name].ms).sort((a,b)=>a-b), lengths=rows.map(r=>r[name].length);
   return {verified:rows.length, medianMs:times[Math.floor(times.length/2)], p95Ms:times[Math.ceil(times.length*0.95)-1], maxMs:times.at(-1), meanMoves:lengths.reduce((a,b)=>a+b,0)/lengths.length, maxMoves:Math.max(...lengths)};
 }
-console.log(JSON.stringify({compactSourceSha256:createHash('sha256').update(fs.readFileSync('compact-solver.js')).digest('hex'),baselineVersion:'cubejs 1.3.2',environment:{node:process.version,platform:os.platform(),arch:os.arch(),cpu:os.cpus()[0].model}, seed:'0x74bc39', fixture:'200 seeded 20–40-turn scrambles, no consecutive same-face turns; not uniformly random states', compactSetupMs,cubejsSetupMs,compactTableBytes:tables.tableBytes,compact:summary('compact'),cubejs:summary('cubejs'),rows},null,2));
+const results = {compactSourceSha256:createHash('sha256').update(fs.readFileSync('compact-solver.js')).digest('hex'),baselineVersion:'cubejs 1.3.2',environment:{node:process.version,platform:os.platform(),arch:os.arch(),cpu:os.cpus()[0].model}, seed:'0x74bc39', fixture:'200 seeded 20–40-turn scrambles, no consecutive same-face turns; not uniformly random states', compactSetupMs,cubejsSetupMs,compactTableBytes:tables.tableBytes,compact:summary('compact'),cubejs:summary('cubejs'),rows};
+const outputIndex = process.argv.indexOf('--output');
+if (outputIndex >= 0) {
+  if (!process.argv[outputIndex + 1]) throw new Error('--output needs a filename');
+  fs.writeFileSync(process.argv[outputIndex + 1], JSON.stringify(results, null, 2) + '\n');
+}
+console.log(JSON.stringify(outputIndex >= 0 ? { ...results, rows: undefined } : results, null, 2));

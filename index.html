@@ -313,7 +313,7 @@ select { font: 13px var(--f-body); color: var(--ink); background: var(--bg); bor
       <p><strong>Breadth-first search</strong>BFS visits vertices in rings of equal distance, so the first time it touches the solved state it has found a shortest path. The catch is the ring sizes: 18, 243, 3,240, 43,239… roughly ×13 per level.</p>
       <p><strong>Meeting in the middle</strong>Bidirectional BFS grows one tree from the scramble and one from solved, and stops when they touch. Two trees of depth d/2 are far smaller than one of depth d, which is why it reaches scrambles that plain BFS cannot.</p>
       <p><strong>A* with a lower bound</strong>One face turn moves at most 4 corners and 4 edges, so ⌈misplaced corners ÷ 4⌉ is a distance that can never be overestimated. A* uses it to expand promising vertices first, while still guaranteeing a shortest path.</p>
-      <p><strong>COVE-3 (3×3 only)</strong>Our compact, output-verified implementation uses established two-phase search with generated distance tables and bounded work. It aims for a responsive verified solution, not a shortest-path guarantee.</p>
+      <p><strong>COVE-3 (3×3 only)</strong>Our two-phase solver skips moves already ruled out by its distance bounds and verifies every returned solution. It compiles faster search tables after the first solve. Results are practical solutions, without a shortest-path guarantee. See the paper for matched-output comparisons and the memory tradeoff.</p>
     </div>
   </section>
 </div>
@@ -1014,7 +1014,7 @@ function runCompact(state, progress) {
       else resolve(result);
     }
     try {
-      if (!compactWorker) compactWorker = new Worker('solver-worker.js');
+      if (!compactWorker) compactWorker = new Worker('solver-worker.js?v=contour-v1');
       compactJob = { cancel: () => finish(new Error('Stopped. No solution is being claimed.')) };
       compactWorker.onmessage = ({ data }) => {
         if (data.type === 'progress') progress(data);

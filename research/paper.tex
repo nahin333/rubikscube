@@ -23,683 +23,739 @@
 \renewcommand{\dbltopfraction}{0.95}
 \renewcommand{\textfraction}{0.05}
 \renewcommand{\floatpagefraction}{0.8}
-\title{COVE-3: Compact Output-Verified Exploration\\
-for Interactive 3×3 Cube Solving}
+\title{COVE-3: Budget-Preserving Contour Compilation\\
+for Interactive Cube Search}
 \author{Rubik's Graph Lab}
 \begin{document}
 \maketitle
 \begin{abstract}
 
-Interactive combinatorial solvers must balance response time, solution
-quality, and correctness under limited computational resources. We study
-this tradeoff in a browser-based Rubik's Cube application and present
-COVE-3 (Compact Output-Verified Exploration for 3×3), a named
-implementation of established two-phase search. It derives coordinate
-transitions from a geometric sticker model, uses four paired pattern
-databases, and allocates a bounded search budget to each subgroup
-candidate. Returned solutions are verified in both cubie and sticker
-representations. The persistent numeric tables require 5.55 MiB, and a
-background worker supports cancellable execution. On 200 shared, seeded
-20--40-turn scrambles, COVE-3 achieves a median solve latency of 5.97
-ms, compared with 34.05 ms for cubejs 1.3.2, while increasing mean
-solution length from 21.71 to 22.77 turns. Both configurations solve and
-pass sticker verification on all evaluated cases. Separately,
-improvements to bidirectional BFS reduce stored entries by 37.65\% on a
-fixed ten-turn instance while preserving optimality. These findings
-demonstrate an application-specific latency--solution-length tradeoff,
-rather than a new search paradigm or a state-of-the-art optimal solver.
-We release source code, deterministic evaluation procedures, and
-per-instance measurements.
+Heuristic search frequently generates successors that are immediately
+rejected by a distance bound. We study this overhead in a compact
+two-phase Rubik's Cube solver and introduce a project-specific
+optimization, budget-preserving contour compilation, within COVE-3. For
+each paired phase-2 abstraction, we encode the exact distance and two
+successor masks in a 24-bit signature, then replace repeated signatures
+with 16-bit dictionary indices. Intersecting the two abstract masks
+selects exactly the successors that pass the original heuristic test. A
+batched accounting rule charges omitted successors as logical visits,
+preserving fixed node budgets and deterministic solution selection. We
+prove this equivalence when wall-clock limits do not intervene. On 500
+pseudorandom legal states, with five repetitions per configuration, the
+compiled solver reduces median latency from 6.19 ms to 2.20 ms and
+avoids 79.33\% of recursive calls while returning identical move
+sequences and logical visit counts on every case. An ablation retaining
+dictionary lookup but disabling selective generation has a median of
+7.00 ms. Persistent numeric storage increases from 5.55 MiB to 7.55 MiB,
+while dictionary coding uses 31.91\% less storage than a flat compiled
+representation. The browser returns its first result using scalar tables
+and compiles contours afterward in a worker. The contribution is a
+tested optimization of an existing solver; two-phase solving, pattern
+databases, and selective generation are established prior work.
 
 \end{abstract}
 
 \hypertarget{introduction}{%
 \section{Introduction}\label{introduction}}
 
-A useful interactive solver must do more than produce a mathematically
-valid sequence of actions. It must return results within a practical
-latency and memory budget, preserve interface responsiveness, and
-communicate whether its answer is optimal. These requirements are
-especially relevant to static web applications, where computation
-executes on the visitor's device rather than a dedicated server.
+A browser solver must balance response latency, memory, solution
+quality, and correctness. Exact graph exploration quickly becomes
+expensive on the 3×3 Rubik's Cube, whose fixed-frame state space
+contains 43,252,003,274,489,856,000 legal positions. Practical two-phase
+search offers a useful alternative, but its implementation can still
+spend substantial time generating nodes that an existing heuristic
+immediately rejects.
 
-Rubik's Cube provides a structured setting for studying these
-requirements. Exact graph search exposes the relationship between
-state-space exploration and shortest paths, but its resource
-requirements increase rapidly with solution depth. In contrast,
-practical solvers can exchange additional moves for reduced computation.
-Conflating these objectives can lead to misleading demonstrations: a
-quickly obtained solution need not be shortest, and a search timeout
-does not imply that a state is unsolvable.
+Our starting point is the project's scalar two-phase solver, frozen at
+its
+\href{https://github.com/nahin333/rubikscube/commit/e7023a8d96681c6a4c23a19c4c4ecb5208b910e4}{pre-change
+revision}. Its phase-2 DFS applies a move to three coordinates, pushes a
+path entry, invokes the recursive routine, and checks the maximum of two
+abstract distances. A rejected child has already incurred transition
+lookup, path manipulation, and call overhead. In addition, the solver
+limits phase-2 visits per subgroup endpoint. Simply removing rejected
+calls changes the meaning of that limit and can change which endpoint
+succeeds. A faster implementation should make this policy change
+explicit or preserve the original behavior.
 
-We examine these distinctions in Rubik's Graph Lab, which supports 2×2
-and 3×3 cubes. The original application used BFS, bidirectional BFS, and
-A* for typed scrambles, while a separate photo-input interface relied on
-cubejs. We introduce a project-owned compact two-phase implementation
-and integrate it with both input modalities. The solver does not use
-learned parameters, training data, or a neural perception model. The
-photo interface supplies a validated symbolic state; visual recognition
-accuracy is outside the evaluated contribution.
+We develop a compiler for the existing distance tables. A compiled entry
+records which moves decrease its distance and which do not increase it.
+The two masks suffice because a unit-cost reversible move changes exact
+abstract distance by at most one. We intersect filters from both
+abstractions and the canonical move-order rule before computing full
+child coordinates. Repeated distance-and-mask combinations share a
+dictionary entry. We also charge skipped children in their original
+order, including visits that trigger a budget guard.
 
-\hypertarget{contributions-of-this-work}{%
-\subsection{Contributions of this work}\label{contributions-of-this-work}}
+This produces a comparison with a particularly clear quality control:
+the old and new solvers return exactly the same move sequence, rather
+than merely meeting the same maximum length. Faster execution is
+therefore not explained by accepting longer solutions. Initialization
+and memory remain separate costs and are measured explicitly.
 
-The work makes three implementation and evaluation contributions:
+\hypertarget{contributions}{%
+\subsection{Contributions}\label{contributions}}
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  \textbf{COVE-3, a resource-bounded practical solver configuration.} We
-  combine geometric transition generation, paired pattern databases, and
-  per-candidate search limits in a browser-executable 3×3
-  implementation. The name identifies this exact configuration; it does
-  not designate an independently novel two-phase algorithm.
+  \textbf{A compact compiler for paired phase-2 abstractions.} COVE-3
+  combines two contour masks and a distance in a 24-bit signature and
+  stores repeated signatures through 16-bit indices. The two product
+  tables contain 1,935,360 entries but only 40,609 distinct signatures
+  in total.
 \item
-  \textbf{Verified exact and practical execution.} We separate
-  shortest-path guarantees from solution validity, establish the
-  stopping condition used by bidirectional BFS, and verify practical
-  outputs through sticker replay.
+  \textbf{A budget-preserving selective-generation rule.} We derive
+  exact move filters and a batched logical-visit accounting rule,
+  proving that fixed-order search retains the scalar solver's outputs
+  and count-based stopping behavior when wall-clock guards do not
+  intervene.
 \item
-  \textbf{A reproducible tradeoff study.} We compare the practical
-  solver against the former application dependency on identical states,
-  report latency together with solution length, and release measurements
-  and integration tests.
+  \textbf{A controlled implementation study.} We compare the frozen
+  scalar solver, a dictionary-only ablation, and the compiled solver on
+  500 legal states with repeated measurements, independent sticker
+  replay, and exhaustive certificate checks. We report both the latency
+  gain and the increased storage cost.
 \end{enumerate}
 
-These contributions belong to the application implementation and its
-evaluation. Two-phase decomposition, pattern databases, and
-bidirectional search are prior techniques, as detailed in Section 2. We
-do not claim to have invented them.
+Selective generation itself is established work, including for Rubik's
+Cube. Our contribution is this dictionary representation, its
+integration with the paired-coordinate solver and visit-budget policy,
+and the supporting evaluation. We do not establish that this combination
+is the first use of every ingredient in the literature.
+
+\hypertarget{proposed-technical-novelty}{%
+\subsection{Proposed technical novelty}\label{proposed-technical-novelty}}
+
+The proposed contribution is a compiler that jointly provides exact
+paired-bound successor selection, dictionary sharing of
+distance/operator-filter signatures, and scalar-trace equivalence under
+fixed count budgets. The specific distinction from the closest
+selective-generation precedent \cite{felner2012} is the
+budget-preserving transformation and its compact paired-table
+representation. Proposition 2 states the preserved contract; the
+negative control in Section 6.2 demonstrates what is lost without it.
+Our literature review supports this scoped comparison with reviewed
+work, while worldwide priority remains unestablished. The
+\href{https://github.com/nahin333/rubikscube/blob/main/research/NOVELTY.md}{dated
+novelty review} records the scope and overlap explicitly.
 
 \hypertarget{related-work}{%
 \section{Related Work}\label{related-work}}
 
-\hypertarget{optimal-search-and-pattern-databases}{%
-\subsection{Optimal search and pattern databases}\label{optimal-search-and-pattern-databases}}
+\hypertarget{pattern-databases-and-two-phase-solving}{%
+\subsection{Pattern databases and two-phase solving}\label{pattern-databases-and-two-phase-solving}}
 
-BFS provides shortest paths in an unweighted state graph, while
-bidirectional BFS reduces the depth explored from either endpoint.
-Heuristic search further restricts exploration using lower bounds on
-remaining cost. Korf's work on Rubik's Cube combines IDA* with pattern
-databases to find optimal solutions \cite{korf1997}. These tables encode
-exact distances in abstract state spaces and motivate the lower bounds
-used here. Our practical method uses this established principle, but its
-stopping policy does not establish global optimality.
+Korf combines IDA* with pattern databases to solve Rubik's Cube
+optimally \cite{korf1997}. A pattern database stores exact distances in
+an abstraction, providing lower bounds for the full problem. Kociemba's
+two-phase algorithm first reaches a subgroup and then solves within it
+\cite{kociemba_coordinates}; his pruning-table documentation also
+describes distance compression using local distance changes
+\cite{kociemba_pruning}. COVE-3 follows this decomposition and uses
+paired abstractions generated from the application's move geometry.
 
-\hypertarget{two-phase-solving}{%
-\subsection{Two-phase solving}\label{two-phase-solving}}
+The directly relevant software baseline is cubejs 1.3.2 \cite{cubejs},
+previously used by the application. Its default search target differs
+from our scalar solver's first-completion policy. We retain an external
+comparison, but use the frozen scalar implementation as the primary
+baseline for attribution at identical output quality.
 
-Kociemba decomposes solving into reaching a subgroup and then solving
-within it \cite{kociemba_coordinates}. His documentation describes
-coordinate encodings and pruning-table constructions, including
-symmetry-based representations \cite{kociemba_pruning}. Our
-implementation follows this decomposition using smaller paired
-coordinate tables. It is not a replacement for the underlying two-phase
-mathematics.
+\hypertarget{selective-successor-generation}{%
+\subsection{Selective successor generation}\label{selective-successor-generation}}
 
-The most directly relevant software baseline is cubejs \cite{cubejs},
-previously used by this application. We evaluate its pinned version
-1.3.2 with default settings. Because the baseline and our implementation
-use different solution-length targets and termination policies, their
-comparison measures a configuration-level tradeoff.
+Felner et al.~introduce enhanced partial expansion and an
+iterative-deepening variant that uses operator selection functions to
+avoid generating unnecessary children \cite{felner2012}. Their paper
+includes Rubik's Cube experiments and discusses pattern-database
+operator effects. This is the closest conceptual precedent to our
+mask-based generation. Our work specializes the idea to two compact
+phase-2 product tables, dictionary-codes the resulting signatures, and
+preserves a pre-existing logical visit budget through batched charges.
+We claim an implementation improvement with a bounded-policy equivalence
+argument, rather than invention of selective generation.
 
-\hypertarget{learning-based-and-human-oriented-methods}{%
-\subsection{Learning-based and human-oriented methods}\label{learning-based-and-human-oriented-methods}}
+\hypertarget{compression-and-other-objectives}{%
+\subsection{Compression and other objectives}\label{compression-and-other-objectives}}
 
-McAleer et al.~investigate reinforcement learning for cube solving
-through Autodidactic Iteration \cite{mcaleer2018}. This represents a
-different approach to constructing search guidance. We neither train
-such a model nor evaluate against it; therefore, our results do not
-establish an advantage over learning-based solvers.
+Value compression reduces the set of representable heuristic values
+\cite{sturtevant2017}. Our dictionary instead preserves complete
+distance-and-operator signatures exactly. Compression itself is prior
+work; the object encoded here and its integration with logical-budget
+preservation define our proposed contribution.
 
-Human-oriented procedures, including Fridrich's method \cite{fridrich},
-optimize recognition and execution by a person. Those objectives do not
-directly determine software latency, although such methods can be
-implemented computationally. Our comparison concerns machine execution
-under a specified resource policy, rather than human speedcubing
-performance.
-
-\hypertarget{generalized-cubes}{%
-\subsection{Generalized cubes}\label{generalized-cubes}}
-
-Demaine et al.~study algorithms for generalized Rubik's Cubes
-\cite{demaine2011}. Supporting arbitrary sizes requires a broader move
-model and additional reasoning about centers, edge pieces, and parity.
-Our implementation is restricted to 2×2 and 3×3 models, with the
-practical two-phase solver restricted to 3×3.
+McAleer et al.~study learned search guidance for cube solving
+\cite{mcaleer2018}, while human-oriented methods such as Fridrich's
+method optimize recognition and physical execution \cite{fridrich}.
+Neither is evaluated as a primary comparator here. Demaine et
+al.~analyze generalized cubes \cite{demaine2011}; our optimization
+concerns a fixed 3×3 model and does not solve arbitrary-size reduction.
+The established 20-move diameter \cite{rokicki_gods_number} concerns
+globally optimal paths, whereas our practical solver can return longer
+verified sequences.
 
 \hypertarget{problem-formulation}{%
 \section{Problem Formulation}\label{problem-formulation}}
 
-Let \(G=(V,E)\) denote the cube's state graph, \(s_0\in V\) the input
-state, and \(s_\star\in V\) the solved state. The action set
-\(\mathcal A\) contains the 18 outer-face moves for a 3×3 cube. Each
-action has unit cost in the \textbf{half-turn metric}, including a half
-turn.
+Let \(s_0\) be a legal 3×3 state, \(s_\star\) the solved state, and
+\(T\) the move transition function. A solution is a sequence
+\(\pi=(a_1,\ldots,a_L)\) with \(T(s_0,\pi)=s_\star\). We use the
+half-turn metric: each outer-face quarter turn, inverse quarter turn, or
+half turn costs one.
 
-A solution is a sequence \(\pi=(a_1,\ldots,a_L)\) satisfying
+A cubie state contains corner and edge permutations \(p_c,p_e\) and
+orientations \(o_c,o_e\). Legal states satisfy
 
-\[\begin{aligned}T(s_0,\pi)&=s_\star,\\L^\star(s_0)&=\min_{\pi:T(s_0,\pi)=s_\star}|\pi|.\end{aligned}\tag{1}\]
+\[
+\begin{gathered}
+\sum_{i=0}^{7}o_{c,i}\equiv0\pmod3,\qquad
+\sum_{i=0}^{11}o_{e,i}\equiv0\pmod2,\\
+\operatorname{parity}(p_c)=\operatorname{parity}(p_e).
+\end{gathered}
+\tag{1}
+\]
 
-Here, \(T\) is the move transition function. Exact solving seeks
-\(L^\star\); practical solving seeks a valid sequence subject to
-computational limits. We evaluate practical configurations using solve
-time \(t\), length \(L\), and observed verification success. We do not
-combine these quantities into a single optimized scalar objective or
-claim a measured optimality gap, since \(L^\star\) is unknown for the
-long-scramble evaluation set.
+The two-phase solver first reaches
+\(H=\langle U,D,R^2,L^2,F^2,B^2\rangle\). Phase 1 uses corner
+orientation, edge orientation, and middle-slice membership coordinates
+of sizes 2187, 2048, and 495. Phase 2 preserves \(H\) with ten moves and
+uses corner permutation \(c\), non-slice-edge permutation \(e\), and
+slice-edge permutation \(q\), with sizes 40320, 40320, and 24. Its lower
+bound is
 
-A 3×3 state is represented as \(s=(p_c,o_c,p_e,o_e)\), comprising corner
-and edge permutations and orientations. Legal states satisfy
+\[
+h_2(c,e,q)=\max\{D_C(c,q),D_E(e,q)\},
+\tag{2}
+\]
 
-\[\begin{gathered}\sum_{i=0}^{7}o_{c,i}\equiv0\pmod3,\quad\sum_{i=0}^{11}o_{e,i}\equiv0\pmod2,\\\operatorname{parity}(p_c)=\operatorname{parity}(p_e).\end{gathered}\tag{2}\]
+where \(D_C,D_E\) are exact distances in the two product abstractions.
+Abstract paths are projections of full paths, so this maximum is
+admissible. Our optimization preserves this bound and its accepted
+successors.
 
-The implementation also checks piece identity, uniqueness, color counts,
-and fixed-center orientation. Under the conventional fixed-frame model,
-
-\[\begin{aligned}|V|&=\frac{8!\,3^7\,12!\,2^{11}}{2}\\&=43,252,003,274,489,856,000.\end{aligned}\tag{3}\]
-
-The established 20-move diameter \cite{rokicki_gods_number} concerns
-optimal solutions. A non-optimal procedure can validly return a longer
-sequence.
+We distinguish a \textbf{logical visit}, charged by the scalar routine
+even when immediately pruned, from a \textbf{generated visit}, where the
+optimized routine actually constructs child coordinates and enters DFS.
+Visits count search-tree occurrences, including iterative-deepening
+repeats; they are not distinct cube states.
 
 \hypertarget{methodology}{%
 \section{Methodology}\label{methodology}}
 
-\hypertarget{system-overview}{%
-\subsection{System overview}\label{system-overview}}
+\hypertarget{system-and-baseline-policy}{%
+\subsection{System and baseline policy}\label{system-and-baseline-policy}}
 
-We call the complete practical configuration \textbf{COVE-3}:
-\textbf{C}ompact \textbf{O}utput-\textbf{V}erified \textbf{E}xploration
-for 3×3. The system converts a typed scramble or corrected photo-derived
-sticker map into a symbolic cube state. A worker validates that state,
-searches compact coordinates, and returns a move sequence. Before
-displaying success, the interface replays every move on the sticker
-model. The named configuration consists of generated coordinate tables,
-paired distance bounds, a per-subgroup-endpoint work budget, global
-limits, and independent output replay; none of these ingredients alone
-is claimed as a new general search algorithm.
-
-\textbf{Pipeline:} input state → validity checks → phase-1 search →
-phase-2 search → cubie verification → sticker replay → displayed
-solution.
+COVE-3 denotes Compact Output-Verified Exploration for 3×3. The
+application accepts typed turns or manually corrected photo-derived
+stickers, validates the symbolic cube, runs search in a worker, and
+replays returned moves on the sticker model. The photo interface is not
+a learned recognition model.
 
 \begin{figure*}[t]
 \centering\includegraphics[width=\textwidth]{figures/system-pipeline.pdf}
-\caption{System pipeline. A browser worker performs state validation, bounded two-phase search, and output verification. Photo input is manually corrected before conversion to a symbolic state and is not evaluated as autonomous computer vision.}
-\label{fig:pipeline}
+\caption{Browser execution. The first scalar result is posted before contour compilation; later solves use compiled tables. Photo-derived stickers require manual correction and are not an autonomous vision benchmark.}
+\label{fig:system-pipeline}
 \end{figure*}
 
-The photo interface is an input mechanism, not a learned component. The
-reported solver timings begin after symbolic input construction and do
-not measure image interpretation.
+The frozen baseline limits phase 1 to depth 12 and each phase-2 attempt
+to depth 18. A subgroup endpoint receives 250,000 phase-2 logical visits
+across its iterative-deepening attempts. The global limit is 20 million
+logical visits. A guard can count the extra visit that triggers it. Time
+is checked every 2048 logical visits, with a 30-second search deadline
+and a separate 45-second browser-worker watchdog. The first completion
+is accepted after cubie and sticker verification. Consecutive same-face
+moves are excluded, and commuting opposite faces use a canonical order.
 
-\hypertarget{coordinate-decomposition}{%
-\subsection{Coordinate decomposition}\label{coordinate-decomposition}}
+\hypertarget{exact-contour-filters}{%
+\subsection{Exact contour filters}\label{exact-contour-filters}}
 
-Following two-phase solving \cite{kociemba_coordinates}, define
+For either abstraction, let \(D(a)\) be its exact goal distance and
+\(\delta(a,m)\) its successor under phase-2 move \(m\). Define
 
 \[
-H=\langle U,D,R^2,L^2,F^2,B^2\rangle.
+\begin{aligned}
+M_-(a)&=\{m:D(\delta(a,m))=D(a)-1\},\\
+M_0(a)&=\{m:D(\delta(a,m))\le D(a)\}.
+\end{aligned}
+\tag{3}
+\]
+
+These sets are ten-bit integers. At remaining depth \(r\ge D(a)\), the
+moves that can pass the next scalar heuristic check are
+
+\[
+F(a,r)=
+\begin{cases}
+M_-(a),&r=D(a),\\
+M_0(a),&r=D(a)+1,\\
+\mathcal A_2,&r\ge D(a)+2.
+\end{cases}
 \tag{4}
 \]
 
-Phase 1 reaches \(H\) by solving corner orientation, edge orientation,
-and membership of the four middle-slice edges. These coordinates have
-cardinalities
+Let \(A_\ell\) encode the canonical moves allowed after face \(\ell\).
+The full admissible successor mask is
+\(A_\ell\cap F((c,q),r)\cap F((e,q),r)\). Set bits are processed in the
+original increasing move-index order.
 
-\[\begin{gathered}n_c=3^7=2187,\quad n_e=2^{11}=2048,\\n_s=\binom{12}{4}=495.\end{gathered}\tag{5}\]
+\textbf{Proposition 1 --- Exact successor filtering.} For an admitted
+phase-2 node, the compiled mask contains a canonical move if and only if
+the scalar child's heuristic is at most \(r-1\).
 
-Phase 2 uses the ten moves that preserve \(H\). Its coordinates describe
-the eight corners, eight non-slice edges, and four slice edges, with
-cardinalities \(8!\), \(8!\), and \(4!\).
+\emph{Proof.} Because each phase-2 move has an inverse and unit cost,
+applying a move changes exact abstract distance by at most one. If
+\(r=D(a)\), only a distance decrease can reach \(r-1\). If \(r=D(a)+1\),
+a non-increase suffices. If \(r\ge D(a)+2\), even a one-step increase is
+at most \(r-1\). These are exactly Eq. (4). Intersecting both
+abstractions implements the maximum in Eq. (2), and intersecting
+\(A_\ell\) imposes the same canonical rule as the scalar loop. ∎
 
-Move tables are generated from the application's geometric facelet
-permutations. Permutation coordinates use the Lehmer rank,
+\hypertarget{dictionary-representation}{%
+\subsection{Dictionary representation}\label{dictionary-representation}}
+
+For every paired abstract state, the compiler forms
 
 \[
-\operatorname{rank}(p)=
-\sum_{i=0}^{n-1}
-\left|\{j>i:p_j<p_i\}\right|(n-i-1)!.
+\sigma(a)=\bigl(D(a)\ll20\bigr)
+\mathbin{|}\bigl(M_0(a)\ll10\bigr)
+\mathbin{|}M_-(a).
+\tag{5}
+\]
+
+The measured maximum distances are 14 and 12, so four distance bits and
+two ten-bit masks fit in 24 bits. Compilation checks the distance bound,
+the one-step distance-change property, and dictionary capacity. It
+interns equal signatures and stores a 16-bit index per abstract state;
+signatures occupy 32-bit dictionary entries. Corner/slice and edge/slice
+tables use 5806 and 34,803 signatures respectively. The extra lookup
+trades a small amount of indirection for fewer signature bytes.
+
+The uncompiled phase-2 tables contain \(D_2=2(40320\cdot24)=1,935,360\)
+byte distances. Let \(D_1=2187\cdot495+2048\cdot495=2,096,325\) and
+\(M_T=1,783,560\) be phase-1 distance bytes and all transition bytes.
+With \(U=40,609\) signatures,
+
+\[
+\begin{aligned}
+M_{\rm scalar}&=M_T+D_1+D_2\\
+&=5,815,245\ \text{bytes},\\
+M_{\rm dict}&=M_T+D_1+2D_2+4U\\
+&=7,913,041\ \text{bytes},\\
+M_{\rm flat}&=M_T+D_1+4D_2\\
+&=11,621,325\ \text{bytes}.
+\end{aligned}
 \tag{6}
 \]
 
-This approach keeps the search representation linked to the same legal
-actions used for visualization while avoiding full-state successor
-allocation in the main practical search.
+The flat value is the calculated footprint of storing one 32-bit
+signature at every paired index, not a measured flat-solver latency. The
+dictionary saves 31.91\% relative to that representation but increases
+persistent storage by 36.07\% relative to byte distances. None of these
+figures measures peak JavaScript heap, temporary BFS queues, hash-map
+overhead, or renderer memory.
 
-\hypertarget{paired-pattern-databases}{%
-\subsection{Paired pattern databases}\label{paired-pattern-databases}}
+\hypertarget{preserving-the-search-budget}{%
+\subsection{Preserving the search budget}\label{preserving-the-search-budget}}
 
-We construct four exact abstract-distance tables by BFS. For phase 1,
-let \(D_{cs}\) and \(D_{es}\) describe corner-orientation/slice and
-edge-orientation/slice pairs. For phase 2, let \(D_{Cq}\) and \(D_{Eq}\)
-describe corner-permutation/slice-permutation and
-non-slice-edge-permutation/slice-permutation pairs. The heuristics are
-
-\[
-h_1(c,e,s)=\max\{D_{cs}(c,s),D_{es}(e,s)\},
-\tag{7}
-\]
-
-\[
-h_2(C,E,q)=\max\{D_{Cq}(C,q),D_{Eq}(E,q)\}.
-\tag{8}
-\]
-
-\textbf{Proposition 1 --- Admissible phase bounds.} If an abstraction
-maps every legal full-state move to a legal abstract move and maps the
-phase goal to its abstract goal, its shortest abstract distance is a
-lower bound on the full-state distance to that goal.
-
-\emph{Proof.} Any full-state path of length \(L\) projects to an
-abstract path of length at most \(L\). The shortest abstract path
-therefore has length at most \(L\), including when the full-state path
-is shortest. Taking the maximum of two lower bounds preserves this
-inequality. ∎
-
-The tables satisfy this move-projection construction. A branch is pruned
-when its phase heuristic exceeds the remaining depth. The bounds are not
-added because one move may improve both abstractions. Their
-admissibility justifies this pruning rule, not the global optimality of
-the final two-phase solution.
-
-\hypertarget{budgeted-subgroup-candidate-search}{%
-\subsection{Budgeted subgroup-candidate search}\label{budgeted-subgroup-candidate-search}}
-
-Phase-1 depth increases from its heuristic lower bound to 12. At a
-subgroup endpoint, phase 2 searches depths from its lower bound to 18.
-The endpoint is abandoned after a budget of 250,000 phase-2 node visits,
-accumulated across its depth iterations. Search then continues with
-other phase-1 candidates.
-
-The global budget is 20 million node visits, with a 30-second search
-deadline checked periodically. The UI applies a separate 45-second
-watchdog that also covers worker initialization. These are
-bounded-effort policies, not completeness guarantees. Consecutive moves
-on the same face are excluded; commuting opposite-face moves use a
-canonical order.
+Skipping rejected children without accounting would allow the optimized
+search more admitted work under the same nominal node cap. Instead,
+before each selected move we count canonical rejected moves preceding it
+and charge their visits in a batch. We charge remaining rejected
+siblings afterward. Charging stops at the earliest endpoint or global
+guard and retains each periodic time/progress checkpoint. A rejected
+child needs no path mutation or coordinate construction.
 
 \begin{figure}[t]
 \hrule\vspace{5pt}
-\textbf{Algorithm 1.} COVE-3 budgeted two-phase search
+\textbf{Algorithm 1.} Budget-preserving phase-2 expansion
 \vspace{4pt}
 \begin{Verbatim}[fontsize=\footnotesize,breaklines=true,breakanywhere=true]
-Input: state s0; transition/distance tables
-       candidate and global work budgets
-Output: verified moves, or explicit failure
-for d1 = h1(s0), ..., 12:
-  enumerate phase-1 paths with h1 pruning
-  for each endpoint sH in subgroup H:
-    reset candidate's phase-2 node counter
-    for d2 = h2(sH), ..., 18:
-      search with h2 and H-preserving moves
-      if a completion is found:
-        join phase-1 and phase-2 paths
-        verify cubie and sticker replay
-        return only if both checks pass
-      if candidate budget is exceeded:
-        break; try another endpoint
-    enforce global budgets throughout
-return explicit search failure
+Input: phase-2 coordinates (c,e,q), depth r, last face l
+charge one generated visit; enforce guards
+if h2(c,e,q) > r: return failure
+if r = 0: return whether coordinates are solved
+A = canonical move mask after l
+M = A & cornerContour(c,q,r) & edgeContour(e,q,r)
+for each set bit m of M, in original move order:
+  charge uncharged rejected moves of A preceding m
+  stop immediately if a budget is exhausted
+  construct child coordinates and push m
+  if recursive search succeeds: return success
+  pop m; stop if a budget is exhausted
+charge remaining rejected moves of A
+return failure
 \end{Verbatim}
 \vspace{3pt}\hrule
 \end{figure}
 
-The first accepted completion is returned. The algorithm does not
-exhaust all shorter combined paths, so its output is not labeled
-shortest.
+\textbf{Proposition 2 --- Count-budget trace equivalence.} For identical
+tables, input, depth limits, move order, and logical node budgets,
+scalar and compiled search return the same move sequence, phase split,
+and logical count, or fail at the same count-based guard, provided a
+wall-clock guard does not intervene.
 
-\hypertarget{memory-and-execution}{%
-\subsection{Memory and execution}\label{memory-and-execution}}
+\emph{Proof.} By Proposition 1, every omitted child would return
+immediately after its logical-visit and endpoint checks. Replace each
+such call with one charge, preserving sibling order. The remaining
+recursive calls have identical coordinates and path prefixes. Induction
+over DFS calls preserves the successful path or exhaustion outcome.
+Truncating each charge batch at the first guard preserves endpoint
+abandonment and global failure. Iterative-deepening iterations and
+phase-1 endpoints therefore remain identical. Periodic count checkpoints
+are retained even inside a batch. Real wall-clock outcomes need not
+match because execution time changes. ∎
 
-The four Uint8 distance arrays require
+\hypertarget{complexity-comparison}{%
+\subsection{Complexity comparison}\label{complexity-comparison}}
 
-\[\begin{aligned}M_D&=2187\cdot495+2048\cdot495\\&\quad+2(40320\cdot24)\\&=4,031,685\ \text{bytes}.\end{aligned}\tag{9}\]
+Let \(b_1\le18\), \(b_2=10\), and \(d_1\le12,d_2\le18\) bound branching
+and depth. Write \(R_j(d)=\sum_{k=0}^{d}\sum_{i=0}^{k}b_j^i\), a
+conservative \(O((d+1)b_j^d)\) iterative-deepening bound. If \(C\)
+phase-1 endpoints are attempted, the scalar logical-visit bound is
+\(R_1(d_1)+C R_2(d_2)\) before resource limits, and at most \(G+1\)
+visits under a global budget \(G\). Compilation preserves this bound; it
+reduces generated work rather than enlarging the logical allowance.
 
-The Uint16 transition arrays require
+Let \(k_v\le b_2\) be the number of successors passing both abstract
+tests at expanded phase-2 node \(v\). Scalar expansion constructs up to
+\(b_2\) children. Compiled expansion uses constant-time mask operations
+and iterates \(k_v\) selected bits, with constant-cost charges between
+them for the fixed ten-move domain. It therefore costs \(O(1+k_v)\) per
+admitted expansion instead of \(O(b_2)\). If every move passes, the
+orders agree. Both algorithms remain exponential in depth in the worst
+case.
 
-\[\begin{aligned}M_T&=2[18(2187+2048+495)\\&\quad+10(40320+40320+24)]\\&=1,783,560\ \text{bytes}.\end{aligned}\tag{10}\]
+Let \(S_1=2187+2048+495\) and \(S_2=40320+40320+24\). Scalar
+preprocessing performs \(O(18(S_1+D_1)+10(S_2+D_2))\) coordinate
+transitions and BFS edge checks. Compilation adds \(O(10D_2)\) work
+under the usual expected constant-time hash-table assumption for
+signature interning. With \(M_T\) transition bytes excluded, both
+representations use \(O(D_1+D_2)\) persistent space because
+\(U\le D_2\). Their byte constants differ as in Eq. (6). Search
+stack/path space remains \(O(d_1+d_2)\), endpoint conversion costs
+\(O(d_1)\) per attempt, and sticker replay costs \(O(54L)\) for a
+returned path of length \(L\).
 
-Thus \(M_D+M_T=5,815,245\) bytes, approximately 5.55 MiB. This is
-persistent numeric-table storage; temporary queues, JavaScript objects,
-rendering resources, and peak process memory are excluded. Tables are
-reused across jobs in a worker. Cancellation terminates the worker
-rather than waiting for a search to finish.
+\begin{table*}[t]
+\caption{Complexity relative to the actual scalar baseline. Both methods retain exponential worst-case search; compiled expansion avoids constructing rejected children.}
+\centering\small
+\begin{tabularx}{\textwidth}{@{}p{0.20\textwidth}LLp{0.22\textwidth}@{}}
+\toprule
+Operation & Scalar baseline & Compiled COVE-3 & Interpretation \\
+\midrule
+One admitted phase-2 expansion & \(O(b)\) & \(O(1+k)\) & Avoids rejected child construction \\
+Extra contour preprocessing & None & \(O(bD_2)\) expected & Paid before compiled solves \\
+Persistent abstract storage & \(O(D_1+D_2)\) & \(O(D_1+D_2+U)\) & Same order, larger measured constant \\
+Stack/path storage & \(O(d_1+d_2)\) & \(O(d_1+d_2)\) & Same order \\
+Worst-case unrestricted search & Exponential in depth & Exponential in depth & No asymptotic superiority claimed \\
+\bottomrule
+\end{tabularx}
+\end{table*}
 
-\hypertarget{time-and-space-complexity}{%
-\subsection{Time and space complexity}\label{time-and-space-complexity}}
-
-COVE-3 is \textbf{our implementation and bounded configuration}, not a
-newly invented two-phase algorithm. Let \(b_1\le18\) and \(b_2\le10\) be
-upper bounds on phase branching, \(d_1\le12\) and \(d_2\le18\) the depth
-caps, \(B=250{,}000\) the phase-2 visit budget per subgroup endpoint,
-and \(G=20{,}000{,}000\) the global visit budget. These bounds apply to
-the implemented 3×3 search; they are not complexity claims for arbitrary
-\(N\times N\times N\) cubes.
-
-Iterative deepening can revisit nodes at successive depths. An upper
-bound on visits for one phase without resource limits is
-
-\[
-R_j(d)=\sum_{k=0}^{d}\sum_{i=0}^{k}b_j^i
-=O\!\left((d+1)b_j^d\right),\qquad j\in\{1,2\}.
-\]
-
-If \(C\) is the number of phase-1 subgroup endpoints attempted, counting
-repeated endpoints across iterations, then \(C\le R_1(d_1)\). The actual
-DFS visit count obeys
-
-\[
-\begin{aligned}
-N_{\mathrm{visits}}&\le G+1,\\
-N_{\mathrm{visits}}&\le R_1(d_1)
-  +C\min\{B+1,R_2(d_2)\}.
-\end{aligned}
-\]
-
-The \(+1\) terms allow the visit that triggers a budget guard. Thus the
-worst-case search remains exponential in depth before caps, while the
-node budgets bound attempted work and may return failure on a valid
-cube. This is a bound on DFS visits, not a hard wall-clock guarantee:
-endpoint conversion costs \(O(d_1)\) per attempt, and input/output
-verification costs \(O(54L)\) sticker operations for a returned path of
-length \(L\le d_1+d_2\).
-
-Let \(S_1=2187+2048+495\) and \(S_2=40320+40320+24\) be the
-transition-table coordinate counts, and let
-\(D_1=2187\cdot495+2048\cdot495\) and \(D_2=2(40320\cdot24)\) be the
-paired distance-table counts. Table construction takes
-\(O(18S_1+10S_2+18D_1+10D_2)\) coordinate transitions and BFS edge
-checks. Persistent table space is \(O(18S_1+10S_2+D_1+D_2)\), with the
-exact 5.55 MiB allocation given above. Each distance-table build also
-allocates a temporary Uint32 queue of at most
-\(\max(2187\cdot495,2048\cdot495,40320\cdot24)=1{,}082{,}565\) entries;
-this is not a measured peak JavaScript heap. Search itself uses
-\(O(d_1+d_2)\) stack/path space beyond the tables. For a fixed 3×3 cube
-these dimensions are constants; the parameterized expressions explain
-the resource tradeoff rather than claiming asymptotic superiority over
-prior two-phase solvers.
-
-\hypertarget{exact-search-implementation}{%
-\subsection{Exact-search implementation}\label{exact-search-implementation}}
-
-The application retains exact modes for educational exploration. We
-modify bidirectional BFS to stop at the first meeting while preserving
-complete-layer side selection.
-
-\textbf{Proposition 2 --- Optimal first meeting under complete-layer
-expansion.} Suppose the two visited sets are disjoint complete balls
-\(B(s_0,r)\) and \(B(s_\star,q)\) immediately before a layer is
-expanded. The first meeting produced by that expansion supplies a
-shortest path.
-
-\emph{Proof.} If \(d(s_0,s_\star)\le r+q\), some vertex of a shortest
-path belongs to both balls, contradicting disjointness. Therefore
-\(d(s_0,s_\star)\ge r+q+1\). The new meeting constructs a path of length
-at most \(r+1+q\). The bounds agree. ∎
-
-This result relies on complete layers and does not justify arbitrary
-switching between partially expanded frontiers.
-
-We additionally encode five sticker colors in a code unit,
-
-\[\begin{gathered}w_j=\sum_{k=0}^{4}c_{5j+k}\,2^{3k},\\c_i\in\{0,\ldots,5\}.\end{gathered}\tag{11}\]
-
-which is injective for a fixed sticker count. The renderer maintains at
-most 420 sampled nodes per side and depth, with the solution path
-included separately. Search retains its full visited sets. Storage caps
-are enforced before insertion, and A* depth statistics are updated when
-a shorter parent path is discovered.
-
-\hypertarget{verification-contract}{%
-\subsection{Verification contract}\label{verification-contract}}
-
-The practical solver verifies its completion in cubie coordinates. The
-UI separately evaluates Eq. (1) on all stickers before displaying
-success. This establishes a conditional acceptance contract: assuming
-correct transition models, accepted results solve the supplied symbolic
-state. Test coverage supports the implementation of this contract; it is
-not a formal proof of the entire software stack.
-
-Validity, completeness, and optimality are distinct. Input-validity
-checks reject illegal piece configurations. Resource exhaustion returns
-a failure without claiming that a valid cube is impossible. Practical
-results are verified solutions; exact results are shortest paths only
-when the corresponding search completes.
+For a fixed 3×3 cube the coordinate dimensions are constants. These
+parameterized bounds describe implementation costs and do not imply a
+generalized-cube complexity result.
 
 \hypertarget{experimental-setup}{%
 \section{Experimental Setup}\label{experimental-setup}}
 
-\hypertarget{research-questions}{%
-\subsection{Research questions}\label{research-questions}}
+\hypertarget{questions-and-configurations}{%
+\subsection{Questions and configurations}\label{questions-and-configurations}}
 
-We evaluate three questions: \textbf{RQ1}, how the practical
-implementation trades solve latency against move count; \textbf{RQ2},
-whether exact-search changes reduce stored entries without changing
-solution length; and \textbf{RQ3}, whether the deployed system preserves
-solution validity and expected interaction behavior.
+We ask whether compilation improves latency at identical output quality
+(RQ1), whether selective generation explains the improvement (RQ2), and
+how storage and application behavior change (RQ3). The primary
+configurations are:
 
-\hypertarget{evaluation-corpus}{%
-\subsection{Evaluation corpus}\label{evaluation-corpus}}
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Original scalar:} the actual frozen pre-change solver, loaded
+  from the pinned revision in the same JavaScript realm as the
+  candidate.
+\item
+  \textbf{Dictionary + scalar:} the current solver with dictionary
+  lookups and visit bookkeeping, but ordinary recursive child
+  generation. This ablates the mask-based generator.
+\item
+  \textbf{Compiled COVE-3:} dictionary lookup, exact mask intersection,
+  and batched logical charging.
+\end{itemize}
 
-For RQ1, we generate 200 deterministic scrambles with lengths between 20
-and 40 turns, excluding consecutive turns on the same face. The
-generator seed is \textbf{0x74bc39}. Each solver receives the same
-resulting cube state. This is a synthetic scramble corpus, not uniform
-sampling from the cube group. Written scramble length is not assumed to
-equal optimal solution length.
+All configurations retain the same distance bounds, move order, endpoint
+cap, global cap, and phase depth limits. We assert equality of complete
+move sequences, phase splits, and logical visit counts rather than
+comparing average lengths alone. Each returned sequence undergoes
+external replay on all 54 stickers outside the timed interval.
 
-There is no training/validation/test split because the implementation is
-not learned. These 200 cases form a fixed evaluation corpus; we do not
-claim a preregistered or independently held-out study. The separate
-regression suite uses another seeded corpus and is reported separately
-rather than pooled into benchmark statistics.
+\hypertarget{corpus-and-measurement-protocol}{%
+\subsection{Corpus and measurement protocol}\label{corpus-and-measurement-protocol}}
 
-\hypertarget{baselines-and-controls}{%
-\subsection{Baselines and controls}\label{baselines-and-controls}}
+The 200 archived 20--40-turn scrambles were used for initial development
+checks. The primary evaluation uses 500 pseudorandom legal cubie states
+with seed \texttt{0x913b5e}: Fisher--Yates corner/edge permutations, a
+parity correction, and independently generated orientations constrained
+by Eq. (1). This avoids using scramble length as a proxy for state
+difficulty. The generator approximates uniform legal-state sampling
+through a deterministic pseudorandom stream; no claim of cryptographic
+randomness or independently held-out evaluation is made. The separate
+evaluation corpus was reused for final verification after the worker
+integration.
 
-The practical baseline is \textbf{cubejs 1.3.2}, the application's
-previous scanner dependency, using its default solve settings. Both
-solvers generate their own tables once before timed evaluation.
-Execution order alternates between configurations across cases. Every
-output undergoes the same external sticker replay; a mismatch aborts the
-evaluation.
+Each configuration warms up on the first 30 archived development cases.
+We measure five repetitions per evaluation state, rotating configuration
+order and reversing corpus traversal on alternate repetitions. A timed
+interval surrounds \texttt{solve}, including symbolic decode and
+internal cubie replay but excluding table construction and external
+sticker replay. We first take the median of five observations for each
+instance and then report the corpus median and nearest-rank P95. The
+five repeated runs are not treated as independent states.
 
-This is not an equal-quality comparison. cubejs searches within its
-default 22-move maximum; COVE-3 accepts its first verified completion
-under the stated budgets and can return longer paths. No comparison
-against neural solvers or optimized native implementations is performed.
+Experiments use Node 18.19.1, Linux x64, and an AMD EPYC 9254 processor.
+Each solver is single-threaded. The paired speedup statistic is the
+median of per-instance baseline/candidate ratios; it differs from the
+ratio of corpus medians. A 95\% percentile interval uses 2000 seeded
+bootstrap resamples of paired instances. This interval is conditional on
+this hardware, runtime, and corpus and does not measure cross-device
+uncertainty. Initialization is recorded once per configuration and is
+descriptive.
 
-For RQ2, we compare against original repository commit
-\textbf{54b37a92fed869a00cf5ce1e1617cd19f5aa3545} on three fixed
-instances. Each configuration is run three times. The script checks
-replay and equality of returned lengths.
+\hypertarget{external-baseline-and-correctness-checks}{%
+\subsection{External baseline and correctness checks}\label{external-baseline-and-correctness-checks}}
 
-\hypertarget{metrics-and-implementation-details}{%
-\subsection{Metrics and implementation details}\label{metrics-and-implementation-details}}
+We rerun cubejs 1.3.2 on the 200 archived scrambles in a separate
+experiment, alternating solver order. This experiment has one timed
+solve per state and table reuse without the primary experiment's
+controlled warmup. cubejs uses its default 22-move target; COVE-3 can
+return longer paths. This comparison therefore concerns application
+configurations, not matched-quality algorithmic superiority. It must not
+be pooled with the primary 500-state experiment.
 
-Experiments use Node \textbf{18.19.1}, Linux x64, and an \textbf{AMD
-EPYC 9254 24-Core Processor}. Each solver executes single-threaded. Warm
-solve time excludes table construction, input conversion, external
-replay, and rendering; the candidate's internal validation remains
-included. ``Warm'' refers to table reuse, not a separately controlled
-steady-state JIT warmup.
-
-We report median, nearest-rank P95, maximum observed latency, mean and
-maximum move counts, and observed verification success. For 200
-observations, the archived implementation selects the sorted element at
-zero-based index 100 as its median and index 189 as P95. Initialization
-is measured once per solver. We report no confidence intervals or
-significance tests from these single-run measurements.
-
-For RQ3, Playwright 1.51.1 and Chromium 134 exercise desktop and
-mobile-sized viewports, playback, notation validation, generated photo
-samples, cancellation/restart, and worker failure. A mobile viewport is
-not a physical-phone performance measurement.
-
-Source revisions, archived measurements, and commands for reproducing
-the figures, comparisons, and paper are documented in the
-\href{https://github.com/nahin333/rubikscube/blob/main/README.md}{project
+Correctness checks independently examine every encoded abstract
+successor, compare scalar and compiled capped behavior around guard
+thresholds, exercise a separate 139-case fixture set, and run the
+existing solver and exact-search regressions. Browser checks cover the
+initial scalar response, later compiled solving, playback,
+cancellation/restart, photo input, and worker failure. Source hashes,
+raw times, states, move sequences, commands, and environment details are
+in the
+\href{https://github.com/nahin333/rubikscube/blob/main/README.md\#reproduce-the-paper-artifacts}{project
 README}.
 
 \hypertarget{evaluation}{%
 \section{Evaluation}\label{evaluation}}
 
-\hypertarget{practical-latency-and-solution-quality}{%
-\subsection{Practical latency and solution quality}\label{practical-latency-and-solution-quality}}
+\hypertarget{identical-output-latency-comparison}{%
+\subsection{Identical-output latency comparison}\label{identical-output-latency-comparison}}
+
+\begin{table*}[t]
+\caption{Primary matched-output evaluation: 500 states and five repetitions per configuration. Statistics use per-instance medians; all move sequences and logical counts are identical.}
+\centering\small
+\begin{tabularx}{\textwidth}{@{}Lrrr@{}}
+\toprule
+Metric & Original scalar & Dictionary + scalar & Compiled COVE-3 \\
+\midrule
+Verified states & 500/500 & 500/500 & 500/500 \\
+Median latency, ms ↓ & 6.192 & 7.001 & \textbf{2.199} \\
+P95 latency, ms ↓ & 36.855 & 42.848 & \textbf{10.616} \\
+Mean per-instance median, ms ↓ & 11.053 & 12.786 & \textbf{3.463} \\
+Mean solution length & 22.838 & 22.838 & 22.838 \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+The ratio of corpus median latencies is 2.82. Median paired speedup is
+3.18, with a conditional paired-instance bootstrap interval of {[}3.12,
+3.26{]}. The compiled solver has a lower per-instance median on all 500
+evaluated states. These are local measurements and do not imply the same
+ratio on every device or every future state.
+
+Across the corpus, the scalar trace contains 129,254,791 logical visits.
+The compiled solver performs 26,722,082 recursive visits and charges
+102,532,709 skipped visits, a 79.33\% reduction in recursive calls.
+Logical counts and complete outputs remain identical. The omitted visits
+were immediately rejected calls, so this is not a 79.33\% reduction in
+distinct states or in the logically admitted search space.
+
+\begin{figure*}[t]
+\centering\includegraphics[width=\textwidth]{figures/contour-ablation.pdf}
+\caption{Primary matched-output experiment. (a) Each point is one state's median of five timings. (b) Empirical latency distributions for all three configurations. (c) Persistent typed-array storage; the flat footprint is calculated. Outputs and logical counts are identical across configurations.}
+\label{fig:contour-ablation}
+\end{figure*}
+
+\hypertarget{attribution-storage-and-initialization}{%
+\subsection{Attribution, storage, and initialization}\label{attribution-storage-and-initialization}}
+
+The dictionary-plus-scalar ablation is slower than the frozen original:
+7.00 versus 6.19 ms median. Dictionary indirection and bookkeeping alone
+therefore do not explain the gain. Enabling selective generation reduces
+its median to 2.20 ms. This controlled ablation supports attribution to
+avoiding rejected child construction and its associated call/path
+overhead. It does not isolate each micro-operation within that
+generator.
+
+\textbf{Budget-policy negative control.} On evaluation state 0, setting
+the global cap to 50,375 visits makes both the original and
+budget-preserving implementations report exhaustion. A control that
+deletes only the batched charges returns a 24-turn solution at that cap,
+having changed what counts as work. The original reference completes a
+different 23-turn sequence after 303,683 logical visits under the
+default allowance. This constructive witness motivates preserving the
+capped policy; it is not a frequency estimate or a claim that the
+uncharged generator is invalid under its own different budget
+definition. The state, outputs, source hashes, and control
+transformation are archived in
+\href{https://github.com/nahin333/rubikscube/blob/main/research/results/budget-witness.json}{budget-witness.json}.
 
 \begin{table}[H]
-\caption{Paired evaluation on 200 states. Lower latency and fewer moves are preferable; both configurations pass replay on all cases.}
+\caption{Persistent numeric storage. The flat footprint is calculated, not a measured flat-solver latency or peak heap.}
 \centering\small
 \begin{tabularx}{\columnwidth}{@{}Lrr@{}}
-\toprule Metric & cubejs & COVE-3 \\\midrule
-Verified completions & 200/200 & 200/200 \\
-Median latency (ms) & 34.047 & \textbf{5.965} \\
-P95 latency (ms) & 203.485 & \textbf{28.918} \\
-Maximum latency (ms) & 1062.317 & \textbf{88.875} \\
-Initialization (ms) & 1265.989 & \textbf{538.343} \\
-Mean moves & \textbf{21.71} & 22.77 \\
-Maximum moves & \textbf{22} & 26 \\\bottomrule
+\toprule
+Representation & Bytes & MiB \\
+\midrule
+Scalar byte distances & 5,815,245 & 5.55 \\
+Dictionary contours & 7,913,041 & 7.55 \\
+Flat 32-bit contours, calculated & 11,621,325 & 11.08 \\
+\bottomrule
 \end{tabularx}
 \end{table}
 
-The ratio of median latencies is 5.71, corresponding to an 82.5\% lower
-median for COVE-3 in this corpus. Mean move count increases by 1.06
-turns, or approximately 4.9\%. This answers RQ1 as a latency--length
-tradeoff rather than an across-the-board improvement.
+Full standalone construction takes 604.7 ms for the scalar baseline and
+815.5 ms for compiled tables in the single recorded setup observation.
+Compilation therefore has a real upfront cost. The browser posts its
+first scalar solution before compiling in the worker; later requests use
+the compiled tables. This scheduling avoids requiring full compilation
+before the first response, but a request made during background
+compilation can still wait. Worker termination remains the cancellation
+mechanism. Neither lower peak heap nor faster cold end-to-end solving
+has been established.
+
+\hypertarget{external-cubejs-comparison}{%
+\subsection{External cubejs comparison}\label{external-cubejs-comparison}}
+
+\begin{table}[H]
+\caption{Separate cubejs comparison on 200 shared scrambles. One timing per state; solution-quality targets differ.}
+\centering\small
+\begin{tabularx}{\columnwidth}{@{}Lrr@{}}
+\toprule
+Metric & cubejs 1.3.2 & Compiled COVE-3 \\
+\midrule
+Verified states & 200/200 & 200/200 \\
+Median latency, ms ↓ & 42.932 & \textbf{3.916} \\
+P95 latency, ms ↓ & 246.646 & \textbf{14.319} \\
+Mean moves ↓ & \textbf{21.71} & 22.77 \\
+Maximum moves ↓ & \textbf{22} & 26 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The external comparison confirms a useful application latency/length
+tradeoff, while the primary experiment establishes an additional
+improvement at identical output quality relative to our previous solver.
+The new contour optimization is not credited with inventing the baseline
+two-phase decomposition or with proving lower asymptotic complexity than
+cubejs.
 
 \begin{figure*}[t]
 \centering\includegraphics[width=\textwidth]{figures/solver-comparison.pdf}
-\caption{All 200 paired observations. (a) Points below the diagonal favor COVE-3 in latency; axes are logarithmic. (b) Empirical cumulative latency distributions. (c) Extra moves from COVE-3. COVE-3 is faster on 197 cases and produces longer, equal-length, and shorter paths on 133, 58, and 9 cases. These are descriptive summaries, not significance tests.}
-\label{fig:comparison}
+\caption{Separate external cubejs comparison: paired latency, latency distributions, and extra moves. Different length targets prevent an equal-quality speedup claim.}
+\label{fig:solver-comparison}
 \end{figure*}
 
-All 200 outputs from both configurations pass replay. This observed
-completion rate is not proof of universal success. In particular, the
-resource limits can produce failure on other valid inputs.
-
-\hypertarget{exact-search-comparison}{%
-\subsection{Exact-search comparison}\label{exact-search-comparison}}
+\hypertarget{correctness-and-application-behavior}{%
+\subsection{Correctness and application behavior}\label{correctness-and-application-behavior}}
 
 \begin{table*}[t]
-\caption{Bidirectional BFS before and after the combined changes. Latencies are medians of three runs, not component-wise ablations.}
+\caption{Verification evidence. Counts concern different checks and should not be pooled as independent samples.}
 \centering\small
-\begin{tabularx}{\textwidth}{@{}Lrrr@{}}
-\toprule Instance & Entries: before $\to$ after & Latency (ms): before $\to$ after & Optimal length \\\midrule
-2$\times$2, eight-turn scramble & 770 $\to$ 585 & 20 $\to$ 13 & 6 \\
-3$\times$3, eight-turn scramble & 93,482 $\to$ 58,251 & 109 $\to$ 124 & 8 \\
-3$\times$3, ten-turn scramble & 1,243,298 $\to$ 775,168 & 1957 $\to$ 1590 & 10 \\\bottomrule
+\begin{tabularx}{\textwidth}{@{}p{0.23\textwidth}Lp{0.22\textwidth}@{}}
+\toprule
+Check & Coverage & Outcome \\
+\midrule
+Compiled successor certificates & All 19,353,600 abstract transitions; both masks and distance values & Matched scalar tests \\
+Trace equivalence fixtures & 139 solved, single-turn, and separate legal-state cases & Identical moves, splits, and logical counts \\
+Global-cap boundaries & 15 limits, including checkpoint and success/failure boundaries & Matching count-based outcomes and progress \\
+Primary benchmark & 500 states × 3 configurations × 5 repetitions & All identical outputs; all sticker replays passed \\
+Existing practical regression & 219 cases; 1000 cubie/sticker transitions; 40,320 permutation ranks & Passed \\
+Existing exact-search regression & 2013 searches against shallow independent BFS and cross-checks & Passed \\
+Browser integration & Initial scalar response, compiled follow-up, desktop/mobile viewport,
+playback, photos, cancellation, worker failure & Passed locally and deployed \\
+\bottomrule
 \end{tabularx}
 \end{table*}
 
-The ten-turn instance uses 37.65\% fewer entries and approximately
-18.8\% less search time in the recorded rerun. However, the eight-turn
-3×3 instance is slower despite storing fewer entries. The result
-supports reduced storage on these instances, not a universal timing
-improvement. Earlier timing runs differed; Table 2 uses the archived
-final rerun. Complete scrambles and measurements are available in
+The tests support the implementation but do not constitute a complete
+formal verification of JavaScript, geometric transitions, or visual
+recognition. The photo examples test input handling and symbolic
+solving, rather than unconstrained real-world perception accuracy.
+
+The application also retains earlier exact-search storage improvements.
+On the archived ten-turn instance, bidirectional BFS stores 775,168
+entries instead of 1,243,298 while preserving the optimal length. Those
+changes are a separate implementation result, not an effect of contour
+compilation; their fixed-instance measurements remain in
 \href{https://github.com/nahin333/rubikscube/blob/main/research/results/exact-search.json}{exact-search.json}.
-
-Rendering no longer scans the entire visited set to select visible
-nodes. Its selection cost depends on sampled layers and the returned
-path. Because this change was not isolated in a rendering benchmark, we
-do not assign it a numeric speedup.
-
-\hypertarget{correctness-and-system-evaluation}{%
-\subsection{Correctness and system evaluation}\label{correctness-and-system-evaluation}}
-
-\begin{table*}[t]
-\caption{Verification evidence. The tests cover different populations and should not be pooled as independent samples.}
-\centering\small
-\begin{tabularx}{\textwidth}{@{}p{0.23\textwidth}Lp{0.25\textwidth}@{}}
-\toprule Evaluation & Coverage & Recorded outcome \\\midrule
-Exact-search regression & 2,013 searches; shallow independent BFS oracle and deeper cross-checks & Passed \\
-Practical regression & 219 solved, single-turn, and seeded long-scramble cases & Passed replay and phase checks \\
-Representation consistency & 1,000 cubie/sticker transition comparisons & Matched \\
-Permutation indexing & All 40,320 eight-piece rank/unrank pairs & Matched \\
-Paired practical experiment & 200 shared states, two solvers & All outputs verified \\
-Chromium integration & Desktop/mobile viewport, playback, sample photos, invalid input, cancellation, failure handling & Passed locally and deployed \\\bottomrule
-\end{tabularx}
-\end{table*}
-
-These results support RQ3 within the tested configurations. Generated
-photo examples validate the interface path, not real-world image
-recognition accuracy. Likewise, replay tests cannot exclude all possible
-shared errors in the underlying move definitions.
-
-\hypertarget{component-attribution}{%
-\subsection{Component attribution}\label{component-attribution}}
-
-No controlled ablation currently isolates paired-table choice, candidate
-budgeting, canonical move ordering, or termination policy. The observed
-latency differences therefore cannot be causally attributed to any one
-component. In particular, accepting longer solutions may explain part of
-the advantage over cubejs. A matched-length comparison and a
-candidate-budget sweep are necessary to separate search-policy effects
-from implementation effects.
 
 \hypertarget{limitations}{%
 \section{Limitations}\label{limitations}}
 
-\textbf{Scope of the contribution.} COVE-3 names this verified
-application configuration and its reproducible comparison. It does not
-introduce two-phase search, pattern databases, or bidirectional BFS. The
-evidence is insufficient for a state-of-the-art or new-algorithm claim.
+\textbf{Novelty boundary.} Two-phase search, pattern databases,
+selective generation, bit masks, and dictionary coding have prior
+foundations. This work contributes a particular compiled representation
+and count-budget-preserving implementation with controlled evidence. The
+literature review does not establish a new general search paradigm, a
+first-ever use of the combination, or state-of-the-art solving
+performance.
 
-\textbf{Optimality and completeness.} The practical solver has
-admissible phase bounds but returns a first completion and applies
-resource limits. It is neither globally optimal nor complete under those
-limits. Its 200/200 observed success rate must not be generalized to
-every valid cube.
+\textbf{Resource tradeoffs.} Compiled tables use 36.07\% more persistent
+numeric storage than scalar distances and add preprocessing. Temporary
+BFS queues, compiler maps, garbage collection, and peak browser heap are
+unmeasured. Deferred compilation changes scheduling rather than
+eliminating its cost.
 
-\textbf{Evaluation coverage.} Results concern one hardware/runtime
-configuration and a finite, non-uniform scramble corpus. Each practical
-case is timed once, without controlled repeated JIT warmup, confidence
-intervals, or cross-device replication. Initialization is a single
-observation. A mobile viewport does not characterize performance on a
-physical phone, and Firefox/Safari were not evaluated.
+\textbf{Search guarantees.} Compilation preserves the baseline's
+count-based behavior, including its limitations. The practical solver
+returns a first completion, applies finite resource caps, and can fail
+on a valid cube. It is not globally optimal or complete under those
+caps. Faster execution can change real timeout outcomes, so the
+equivalence theorem excludes an intervening wall-clock guard.
 
-\textbf{Comparator fairness.} The two configurations pursue different
-solution-quality targets. Our method wins on reported latency metrics;
-cubejs wins on aggregate move counts. Ratios of medians should not be
-interpreted as per-instance guarantees or equal-quality algorithmic
-speedups.
+\textbf{Evaluation coverage.} Measurements use one processor and
+runtime, synthetic pseudorandom states, a finite corpus, and a
+deterministic experiment order. Five repetitions and paired bootstrap
+intervals do not establish cross-machine or cross-browser performance.
+The corpus was reused during final verification; this is not an
+independently held-out, preregistered study. A mobile-sized Chromium
+viewport is not a physical-phone performance evaluation.
 
-\textbf{Memory interpretation.} The 5.55 MiB figure is calculated
-persistent typed-array storage. It excludes initialization queues,
-object overhead, graphics resources, and peak heap. No claim of lower
-total memory than cubejs is established.
+\textbf{Comparator coverage.} The primary scalar baseline isolates our
+implementation change. The external cubejs baseline has a different
+length target, and no optimized native solver, modern min2phase
+implementation, or learned solver is evaluated. The flat compiled
+storage calculation is not a flat-code runtime ablation.
 
-\textbf{Vision and learning.} No learned model is introduced. There is
-no labeled photo dataset, perception-accuracy measurement, or end-to-end
-vision benchmark. The photo interface requires user alignment and
-correction. This paper should be positioned as a search/systems study
-with a visual interface, not as a new recognition method.
-
-\textbf{Generalization.} Arbitrary-size reduction, inner-layer moves,
-and large-cube center/edge procedures are not implemented. Results apply
-to the documented 2×2/3×3 models. Verification assumes that the move
-models correctly represent those puzzles.
+\textbf{Scope.} Compiled solving supports the fixed 3×3 model. The
+application's exact demonstrations also support 2×2, but arbitrary-size
+center solving, edge reduction, inner-layer moves, and parity repair for
+larger cubes are not implemented. There is no learned model or evaluated
+autonomous vision contribution.
 
 \hypertarget{conclusion}{%
 \section{Conclusion}\label{conclusion}}
 
-We presented a compact, resource-bounded implementation of two-phase
-cube solving with explicit output verification and browser integration.
-On the recorded evaluation corpus, it reduces median latency relative to
-the previous application dependency while producing modestly longer
-solutions. Complementary exact-search changes reduce stored entries on
-fixed test instances without changing optimal solution lengths. The
-results support a practical interactive-solving configuration, while
-leaving global optimality, universal completion, matched-quality
-comparisons, and arbitrary-size generalization unresolved.
-
-Future work should evaluate uniform random states, repeated trials on
-multiple devices, matched solution-quality targets, and controlled
-component ablations. A separate perception study would be required
-before drawing conclusions about image-based cube recognition.
+Budget-preserving contour compilation improves COVE-3 by generating only
+phase-2 children that pass its established abstract bounds. Dictionary
+encoding reduces storage relative to flat signatures, and batched
+charges preserve the scalar solver's logical limits and deterministic
+output selection. On 500 states, median latency falls from 6.19 to 2.20
+ms with identical solutions and 79.33\% fewer recursive calls. The cost
+is an increase from 5.55 to 7.55 MiB of persistent tables and additional
+compilation work. This establishes an improvement over our previous
+solver at matched output quality. Future evaluation should cover mobile
+hardware, alternative representations, and newer solvers at matched
+targets.
 
 \bibliographystyle{ieeenat_fullname}
 \bibliography{references}

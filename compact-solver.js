@@ -91,7 +91,45 @@
     if (tail !== distances.length) throw new Error('Incomplete pruning table.');
     return distances;
   }
-  function build(P, report = () => {}) {
+  // Compile a paired abstraction into a dictionary of distance/contour signatures.
+  // An undirected unit-cost move changes an exact distance by at most one.
+  // At remaining depth d, successors must decrease distance; at d+1 they
+  // must not increase it; at d+2 or more every move passes this abstraction.
+  function compileContours(A, B, distances) {
+    const ids = new Uint16Array(distances.length), dictionary = [], index = new Map();
+    for (let key = 0; key < distances.length; key++) {
+      const d = distances[key], a = Math.floor(key / 24) * 10, b = (key % 24) * 10;
+      if (d > 15) throw new Error('Contour encoding needs a distance of at most 15.');
+      let down = 0, nonIncreasing = 0;
+      for (let m = 0; m < 10; m++) {
+        const next = distances[A[a + m] * 24 + B[b + m]];
+        if (Math.abs(next - d) > 1) throw new Error('Invalid distance-table transition.');
+        if (next < d) down |= 1 << m;
+        if (next <= d) nonIncreasing |= 1 << m;
+      }
+      const signature = (d << 20) | (nonIncreasing << 10) | down;
+      let id = index.get(signature);
+      if (id === undefined) {
+        id = dictionary.length;
+        if (id >= 65536) throw new Error('Contour dictionary exceeds its 16-bit index.');
+        index.set(signature, id); dictionary.push(signature);
+      }
+      ids[key] = id;
+    }
+    return { ids, dictionary: Uint32Array.from(dictionary) };
+  }
+  function compileTables(T, report = () => {}) {
+    if (T.cpSignatures && T.epSignatures) return T;
+    report('Compiling budget-preserving contour dictionaries');
+    const corner = compileContours(T.cp, T.sp, T.cpSp), edge = compileContours(T.ep, T.sp, T.epSp);
+    return {
+      ...T, cpSp: corner.ids, epSp: edge.ids,
+      cpSignatures: corner.dictionary, epSignatures: edge.dictionary,
+      tableBytes: T.tableBytes - T.cpSp.byteLength - T.epSp.byteLength
+        + corner.ids.byteLength + edge.ids.byteLength + corner.dictionary.byteLength + edge.dictionary.byteLength,
+    };
+  }
+  function build(P, report = () => {}, options = {}) {
     const model = createModel(P), moves = model.moves;
     const phase2 = P.moves.map((m, i) => m.face === 'U' || m.face === 'D' || m.q === 2 ? i : -1).filter(i => i >= 0);
     const masks = [], maskIndex = new Int16Array(4096); maskIndex.fill(-1);
@@ -136,28 +174,34 @@
     report('Building edge-permutation / slice distances');
     const epSp = pairDistances(ep, 40320, sp, 24, 10, 0, 0);
     const tableBytes = [co, eo, sl, cp, ep, sp, coSl, eoSl, cpSp, epSp].reduce((n, a) => n + a.byteLength, 0);
-    return { model, phase2, slice, sliceGoal, co, eo, sl, cp, ep, sp, coSl, eoSl, cpSp, epSp, tableBytes };
+    const tables = { model, phase2, slice, sliceGoal, co, eo, sl, cp, ep, sp, coSl, eoSl, cpSp, epSp, tableBytes };
+    return options.expansion === 'scalar' ? tables : compileTables(tables, report);
   }
   // Opposite face turns commute. Keep only one order, while prohibiting
   // consecutive turns of the same face (which combine into one move).
   function allowed(face, last) { return face !== last && !(last >= 0 && (face + 3) % 6 === last && face < last); }
+  const popcount = v => { v -= (v >>> 1) & 0x55555555; v = (v & 0x33333333) + ((v >>> 2) & 0x33333333); return (((v + (v >>> 4)) & 0x0f0f0f0f) * 0x01010101) >>> 24; };
   function solve(T, stickers, options = {}) {
     const start = T.model.decode(stickers), now = () => performance.now();
     const started = now(), deadline = started + (options.timeoutMs ?? 30000), maxNodes = options.maxNodes ?? 20000000;
     const report = options.report || (() => {}), path = [], path2 = [];
-    let nodes = 0, result = null;
+    let nodes = 0, generatedNodes = 0, skippedNodes = 0, result = null;
+    function checkpoint() {
+      if (now() >= deadline) throw new Error('Search time budget reached; no solution is being claimed.');
+      if ((nodes & 65535) === 0) report({ nodes, elapsedMs: now() - started });
+    }
     function check() {
-      nodes++;
+      nodes++; generatedNodes++;
       if (nodes > maxNodes) throw new Error('Search node budget reached; no solution is being claimed.');
-      if ((nodes & 2047) === 0) {
-        if (now() >= deadline) throw new Error('Search time budget reached; no solution is being claimed.');
-        if ((nodes & 65535) === 0) report({ nodes, elapsedMs: now() - started });
-      }
+      if ((nodes & 2047) === 0) checkpoint();
     }
     const h1 = (c, e, s) => Math.max(T.coSl[c * 495 + s], T.eoSl[e * 495 + s]);
-    const h2 = (c, e, s) => Math.max(T.cpSp[c * 24 + s], T.epSp[e * 24 + s]);
+    const compiled = Boolean(T.cpSignatures && T.epSignatures);
+    const h2 = compiled
+      ? (c, e, s) => Math.max(T.cpSignatures[T.cpSp[c * 24 + s]] >>> 20, T.epSignatures[T.epSp[e * 24 + s]] >>> 20)
+      : (c, e, s) => Math.max(T.cpSp[c * 24 + s], T.epSp[e * 24 + s]);
     let endpointNodes = 0;
-    function dfs2(c, e, s, left, last) {
+    function dfs2Scalar(c, e, s, left, last) {
       check();
       if (++endpointNodes > 250000) return false;
       if (h2(c, e, s) > left) return false;
@@ -172,6 +216,48 @@
       }
       return false;
     }
+    // Charge rejected children exactly as the scalar DFS would have visited
+    // them. Stop at the same endpoint/global limits, and retain every periodic
+    // timeout/progress checkpoint even when several visits are batched.
+    function skip(count) {
+      count = Math.min(count, 250001 - endpointNodes);
+      while (count > 0) {
+        const step = Math.min(count, 2048 - (nodes & 2047), maxNodes + 1 - nodes);
+        nodes += step; skippedNodes += step;
+        if (nodes > maxNodes) throw new Error('Search node budget reached; no solution is being claimed.');
+        if ((nodes & 2047) === 0) checkpoint();
+        endpointNodes += step; count -= step;
+      }
+    }
+    const allowed2 = Array.from({ length: 7 }, (_, i) => T.phase2.reduce((mask, mi, j) => allowed(Math.floor(mi / 3), i - 1) ? mask | (1 << j) : mask, 0));
+    const contourMask = (signature, left) => {
+      const slack = left - (signature >>> 20);
+      return slack >= 2 ? 1023 : slack === 1 ? (signature >>> 10) & 1023 : signature & 1023;
+    };
+    function dfs2Contour(c, e, s, left, last) {
+      check();
+      if (++endpointNodes > 250000) return false;
+      const corner = T.cpSignatures[T.cpSp[c * 24 + s]], edge = T.epSignatures[T.epSp[e * 24 + s]];
+      if ((corner >>> 20) > left || (edge >>> 20) > left) return false;
+      if (!left) return c === 0 && e === 0 && s === 0;
+      let uncharged = allowed2[last + 1];
+      let candidates = uncharged & contourMask(corner, left) & contourMask(edge, left);
+      const cb = c * 10, eb = e * 10, sb = s * 10;
+      while (candidates) {
+        const bit = candidates & -candidates, rejected = uncharged & (bit - 1);
+        skip(popcount(rejected));
+        if (endpointNodes > 250000) return false;
+        uncharged &= ~(rejected | bit); candidates &= candidates - 1;
+        const j = 31 - Math.clz32(bit), mi = T.phase2[j];
+        path2.push(mi);
+        if (dfs2(T.cp[cb + j], T.ep[eb + j], T.sp[sb + j], left - 1, Math.floor(mi / 3))) return true;
+        path2.pop();
+        if (endpointNodes > 250000) return false;
+      }
+      skip(popcount(uncharged));
+      return false;
+    }
+    const dfs2 = compiled && options.expansion !== 'scalar' ? dfs2Contour : dfs2Scalar;
     function finish() {
       let state = start;
       for (const mi of path) state = T.model.turn(state, mi);
@@ -206,9 +292,9 @@
     let verified = start;
     for (const mi of result.moves) verified = T.model.turn(verified, mi);
     if (rank(verified.cp) || verified.ep.some((p, i) => p !== i) || verified.co.some(Boolean) || verified.eo.some(Boolean)) throw new Error('Internal solution verification failed.');
-    return { ...result, nodes, elapsedMs: now() - started, tableBytes: T.tableBytes, optimal: false };
+    return { ...result, nodes, generatedNodes, skippedNodes, elapsedMs: now() - started, tableBytes: T.tableBytes, optimal: false };
   }
-  const api = { createModel, build, solve, rank, unrank, orientation };
+  const api = { createModel, build, solve, rank, unrank, orientation, compileContours, compileTables };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.CompactSolver = api;
 })(globalThis);
