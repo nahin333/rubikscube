@@ -2,7 +2,7 @@
 local stringify = pandoc.utils.stringify
 local raw = function(s) return pandoc.RawBlock('latex', s) end
 local table_index, figure_index = 0, 0
-local citation_keys = {'korf1997', 'kociemba_coordinates', 'kociemba_pruning', 'cubejs', 'mcaleer2018', 'fridrich', 'demaine2011', 'rokicki_gods_number', 'felner2012', 'sturtevant2017'}
+local citation_keys = {'korf1997', 'kociemba_coordinates', 'kociemba_pruning', 'cubejs', 'mcaleer2018', 'fridrich', 'demaine2011', 'rokicki_gods_number', 'felner2012', 'sturtevant2017', 'akagi2010', 'lammich2015'}
 
 function Str(el)
   local before, number, after = el.text:match('^(.-)%[(%d+)%](.*)$')
@@ -37,6 +37,7 @@ function Table(el)
     'Persistent numeric storage. The flat footprint is calculated, not a measured flat-solver latency or peak heap.',
     'Separate cubejs comparison on 200 shared scrambles. One timing per state; solution-quality targets differ.',
     'Verification evidence. Counts concern different checks and should not be pooled as independent samples.',
+    'Follow-up negative results on 500 separate states, five repetitions. Each candidate has its own contemporaneous contour baseline; medians are not pooled across runs.',
   }
   local layouts = {
     {'table*', '\\textwidth', '@{}p{0.20\\textwidth}LLp{0.22\\textwidth}@{}'},
@@ -44,6 +45,7 @@ function Table(el)
     {'table', '\\columnwidth', '@{}Lrr@{}'},
     {'table', '\\columnwidth', '@{}Lrr@{}'},
     {'table*', '\\textwidth', '@{}p{0.23\\textwidth}Lp{0.22\\textwidth}@{}'},
+    {'table*', '\\textwidth', '@{}Lrrr@{}'},
   }
   local layout = assert(layouts[table_index], 'Unexpected manuscript table')
   local function row_latex(row)
@@ -71,6 +73,7 @@ function Pandoc(doc)
     {'system-pipeline', 'Browser execution. The first scalar result is posted before contour compilation; later solves use compiled tables. Photo-derived stickers require manual correction and are not an autonomous vision benchmark.'},
     {'contour-ablation', 'Primary matched-output experiment. (a) Each point is one state\'s median of five timings. (b) Empirical latency distributions for all three configurations. (c) Persistent typed-array storage; the flat footprint is calculated. Outputs and logical counts are identical across configurations.'},
     {'solver-comparison', 'Separate external cubejs comparison: paired latency, latency distributions, and extra moves. Different length targets prevent an equal-quality speedup claim.'},
+    {'research-extensions', 'Follow-up experiments: per-instance latency ratios relative to the concurrently interleaved contour baseline. Ratios above one indicate slower execution. Both transformations preserve the tested count-based contract, but neither improves corpus median latency.'},
   }
   for _, block in ipairs(doc.blocks) do
     local text = stringify(block)

@@ -16,6 +16,7 @@ Turn a scramble into a graph, watch algorithms explore it, and replay a verified
 1. **Budget-preserving contour compilation.** We changed the phase-2 search so it constructs only children that pass both existing abstract distance tests. Skipped calls are still charged to the original logical node budget, preserving which solution is selected under count limits. The [paper](research/REPORT.md#44-preserving-the-search-budget) proves that equivalence when a wall-clock guard does not intervene.
 2. **A compact dictionary of distance and move-filter signatures.** Two ten-bit masks and a distance form a 24-bit signature. Only 40,609 distinct signatures cover 1,935,360 paired-state entries. Sixteen-bit indices reduce total persistent storage from a calculated **11.08 MiB flat representation to 7.55 MiB**; scalar byte distances remain smaller at 5.55 MiB.
 3. **A controlled, reproducible comparison.** We froze the actual previous solver, checked every abstract transition, compared identical move sequences on 500 states with five repetitions, and included an ablation disabling selective generation. The dictionary-only ablation is slower, which supports attributing the gain to the generator change.
+4. **Two further correctness constructions with published negative results.** Exact-cost failure replay and deferred sibling charges extend the budget-preservation argument. Both preserve tested outputs and cutoffs, but neither improves latency; they remain experimental. This adds an explicit account of what did **not** work, without inflating the speedup claim.
 
 COVE-3 means **Compact Output-Verified Exploration for 3×3**. Two-phase solving, pattern databases, selective generation, bit masks, and dictionary coding have prior foundations. Our contribution is this implementation, its budget-preservation argument, and the measured improvement over our previous solver. The [closest selective-generation precedent](https://doi.org/10.1609/aaai.v26i1.8137) already includes Rubik’s Cube; we cite it and do not claim to have invented that general idea.
 
@@ -32,6 +33,24 @@ COVE-3 means **Compact Output-Verified Exploration for 3×3**. Two-phase solving
 **Why budget preservation matters:** on the archived [counterexample](research/results/budget-witness.json), the original solver and our compiled solver both fail at a cap of 50,375 logical visits. Removing the charges lets a naive selective generator return a 24-turn solution at that same nominal cap, because it has silently changed the policy. Our method preserves the contract while accelerating execution under the original allowance. The uncapped-by-that-limit reference returns a different, 23-turn sequence after 303,683 logical visits.
 
 The [dated novelty review](research/NOVELTY.md) documents sources, search scope, overlap, and remaining uncertainty. This is a specific proposed research contribution with measured evidence. Absolute worldwide priority—“nobody has done it before”—has **not** been established and is not asserted in the paper.
+
+### Further research: tested, not promoted as a breakthrough
+
+We implemented **exact-cost failure replay** (reuse an exhausted subtree while charging its original logical cost) and **deferred-charge chain traversal** (follow a single surviving child iteratively, charging later rejected siblings only on failure). The [paper](research/REPORT.md#46-exact-cost-failure-certificates) adds a proof, assumptions, complexity, and related-work comparisons. Caching and iterative traversal have established precedents; worldwide priority is unverified.
+
+On a separate 500-state corpus with five repetitions, failure replay took **2.507 ms versus 2.123 ms** for its paired baseline; chain traversal took **2.683 ms versus 1.954 ms**. Both were slower despite reducing generated visits or recursive calls. The website therefore retains the measured contour solver. These are research findings, **not additional speed improvements**.
+
+![Follow-up latency distributions, including slowdowns](research/figures/research-extensions.svg)
+
+[Full results and interpretation](research/REPORT.md#65-follow-up-extensions-preserved-behavior-without-a-speedup) · [Replay data](research/results/failure-replay.json) · [Traversal data](research/results/corridor-traversal.json)
+
+Reproduce these research variants from the repository root:
+
+```sh
+node tests/research-extensions.cjs
+node tests/benchmark-replay.cjs --count 500 --repeats 5 --seed 0x83d92a --output research/results/failure-replay.json
+node tests/benchmark-replay.cjs --variant corridor --count 500 --repeats 5 --seed 0x83d92a --output research/results/corridor-traversal.json
+```
 
 ## Evidence: same solutions, less generated work
 

@@ -117,6 +117,13 @@ and memory remain separate costs and are measured explicitly.
   500 legal states with repeated measurements, independent sticker
   replay, and exhaustive certificate checks. We report both the latency
   gain and the increased storage cost.
+\item
+  \textbf{A broader accounting argument and two tested extensions.} We
+  extend the count-preservation argument to exact-cost failure
+  certificates and deferred sibling charges along single-successor
+  chains. Their implementations preserve the tested contract but fail to
+  improve latency in a separate evaluation. They remain research
+  variants, not enabled application features.
 \end{enumerate}
 
 Selective generation itself is established work, including for Rubik's
@@ -194,6 +201,21 @@ concerns a fixed 3×3 model and does not solve arbitrary-size reduction.
 The established 20-move diameter \cite{rokicki_gods_number} concerns
 globally optimal paths, whereas our practical solver can return longer
 verified sequences.
+
+\hypertarget{transposition-reuse-and-traversal-transformations}{%
+\subsection{Transposition reuse and traversal transformations}\label{transposition-reuse-and-traversal-transformations}}
+
+Akagi et al.~analyze correctness and replacement policies for IDA*
+transposition tables \cite{akagi2010}. Their work establishes both prior
+art for failure reuse and the need to state cache semantics carefully.
+Our experimental cache stores an exact logical traversal cost for an
+exhausted subtree, rather than a strengthened distance estimate, to
+simulate the existing count budget. Replacing recursion with iteration
+is also established implementation practice; formal DFS refinement has
+been studied by Lammich and Neumann \cite{lammich2015}. Neither caching
+nor iterative traversal is claimed as our invention. The additional
+research question is preservation of this solver's count-based
+observations under these transformations.
 
 \hypertarget{problem-formulation}{%
 \section{Problem Formulation}\label{problem-formulation}}
@@ -457,6 +479,84 @@ For a fixed 3×3 cube the coordinate dimensions are constants. These
 parameterized bounds describe implementation costs and do not imply a
 generalized-cube complexity result.
 
+\hypertarget{exact-cost-failure-certificates}{%
+\subsection{Exact-cost failure certificates}\label{exact-cost-failure-certificates}}
+
+Consider an exhausted phase-2 subtree identified by
+\(x=(c,e,q,r,\ell)\), where \(r\) is remaining depth and \(\ell\) is the
+last face. The last face is essential because it determines canonical
+move exclusions. Let \(w(x)\) be its complete scalar logical visit
+count, including its root. Store \((x,w)\) only after failure without an
+endpoint cutoff. A success, interrupted traversal, or budget-truncated
+failure is not a reusable failure certificate.
+
+After the root visit has been charged normally, a matching certificate
+can replace the remaining traversal only if
+
+\[
+w(x)-1\le\min\{B-n_E,\ G-n_G\},
+\tag{7}
+\]
+
+where \(B,G\) are endpoint and global caps and \(n_E,n_G\) their current
+counts. Otherwise the original traversal runs, preserving the precise
+cutoff boundary. A direct-mapped table stores full numeric keys, so a
+hash collision causes replacement or a miss, never false equality. The
+prototype has \(2^{16}\) slots, with a Float64 key and Uint32 cost per
+slot: 786,432 additional bytes (0.75 MiB) allocated per solve. It probes
+only admitted states with remaining depth 3 through 8.
+
+\textbf{Proposition 3 (failure-certificate replay).} In this fixed-order
+search, replacing an exhausted subtree satisfying (7) by its exact
+remaining logical count preserves returned moves, count-based cutoffs,
+and count-indexed progress notifications, provided the original periodic
+checkpoints are retained and no wall-clock limit intervenes.
+
+\textbf{Proof.} The phase-2 coordinates determine the full subgroup
+state; remaining depth and last face determine its finite, ordered
+search tree. There is no additional ancestor-dependent cycle exclusion.
+Exhaustion establishes that the subtree returns false, so it cannot
+contribute a selected solution. Equation (7) ensures the replaced
+segment cannot cross a count cutoff. Charging its exact remaining
+length, with every periodic checkpoint, reaches the same observable
+counter state as the explicit traversal. Induction over such
+substitutions gives the result, including when a stored cost was
+measured with earlier valid substitutions. Full-key equality and storage
+only after exhaustion make replacement policy irrelevant to soundness.
+Elapsed timestamps and real-time timeout outcomes are outside the claim.
+
+For a certificate of cost \(w\), replay costs \(O(1+w/J)\) rather than
+explicit traversal, where \(J=2048\) is the mandatory checkpoint
+interval. Cache initialization costs \(O(K)\) for \(K\) slots, lookup is
+\(O(1)\) for the fixed direct-mapped scheme, and storage is \(O(K)\).
+Misses, collisions, and lookup overhead remain; exponential worst-case
+search is unchanged. Fewer generated visits do not imply lower measured
+latency.
+
+\hypertarget{deferred-sibling-charges-along-single-successor-chains}{%
+\subsection{Deferred sibling charges along single-successor chains}\label{deferred-sibling-charges-along-single-successor-chains}}
+
+When exactly one child survives the contour masks, all other permitted
+children are known to fail immediately. Charge rejected siblings before
+that child immediately, then descend iteratively. Rejected siblings
+after it must be charged only if the child fails. Their counts
+accumulate as a deferred scalar debt along the chain; a successful
+descendant discards that debt, while a failed descendant charges it with
+the existing capped checkpoint routine before returning.
+
+The invariant is that accumulated debt counts only pending, immediately
+rejected siblings on the active chain. On failure their charges are
+contiguous after inner subtrees finish, so combining them preserves
+count-indexed observations; on success the original DFS never visits
+them. Intermediate cutoff handling truncates debt at the original guard.
+Thus the transformation preserves the same contract as Proposition 2. It
+changes recursion into iteration without skipping generated states,
+strengthening the distinction between call counts and search work. It
+adds \(O(1)\) debt storage per active recursive frame and retains
+\(O(d_2)\) path/stack space and exponential worst-case work. The
+experiment records removed recursive calls separately from generated
+visits.
+
 \hypertarget{experimental-setup}{%
 \section{Experimental Setup}\label{experimental-setup}}
 
@@ -698,6 +798,68 @@ changes are a separate implementation result, not an effect of contour
 compilation; their fixed-instance measurements remain in
 \href{https://github.com/nahin333/rubikscube/blob/main/research/results/exact-search.json}{exact-search.json}.
 
+\hypertarget{follow-up-extensions-preserved-behavior-without-a-speedup}{%
+\subsection{Follow-up extensions: preserved behavior without a speedup}\label{follow-up-extensions-preserved-behavior-without-a-speedup}}
+
+The two research variants in Sections 4.6--4.7 were developed on a
+100-state pilot (seed \texttt{0xb217ef}), then fixed before a separate
+500-state evaluation (seed \texttt{0x83d92a}). Each has its own
+interleaved contour-baseline run with five repetitions, 20 warmup states
+(seed \texttt{0xabc123}), alternating order and corpus direction, and
+independent sticker replay. Cache allocation is included in solve
+latency; shared table construction is excluded. This is a single-machine
+follow-up, not a preregistered or cross-device study. All 500 states,
+repeated timings, outputs, and source hashes are archived separately for
+\href{https://github.com/nahin333/rubikscube/blob/main/research/results/failure-replay.json}{failure
+replay} and
+\href{https://github.com/nahin333/rubikscube/blob/main/research/results/corridor-traversal.json}{chain
+traversal}.
+
+\begin{table*}[t]
+\caption{Follow-up negative results on 500 separate states, five repetitions. Each candidate has its own contemporaneous contour baseline; medians are not pooled across runs.}
+\centering\small
+\begin{tabularx}{\textwidth}{@{}Lrrr@{}}
+\toprule
+Extension & Baseline median, ms & Candidate median, ms & Faster states \\
+\midrule
+Exact-cost failure replay & \textbf{2.123} & 2.507 & 41/500 \\
+Deferred-charge chain traversal & \textbf{1.954} & 2.683 & 25/500 \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+Failure replay records 966,438 cache hits and replaces 13,460,309
+logical visits per single traversal of the corpus. Actual generated
+visits fall from 26,899,938 to 25,852,443, a 3.89\% reduction: many
+logically replayed visits were already skipped by contour masks. The
+median of paired baseline/candidate speed ratios is 0.839, indicating
+slowdown, despite the reduced generated work. Its additional 0.75 MiB
+cache and lookup overhead do not pay off in this implementation.
+
+Chain traversal removes 4,053,590 recursive calls while processing
+exactly the same 26,899,938 generated visits. Its paired median speed
+ratio is 0.683. Debt bookkeeping and the changed traversal structure
+fail to improve measured latency. These results identify a limit of
+call-count-based optimization: reducing recursion or generated visits
+alone does not establish an execution-time gain. We have not profiled
+individual micro-operations, so the data do not isolate the cause of
+each slowdown.
+
+\begin{figure*}[t]
+\centering\includegraphics[width=\textwidth]{figures/research-extensions.pdf}
+\caption{Follow-up experiments: per-instance latency ratios relative to the concurrently interleaved contour baseline. Ratios above one indicate slower execution. Both transformations preserve the tested count-based contract, but neither improves corpus median latency.}
+\label{fig:research-extensions}
+\end{figure*}
+
+Separate correctness tests cover 169 solved, single-turn, and
+legal-state fixtures for both variants. Fifteen global caps test both
+variants and a deliberately collision-heavy two-slot replay cache,
+checking exact outputs, counts, and progress notifications. Zero-timeout
+guards also remain enforced. Both variants preserve every tested output
+and count contract, but neither is enabled in the application. These are
+correctness constructions and negative empirical findings, not
+additional demonstrated speedups or certified first-ever algorithms.
+
 \hypertarget{limitations}{%
 \section{Limitations}\label{limitations}}
 
@@ -708,6 +870,13 @@ and count-budget-preserving implementation with controlled evidence. The
 literature review does not establish a new general search paradigm, a
 first-ever use of the combination, or state-of-the-art solving
 performance.
+
+\textbf{Follow-up scope.} The failure-replay proposition assumes the
+complete subtree key includes every path-dependent restriction. Adding
+ancestor-cycle pruning or other history-dependent rules requires a new
+argument. The research variants are prototypes evaluated in Node; they
+are not enabled in the browser, and their measured slowdowns do not
+prove that every implementation of these ideas must be slower.
 
 \textbf{Resource tradeoffs.} Compiled tables use 36.07\% more persistent
 numeric storage than scalar distances and add preprocessing. Temporary
@@ -753,9 +922,12 @@ output selection. On 500 states, median latency falls from 6.19 to 2.20
 ms with identical solutions and 79.33\% fewer recursive calls. The cost
 is an increase from 5.55 to 7.55 MiB of persistent tables and additional
 compilation work. This establishes an improvement over our previous
-solver at matched output quality. Future evaluation should cover mobile
-hardware, alternative representations, and newer solvers at matched
-targets.
+solver at matched output quality. The accounting argument also supports
+exact-cost failure replay and deferred sibling charges, but both tested
+extensions are slower than the compiled baseline. Their negative results
+reinforce the need for measured latency, not just smaller work counters.
+Future evaluation should cover mobile hardware, alternative
+representations, and newer solvers at matched targets.
 
 \bibliographystyle{ieeenat_fullname}
 \bibliography{references}

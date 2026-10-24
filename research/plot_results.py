@@ -138,6 +138,26 @@ plt.close(fig)
 for artifact in out.glob("*.svg"):
     artifact.write_text("\n".join(line.rstrip() for line in artifact.read_text().splitlines()) + "\n")
 
+# Separate follow-up studies: retain paired baselines, including slowdowns.
+fig, axes = plt.subplots(1, 2, figsize=(10, 3.6), layout="constrained")
+for ax, name, title in zip(axes, ("failure-replay", "corridor-traversal"),
+                          ("(a) Exact-cost failure replay", "(b) Deferred-charge traversal")):
+    experiment = json.loads((ROOT / f"results/{name}.json").read_text())
+    ratios = np.array([r["medianMs"]["candidate"] / r["medianMs"]["contour"]
+                       for r in experiment["rows"]])
+    ax.step(np.sort(ratios), np.arange(1, len(ratios) + 1) / len(ratios),
+            where="post", color=orange, linewidth=1.8)
+    ax.axvline(1, color="0.35", linestyle="--", linewidth=1, label="Equal latency")
+    ax.set(xlabel="Candidate / baseline latency (above 1 = slower)",
+           ylabel="Empirical cumulative fraction", title=title, ylim=(0, 1.02))
+    ax.legend(frameon=False, loc="lower right")
+    ax.grid(alpha=0.15)
+for extension in ("svg", "pdf", "png"):
+    fig.savefig(out / f"research-extensions.{extension}", dpi=200)
+plt.close(fig)
+artifact = out / "research-extensions.svg"
+artifact.write_text("\n".join(line.rstrip() for line in artifact.read_text().splitlines()) + "\n")
+
 print(json.dumps({"cases": len(rows), "compact_faster": int(np.sum(candidate < baseline)),
                   "compact_shorter": int(np.sum(delta < 0)), "equal_length": int(np.sum(delta == 0)),
                   "compact_longer": int(np.sum(delta > 0)), "mean_extra_moves": float(delta.mean())}))

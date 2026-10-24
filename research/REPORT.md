@@ -23,6 +23,7 @@ This produces a comparison with a particularly clear quality control: the old an
 1. **A compact compiler for paired phase-2 abstractions.** COVE-3 combines two contour masks and a distance in a 24-bit signature and stores repeated signatures through 16-bit indices. The two product tables contain 1,935,360 entries but only 40,609 distinct signatures in total.
 2. **A budget-preserving selective-generation rule.** We derive exact move filters and a batched logical-visit accounting rule, proving that fixed-order search retains the scalar solver’s outputs and count-based stopping behavior when wall-clock guards do not intervene.
 3. **A controlled implementation study.** We compare the frozen scalar solver, a dictionary-only ablation, and the compiled solver on 500 legal states with repeated measurements, independent sticker replay, and exhaustive certificate checks. We report both the latency gain and the increased storage cost.
+4. **A broader accounting argument and two tested extensions.** We extend the count-preservation argument to exact-cost failure certificates and deferred sibling charges along single-successor chains. Their implementations preserve the tested contract but fail to improve latency in a separate evaluation. They remain research variants, not enabled application features.
 
 Selective generation itself is established work, including for Rubik’s Cube. Our contribution is this dictionary representation, its integration with the paired-coordinate solver and visit-budget policy, and the supporting evaluation. We do not establish that this combination is the first use of every ingredient in the literature.
 
@@ -47,6 +48,10 @@ Felner et al. introduce enhanced partial expansion and an iterative-deepening va
 Value compression reduces the set of representable heuristic values [10]. Our dictionary instead preserves complete distance-and-operator signatures exactly. Compression itself is prior work; the object encoded here and its integration with logical-budget preservation define our proposed contribution.
 
 McAleer et al. study learned search guidance for cube solving [5], while human-oriented methods such as Fridrich’s method optimize recognition and physical execution [6]. Neither is evaluated as a primary comparator here. Demaine et al. analyze generalized cubes [7]; our optimization concerns a fixed 3×3 model and does not solve arbitrary-size reduction. The established 20-move diameter [8] concerns globally optimal paths, whereas our practical solver can return longer verified sequences.
+
+### 2.4. Transposition reuse and traversal transformations
+
+Akagi et al. analyze correctness and replacement policies for IDA* transposition tables [11]. Their work establishes both prior art for failure reuse and the need to state cache semantics carefully. Our experimental cache stores an exact logical traversal cost for an exhausted subtree, rather than a strengthened distance estimate, to simulate the existing count budget. Replacing recursion with iteration is also established implementation practice; formal DFS refinement has been studied by Lammich and Neumann [12]. Neither caching nor iterative traversal is claimed as our invention. The additional research question is preservation of this solver's count-based observations under these transformations.
 
 ## 3. Problem Formulation
 
@@ -192,6 +197,31 @@ Let $S_1=2187+2048+495$ and $S_2=40320+40320+24$. Scalar preprocessing performs 
 
 For a fixed 3×3 cube the coordinate dimensions are constants. These parameterized bounds describe implementation costs and do not imply a generalized-cube complexity result.
 
+### 4.6. Exact-cost failure certificates
+
+Consider an exhausted phase-2 subtree identified by $x=(c,e,q,r,\ell)$, where $r$ is remaining depth and $\ell$ is the last face. The last face is essential because it determines canonical move exclusions. Let $w(x)$ be its complete scalar logical visit count, including its root. Store $(x,w)$ only after failure without an endpoint cutoff. A success, interrupted traversal, or budget-truncated failure is not a reusable failure certificate.
+
+After the root visit has been charged normally, a matching certificate can replace the remaining traversal only if
+
+$$
+w(x)-1\le\min\{B-n_E,\ G-n_G\},
+\tag{7}
+$$
+
+where $B,G$ are endpoint and global caps and $n_E,n_G$ their current counts. Otherwise the original traversal runs, preserving the precise cutoff boundary. A direct-mapped table stores full numeric keys, so a hash collision causes replacement or a miss, never false equality. The prototype has $2^{16}$ slots, with a Float64 key and Uint32 cost per slot: 786,432 additional bytes (0.75 MiB) allocated per solve. It probes only admitted states with remaining depth 3 through 8.
+
+**Proposition 3 (failure-certificate replay).** In this fixed-order search, replacing an exhausted subtree satisfying (7) by its exact remaining logical count preserves returned moves, count-based cutoffs, and count-indexed progress notifications, provided the original periodic checkpoints are retained and no wall-clock limit intervenes.
+
+**Proof.** The phase-2 coordinates determine the full subgroup state; remaining depth and last face determine its finite, ordered search tree. There is no additional ancestor-dependent cycle exclusion. Exhaustion establishes that the subtree returns false, so it cannot contribute a selected solution. Equation (7) ensures the replaced segment cannot cross a count cutoff. Charging its exact remaining length, with every periodic checkpoint, reaches the same observable counter state as the explicit traversal. Induction over such substitutions gives the result, including when a stored cost was measured with earlier valid substitutions. Full-key equality and storage only after exhaustion make replacement policy irrelevant to soundness. Elapsed timestamps and real-time timeout outcomes are outside the claim.
+
+For a certificate of cost $w$, replay costs $O(1+w/J)$ rather than explicit traversal, where $J=2048$ is the mandatory checkpoint interval. Cache initialization costs $O(K)$ for $K$ slots, lookup is $O(1)$ for the fixed direct-mapped scheme, and storage is $O(K)$. Misses, collisions, and lookup overhead remain; exponential worst-case search is unchanged. Fewer generated visits do not imply lower measured latency.
+
+### 4.7. Deferred sibling charges along single-successor chains
+
+When exactly one child survives the contour masks, all other permitted children are known to fail immediately. Charge rejected siblings before that child immediately, then descend iteratively. Rejected siblings after it must be charged only if the child fails. Their counts accumulate as a deferred scalar debt along the chain; a successful descendant discards that debt, while a failed descendant charges it with the existing capped checkpoint routine before returning.
+
+The invariant is that accumulated debt counts only pending, immediately rejected siblings on the active chain. On failure their charges are contiguous after inner subtrees finish, so combining them preserves count-indexed observations; on success the original DFS never visits them. Intermediate cutoff handling truncates debt at the original guard. Thus the transformation preserves the same contract as Proposition 2. It changes recursion into iteration without skipping generated states, strengthening the distinction between call counts and search work. It adds $O(1)$ debt storage per active recursive frame and retains $O(d_2)$ path/stack space and exponential worst-case work. The experiment records removed recursive calls separately from generated visits.
+
 ## 5. Experimental Setup
 
 ### 5.1. Questions and configurations
@@ -292,11 +322,34 @@ The tests support the implementation but do not constitute a complete formal ver
 
 The application also retains earlier exact-search storage improvements. On the archived ten-turn instance, bidirectional BFS stores 775,168 entries instead of 1,243,298 while preserving the optimal length. Those changes are a separate implementation result, not an effect of contour compilation; their fixed-instance measurements remain in [exact-search.json](results/exact-search.json).
 
+### 6.5. Follow-up extensions: preserved behavior without a speedup
+
+The two research variants in Sections 4.6–4.7 were developed on a 100-state pilot (seed `0xb217ef`), then fixed before a separate 500-state evaluation (seed `0x83d92a`). Each has its own interleaved contour-baseline run with five repetitions, 20 warmup states (seed `0xabc123`), alternating order and corpus direction, and independent sticker replay. Cache allocation is included in solve latency; shared table construction is excluded. This is a single-machine follow-up, not a preregistered or cross-device study. All 500 states, repeated timings, outputs, and source hashes are archived separately for [failure replay](results/failure-replay.json) and [chain traversal](results/corridor-traversal.json).
+
+**Table 6.** Follow-up performance. Each row uses its own paired baseline; numbers are not pooled with the earlier primary study.
+
+| Extension | Baseline median, ms | Candidate median, ms | Faster states |
+| :--- | ---: | ---: | ---: |
+| Exact-cost failure replay | **2.123** | 2.507 | 41/500 |
+| Deferred-charge chain traversal | **1.954** | 2.683 | 25/500 |
+
+Failure replay records 966,438 cache hits and replaces 13,460,309 logical visits per single traversal of the corpus. Actual generated visits fall from 26,899,938 to 25,852,443, a 3.89% reduction: many logically replayed visits were already skipped by contour masks. The median of paired baseline/candidate speed ratios is 0.839, indicating slowdown, despite the reduced generated work. Its additional 0.75 MiB cache and lookup overhead do not pay off in this implementation.
+
+Chain traversal removes 4,053,590 recursive calls while processing exactly the same 26,899,938 generated visits. Its paired median speed ratio is 0.683. Debt bookkeeping and the changed traversal structure fail to improve measured latency. These results identify a limit of call-count-based optimization: reducing recursion or generated visits alone does not establish an execution-time gain. We have not profiled individual micro-operations, so the data do not isolate the cause of each slowdown.
+
+![Follow-up extensions retain negative latency results](figures/research-extensions.svg)
+
+**Figure 4.** Per-state candidate/baseline latency ratios. Values above one are slower. Each distribution uses medians of five measurements, and each candidate is compared with its own interleaved baseline.
+
+Separate correctness tests cover 169 solved, single-turn, and legal-state fixtures for both variants. Fifteen global caps test both variants and a deliberately collision-heavy two-slot replay cache, checking exact outputs, counts, and progress notifications. Zero-timeout guards also remain enforced. Both variants preserve every tested output and count contract, but neither is enabled in the application. These are correctness constructions and negative empirical findings, not additional demonstrated speedups or certified first-ever algorithms.
+
 ## 7. Limitations
 
 <a id="limitations-and-claims-we-do-not-make"></a>
 
 **Novelty boundary.** Two-phase search, pattern databases, selective generation, bit masks, and dictionary coding have prior foundations. This work contributes a particular compiled representation and count-budget-preserving implementation with controlled evidence. The literature review does not establish a new general search paradigm, a first-ever use of the combination, or state-of-the-art solving performance.
+
+**Follow-up scope.** The failure-replay proposition assumes the complete subtree key includes every path-dependent restriction. Adding ancestor-cycle pruning or other history-dependent rules requires a new argument. The research variants are prototypes evaluated in Node; they are not enabled in the browser, and their measured slowdowns do not prove that every implementation of these ideas must be slower.
 
 **Resource tradeoffs.** Compiled tables use 36.07% more persistent numeric storage than scalar distances and add preprocessing. Temporary BFS queues, compiler maps, garbage collection, and peak browser heap are unmeasured. Deferred compilation changes scheduling rather than eliminating its cost.
 
@@ -310,7 +363,7 @@ The application also retains earlier exact-search storage improvements. On the a
 
 ## 8. Conclusion
 
-Budget-preserving contour compilation improves COVE-3 by generating only phase-2 children that pass its established abstract bounds. Dictionary encoding reduces storage relative to flat signatures, and batched charges preserve the scalar solver’s logical limits and deterministic output selection. On 500 states, median latency falls from 6.19 to 2.20 ms with identical solutions and 79.33% fewer recursive calls. The cost is an increase from 5.55 to 7.55 MiB of persistent tables and additional compilation work. This establishes an improvement over our previous solver at matched output quality. Future evaluation should cover mobile hardware, alternative representations, and newer solvers at matched targets.
+Budget-preserving contour compilation improves COVE-3 by generating only phase-2 children that pass its established abstract bounds. Dictionary encoding reduces storage relative to flat signatures, and batched charges preserve the scalar solver’s logical limits and deterministic output selection. On 500 states, median latency falls from 6.19 to 2.20 ms with identical solutions and 79.33% fewer recursive calls. The cost is an increase from 5.55 to 7.55 MiB of persistent tables and additional compilation work. This establishes an improvement over our previous solver at matched output quality. The accounting argument also supports exact-cost failure replay and deferred sibling charges, but both tested extensions are slower than the compiled baseline. Their negative results reinforce the need for measured latency, not just smaller work counters. Future evaluation should cover mobile hardware, alternative representations, and newer solvers at matched targets.
 
 ## References
 
@@ -333,3 +386,7 @@ Budget-preserving contour compilation improves COVE-3 by generating only phase-2
 [9] Ariel Felner, Meir Goldenberg, Guni Sharon, Roni Stern, Tal Beja, Nathan Sturtevant, Jonathan Schaeffer, and Robert Holte. **Partial-Expansion A* with Selective Node Generation.** AAAI 26(1):471–477, 2012. [Publisher](https://doi.org/10.1609/aaai.v26i1.8137).
 
 [10] Nathan R. Sturtevant, Ariel Felner, and Malte Helmert. **Value Compression of Pattern Databases.** AAAI, 2017. [Publisher](https://doi.org/10.1609/aaai.v31i1.10665).
+
+[11] Yuima Akagi, Akihiro Kishimoto, and Alex Fukunaga. **On Transposition Tables for Single-Agent Search and Planning: Summary of Results.** SoCS 1(1):2–9, 2010. [Publisher](https://doi.org/10.1609/socs.v1i1.18164).
+
+[12] Peter Lammich and René Neumann. **A Framework for Verifying Depth-First Search Algorithms.** CPP, pp. 137–146, 2015. [Publisher](https://doi.org/10.1145/2676724.2693165).
