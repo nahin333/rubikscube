@@ -44,6 +44,13 @@ let browser;
   console.log('Long scramble', await finished());
   assert.equal(await page.evaluate(() => window.__workerResults.at(-1).tableBytes), 12043251);
   assert.ok(await page.evaluate(() => window.__workerResults.at(-1).skippedNodes > 0), 'Subsequent solves must use compiled dual-horizon pruning');
+  await page.locator('#ablateBtn').click();
+  await page.waitForFunction(() => window.__labTest && !window.__labTest.app.running && Array.isArray(window.__labTest.app.ablation) && window.__labTest.app.ablation.length === 4, null, { timeout: 60000 });
+  assert.ok(await page.evaluate(() => {
+    const a = window.__labTest.app.ablation;
+    return a[3].generatedNodes < a[2].generatedNodes && a[2].generatedNodes < a[1].generatedNodes && a[1].generatedNodes < a[0].generatedNodes;
+  }), 'Live 4-stage ablation must monotonically prune visits');
+  await page.screenshot({ path: '/tmp/rubiks-desktop.png', fullPage: true });
   await page.waitForTimeout(450); // Delayed input reset must not erase a fast result.
   assert.ok(await page.evaluate(() => window.__labTest.app.sol !== null));
   await page.locator('#toEnd').click();

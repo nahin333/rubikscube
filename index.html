@@ -168,6 +168,39 @@ select { font: 13px var(--f-body); color: var(--ink); background: var(--bg); bor
 .movepad button + button { border-left: 1px solid var(--line); }
 .movepad button:hover { background: var(--soft); }
 .phase-sep { font: 600 11px var(--f-body); color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; align-self: center; padding: 0 2px; }
+.compiler-pill {
+  display: inline-flex; align-items: center; gap: 8px; margin-top: 8px; padding: 5px 10px;
+  border: 1px solid var(--line); border-radius: 999px; background: var(--panel);
+  font: 500 12px var(--f-mono); color: var(--muted); max-width: 100%;
+}
+.compiler-pill i { width: 8px; height: 8px; border-radius: 50%; background: var(--bwd); flex: none; }
+.compiler-pill.ready { border-color: color-mix(in srgb, var(--fwd) 45%, var(--line)); color: var(--ink); }
+.compiler-pill.ready i { background: var(--fwd); }
+.btn-sm { padding: 4px 10px; font-size: 12px; border-radius: 6px; }
+.badge-new {
+  display: inline-block; padding: 2px 8px; border-radius: 999px; background: var(--fwd); color: #fff;
+  font: 600 11px var(--f-mono); letter-spacing: 0.04em; text-transform: uppercase;
+}
+.dh-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(195px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.dh-metrics .stat small { font-size: 12px; color: var(--muted); line-height: 1.35; }
+.dh-metrics .stat small b { font-size: 12px; color: var(--ink); font-weight: 600; }
+.dh-pillars { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
+.dh-pillar { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: grid; gap: 6px; align-content: start; min-width: 0; }
+.dh-pillar h3 { margin: 0; font: 600 14px var(--f-body); color: var(--ink); }
+.dh-pillar p { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.48; }
+.dh-grid { display: grid; grid-template-columns: minmax(0, 1.04fr) minmax(0, 1.12fr); gap: 16px; align-items: start; }
+@media (max-width: 980px) { .dh-grid { grid-template-columns: minmax(0, 1fr); } }
+.dh-fig { background: #ffffff; border: 1px solid var(--line); border-radius: 8px; padding: 8px; margin: 0; min-width: 0; }
+.dh-fig img { width: 100%; max-width: 100%; height: auto; display: block; border-radius: 4px; }
+.dh-fig figcaption { font-size: 12px; color: #475569; padding: 6px 4px 2px; line-height: 1.4; }
+.dh-table-wrap { overflow-x: auto; max-width: 100%; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+.dh-table { width: 100%; border-collapse: collapse; font-size: 12px; white-space: nowrap; }
+.dh-table th, .dh-table td { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: right; font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.dh-table th:first-child, .dh-table td:first-child { text-align: left; font-family: var(--f-body); }
+.dh-table th { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); background: var(--panel); }
+#chart.scan-mode { overflow: hidden; }
+.dh-table tr:last-child td { border-bottom: 0; }
+.dh-table tr.hi td { font-weight: 600; color: var(--ink); background: color-mix(in srgb, var(--fwd) 9%, var(--bg)); }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
 </style>
 
@@ -179,7 +212,9 @@ select { font: 13px var(--f-body); color: var(--ink); background: var(--bg); bor
       <nav class="resource-links" aria-label="Project links">
         <a href="https://github.com/nahin333/rubikscube" target="_blank" rel="noopener noreferrer">GitHub repository ↗</a>
         <a href="research/paper.pdf" target="_blank" rel="noopener noreferrer">Research paper (PDF) ↗</a>
+        <a href="#dual-horizon">Stage-2 Dual-Horizon results ↓</a>
       </nav>
+      <div class="compiler-pill" id="compilerStatus" role="status" aria-live="polite"><i></i><span>COVE-3 engine: cold scalar start → compiling Potential-Free Dual-Horizon…</span></div>
     </div>
     <div class="facts" id="facts"></div>
   </header>
@@ -289,7 +324,13 @@ select { font: 13px var(--f-body); color: var(--ink); background: var(--bg); bor
 
       <div class="lower">
         <section class="card">
-          <div class="card-head"><h2>States discovered per depth</h2><span class="hint">log scale</span></div>
+          <div class="card-head">
+            <h2 id="chartTitle">States discovered per depth</h2>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span class="hint" id="chartHint">log scale</span>
+              <button type="button" class="btn btn-sm" id="ablateBtn" hidden>Compare all 4 stages</button>
+            </div>
+          </div>
           <div class="legend" id="chartLegend"></div>
           <div class="chart-box"><svg id="chart" height="230"></svg><div class="tip" id="tip" hidden></div></div>
         </section>
@@ -306,6 +347,77 @@ select { font: 13px var(--f-body); color: var(--ink); background: var(--bg); bor
       </div>
     </div>
   </div>
+
+  <section class="card" id="dual-horizon">
+    <div class="card-head">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span class="badge-new">Stage-2 Update</span>
+        <h2>Potential-Free Coboundary &amp; Cayley-Clique Dual-Horizon Compilation</h2>
+      </div>
+      <span class="hint">100% identical scalar paths &amp; node budgets · Held-out 500-state seed <code>0xd48a63</code></span>
+    </div>
+    <div class="dh-metrics">
+      <div class="stat">
+        <span>Generated visits</span>
+        <b>−93.62%</b>
+        <small><b>−68.47%</b> beyond Stage-1 COVE-3 (131.54M → 26.60M → 8.39M)</small>
+      </div>
+      <div class="stat">
+        <span>Held-out median latency</span>
+        <b>1.84 ms</b>
+        <small><b>1.43 ms</b> pairwise · faster on <b>499 / 500</b> states vs. Stage-1</small>
+      </div>
+      <div class="stat">
+        <span>Unified H2 dictionary</span>
+        <b>24,743</b>
+        <small><b>39.07%</b> fewer entries &amp; <b>62,440 B</b> smaller than 1-step COVE-3</small>
+      </div>
+      <div class="stat">
+        <span>Stored scalar distances</span>
+        <b>0 bits</b>
+        <small>15 Cayley-K<sub>4</sub> SWAR syndromes + steepest-descent 1-form walks</small>
+      </div>
+    </div>
+    <div class="dh-pillars">
+      <div class="dh-pillar">
+        <h3>1. Phase-1 Cayley-K<sub>4</sub> Clique-Syndrome SWAR</h3>
+        <p>Each outer face's coset <code>{I, F, F2, F'}</code> forms a K<sub>4</sub> clique in every half-turn quotient Cayley graph, forcing <code>M− ≠ 0 ⇒ M0 = 111</code> and collapsing 64 move-mask pairs to <b>15 realizable 4-bit syndromes</b> (24 bits = 3 bytes/state). All 18 moves decode in parallel via <code>((w &gt;&gt;&gt; 3) &amp; 0x111111) * 7</code> with linear coboundary integration <code>ΔD = 1 − μ − v</code>.</p>
+      </div>
+      <div class="dh-pillar">
+        <h3>2. Unified Coboundary Horizon-2 Dictionary</h3>
+        <p>Over half (<b>53.81%</b>) of Stage-1 COVE-3's Phase-2 visits were dead-on-arrival Horizon-2 ghosts. Omitting scalar potentials <code>D(a)</code>—recovering root distances once per endpoint by steepest-descent 1-form walks along <code>M−</code>—quotients level sets and fits unary canonical Horizon-2 masks <code>M−(2)</code> in <b>7.49 MiB</b> (smaller than Stage-1's 7.55 MiB).</p>
+      </div>
+      <div class="dh-pillar">
+        <h3>3. Three-Tier Ghost Accounting &amp; Barrier</h3>
+        <p>A 1-KiB lookup table batch-charges Horizon-1 (<code>1</code>), Horizon-2 (<code>1 + |Af|</code>), and hoisted unary-starved Horizon-3 (<code>1 + |Af| + extra[nh1]</code>) subtrees in <code>O(1)</code>, preserving exact 250,000-visit endpoint cutoffs. A set-disjointness reduction proves Horizon 2 is maximal for factored unary tables.</p>
+      </div>
+    </div>
+    <div class="dh-grid">
+      <figure class="dh-fig">
+        <img src="research/figures/dual-horizon.svg" alt="Held-out 500-state evaluation of potential-free dual-horizon compilation" loading="lazy">
+        <figcaption>Held-out 500-state evaluation (<code>seed 0xd48a63</code>, 5 repeats): paired latency vs. Stage-1 COVE-3 (499/500 faster), empirical CDFs, and generated visits across all five compilation stages.</figcaption>
+      </figure>
+      <div style="display:grid;gap:10px;min-width:0">
+        <div class="dh-table-wrap">
+          <table class="dh-table" aria-label="Held-out 500-state ablation summary">
+            <thead>
+              <tr><th>Configuration</th><th>Size</th><th>Visits</th><th>Median</th><th>P95</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>3-way: Scalar baseline</td><td>5.55 MiB</td><td>131,538,403</td><td>5.58 ms</td><td>28.39 ms</td></tr>
+              <tr><td>3-way: Stage-1 COVE-3</td><td>7.55 MiB</td><td>26,601,908</td><td>2.57 ms</td><td>10.76 ms</td></tr>
+              <tr class="hi"><td>3-way: Potential-Free Dual</td><td>11.49 MiB</td><td>8,388,304</td><td>1.84 ms</td><td>9.02 ms</td></tr>
+              <tr><td>Pairwise A: Stage-1 COVE-3</td><td>7.55 MiB</td><td>26,601,908</td><td>2.14 ms</td><td>9.19 ms</td></tr>
+              <tr class="hi"><td>Pairwise A: Coboundary H2-only</td><td>7.49 MiB</td><td>16,712,753</td><td>2.04 ms</td><td>8.54 ms</td></tr>
+              <tr><td>Pairwise B: 32-bit Clique-SWAR</td><td>13.48 MiB</td><td>8,388,304</td><td>1.46 ms</td><td>7.62 ms</td></tr>
+              <tr class="hi"><td>Pairwise B: Potential-Free Dual</td><td>11.49 MiB</td><td>8,388,304</td><td>1.43 ms</td><td>7.57 ms</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="hint" style="margin:0;line-height:1.45">Tip: click <b>Compare all 4 stages</b> inside the chart card above to benchmark all four compiler stages live on your current scramble in this browser tab. Full proofs and artifacts: <a href="research/paper.pdf" target="_blank" rel="noopener noreferrer" style="color:var(--fwd)">PDF paper ↗</a> · <a href="https://github.com/nahin333/rubikscube/blob/main/research/REPORT.md" target="_blank" rel="noopener noreferrer" style="color:var(--fwd)">Markdown manuscript ↗</a> · <a href="https://github.com/nahin333/rubikscube/blob/main/research/NOVELTY.md" target="_blank" rel="noopener noreferrer" style="color:var(--fwd)">Novelty review ↗</a>.</p>
+      </div>
+    </div>
+  </section>
 
   <section class="card">
     <h2>The graph behind the cube</h2>
@@ -540,7 +652,7 @@ function createSearch(P, startKey, algo, cap = CAP[P.N]) {
 
 // ---------- App state ----------
 const $ = id => document.getElementById(id);
-const app = { mode: 'search', scanInfo: null, N: 3, algo: 'compact', P: null, search: null, running: false, sol: null, pos: 0, states: [], cur: null, startState: null, selected: -1, playing: false, busy: false, drawn: [], t0: 0, elapsed: 0 };
+const app = { mode: 'search', scanInfo: null, ablation: null, dualCompiled: false, N: 3, algo: 'compact', P: null, search: null, running: false, sol: null, pos: 0, states: [], cur: null, startState: null, selected: -1, playing: false, busy: false, drawn: [], t0: 0, elapsed: 0 };
 
 function tok(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
 const fmt = n => n.toLocaleString('en-US');
@@ -871,16 +983,79 @@ function drawNeighbours() {
   $('nbrHint').textContent = S ? `degree ${k} · ${explored} seen by search` : `degree ${k}`;
 }
 
-// ---------- Chart: states per depth ----------
+// ---------- Chart: states per depth / COVE-3 dual-horizon pruning ----------
+function drawScanChart(svg, W, H) {
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.onmousemove = null; $('tip').hidden = true;
+  const barFull = Math.max(80, W - 12);
+  if (app.ablation && app.ablation.length) {
+    $('chartTitle').textContent = 'Live 4-stage ablation on this cube';
+    $('chartHint').textContent = 'median of 3 runs';
+    const baseGen = Math.max(1, app.ablation[0].generatedNodes);
+    let html = '';
+    app.ablation.forEach((st, idx) => {
+      const y0 = 16 + idx * 45;
+      const frac = Math.min(1, st.generatedNodes / baseGen);
+      const w = st.generatedNodes === 0 ? 4 : Math.max(5, frac * barFull);
+      const pct = idx === 0 ? 'baseline' : `−${((1 - st.generatedNodes / baseGen) * 100).toFixed(1)}%`;
+      const color = idx === 3 ? 'var(--fwd)' : idx === 2 ? '#18988b' : idx === 1 ? 'var(--bwd)' : 'var(--muted)';
+      html += `<text x="6" y="${y0}" fill="var(--ink)" font-size="11.5" font-weight="${idx === 3 ? '700' : '600'}" font-family="Instrument Sans, sans-serif">${st.label}</text>`;
+      html += `<text x="${W - 6}" y="${y0}" text-anchor="end" fill="var(--muted)" font-size="11" font-family="JetBrains Mono, monospace">${fmt(st.generatedNodes)} (${pct}) · ${st.ms.toFixed(2)} ms</text>`;
+      html += `<rect x="6" y="${y0 + 6}" width="${barFull}" height="10" rx="5" fill="var(--soft)"/>`;
+      html += `<rect x="6" y="${y0 + 6}" width="${w}" height="10" rx="5" fill="${color}"/>`;
+    });
+    const s0 = app.ablation[0];
+    html += `<text x="6" y="214" fill="var(--muted)" font-size="10.5" font-family="JetBrains Mono, monospace">✓ Identical ${s0.moves.length}-turn path &amp; ${fmt(s0.nodes)} logical budget</text>`;
+    svg.innerHTML = html;
+    return;
+  }
+  const info = app.scanInfo;
+  if (!info) return;
+  if (info.skippedNodes > 0) {
+    const total = Math.max(1, info.nodes);
+    const skipPct = ((info.skippedNodes / total) * 100).toFixed(1);
+    const genPct = ((info.generatedNodes / total) * 100).toFixed(1);
+    $('chartTitle').textContent = 'Dual-horizon pruning on this cube';
+    $('chartHint').textContent = `${skipPct}% visits pruned`;
+    const rows = [
+      { label: 'Scalar logical budget', val: `${fmt(info.nodes)} (100%)`, frac: 1, color: 'var(--muted)' },
+      { label: 'Pruned in O(1) (SWAR + H2)', val: `${fmt(info.skippedNodes)} (${skipPct}%)`, frac: info.skippedNodes / total, color: 'var(--bwd)' },
+      { label: 'Generated DFS visits', val: `${fmt(info.generatedNodes)} (${genPct}%)`, frac: info.generatedNodes / total, color: 'var(--fwd)' },
+    ];
+    let html = '';
+    rows.forEach((r, idx) => {
+      const y0 = 20 + idx * 54;
+      const w = r.frac === 0 ? 0 : Math.max(5, Math.min(1, r.frac) * barFull);
+      html += `<text x="6" y="${y0}" fill="var(--ink)" font-size="11.5" font-weight="600" font-family="Instrument Sans, sans-serif">${r.label}</text>`;
+      html += `<text x="${W - 6}" y="${y0}" text-anchor="end" fill="var(--muted)" font-size="10.5" font-family="JetBrains Mono, monospace">${r.val}</text>`;
+      html += `<rect x="6" y="${y0 + 7}" width="${barFull}" height="12" rx="6" fill="var(--soft)"/>`;
+      if (w > 0) html += `<rect x="6" y="${y0 + 7}" width="${w}" height="12" rx="6" fill="${r.color}"/>`;
+    });
+    html += `<text x="6" y="208" fill="var(--muted)" font-size="11" font-family="Instrument Sans, sans-serif">Use "Compare all 4 stages" above to benchmark all 4 compilers.</text>`;
+    svg.innerHTML = html;
+    return;
+  }
+  $('chartTitle').textContent = 'COVE-3 cold-start & compiler pipeline';
+  $('chartHint').textContent = app.dualCompiled ? 'dual-horizon ready' : 'compiling in worker…';
+  let html = `<text x="6" y="26" fill="var(--ink)" font-size="12" font-weight="600" font-family="Instrument Sans, sans-serif">1. Cold first response (fast scalar tables · 5.55 MiB)</text>`;
+  html += `<text x="${W - 6}" y="26" text-anchor="end" fill="var(--muted)" font-size="11" font-family="JetBrains Mono, monospace">${fmt(info.nodes)} visits · ${Math.round(info.ms)} ms</text>`;
+  html += `<rect x="6" y="34" width="${barFull}" height="12" rx="6" fill="var(--muted)"/>`;
+  html += `<rect x="6" y="68" width="${barFull}" height="108" rx="8" fill="var(--soft)" stroke="var(--line)"/>`;
+  html += `<text x="18" y="96" fill="var(--ink)" font-size="12.5" font-weight="600" font-family="Instrument Sans, sans-serif">${app.dualCompiled ? '✓ Potential-Free Dual-Horizon compiled in worker (11.49 MiB)' : '⟳ Compiling Potential-Free Dual-Horizon tables in worker…'}</text>`;
+  html += `<text x="18" y="118" fill="var(--muted)" font-size="11.5" font-family="JetBrains Mono, monospace">Phase 1: 24-bit Cayley-K4 SWAR · Phase 2: 24,743 H2 coboundaries</text>`;
+  html += `<text x="18" y="142" fill="var(--muted)" font-size="11.5" font-family="Instrument Sans, sans-serif">First solve answers immediately without waiting for table compilation.</text>`;
+  html += `<text x="18" y="162" fill="var(--fwd)" font-size="11.5" font-weight="600" font-family="Instrument Sans, sans-serif">Press "Compare all 4 stages" above or "Solve" to see ~93.6% visit pruning.</text>`;
+  svg.innerHTML = html;
+}
 function drawChart() {
   const svg = $('chart'), S = app.search, tip = $('tip');
   const W = svg.getBoundingClientRect().width || 400, H = 230, padL = 46, padR = 8, padT = 10, padB = 28;
   $('chartLegend').hidden = true;
-  if (app.mode === 'scan') {
-    svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.onmousemove = null;
-    svg.innerHTML = `<text x="${W / 2}" y="${H / 2 - 8}" text-anchor="middle" fill="var(--muted)" font-size="13">COVE-3 uses iterative deepening, not a breadth-first tree,</text><text x="${W / 2}" y="${H / 2 + 12}" text-anchor="middle" fill="var(--muted)" font-size="13">so there are no per-depth counts to chart.</text>`;
-    return;
-  }
+  svg.classList.toggle('scan-mode', app.mode === 'scan');
+  $('ablateBtn').hidden = app.mode !== 'scan';
+  $('ablateBtn').disabled = app.running;
+  if (app.mode === 'scan') { drawScanChart(svg, W, H); return; }
+  $('chartTitle').textContent = 'States discovered per depth';
+  $('chartHint').textContent = 'log scale';
   if (!S) { svg.innerHTML = `<text x="${W / 2}" y="${H / 2}" text-anchor="middle" fill="var(--muted)" font-size="13">No search yet</text>`; return; }
   const bidir = S.algo === 'bidir', series = bidir ? [0, 1] : [0];
   const depths = Math.max(S.counts[0].length, bidir ? S.counts[1].length : 0);
@@ -1006,7 +1181,18 @@ $('toEnd').onclick = () => app.sol && jumpTo(app.sol.length);
 
 // ---------- Running a search ----------
 let compactWorker = null, compactJob = null;
-function runCompact(state, progress) {
+function markDualCompiled(data) {
+  app.dualCompiled = true;
+  const el = $('compilerStatus');
+  if (el) {
+    el.classList.add('ready');
+    const sigs = data && data.signatures ? fmt(data.signatures) : '24,743';
+    const mib = data && data.tableBytes ? (data.tableBytes / 1048576).toFixed(2) : '11.49';
+    el.querySelector('span').textContent = `Potential-Free Dual-Horizon active · ${sigs} H2 coboundary signatures · 0 scalar distance bits (${mib} MiB)`;
+  }
+  if (app.mode === 'scan' && !app.running) drawChart();
+}
+function runCompact(state, progress, action) {
   if (compactJob) return Promise.reject(new Error('A solver job is already running.'));
   return new Promise((resolve, reject) => {
     let timer, settled = false;
@@ -1014,20 +1200,29 @@ function runCompact(state, progress) {
       if (settled) return;
       settled = true;
       clearTimeout(timer); compactJob = null;
-      if (error) { compactWorker?.terminate(); compactWorker = null; reject(error); }
-      else resolve(result);
+      if (error) {
+        compactWorker?.terminate(); compactWorker = null; app.dualCompiled = false;
+        const el = $('compilerStatus');
+        if (el) { el.classList.remove('ready'); el.querySelector('span').textContent = 'COVE-3 worker reset · will rebuild on next solve'; }
+        reject(error);
+      } else resolve(result);
     }
     try {
-      if (!compactWorker) compactWorker = new Worker('solver-worker.js?v=dual-v1');
+      if (!compactWorker) compactWorker = new Worker('solver-worker.js?v=dual-v2');
       compactJob = { cancel: () => finish(new Error('Stopped. No solution is being claimed.')) };
       compactWorker.onmessage = ({ data }) => {
+        if (data.type === 'compiled') { markDualCompiled(data); return; }
         if (data.type === 'progress') progress(data);
         else if (data.type === 'error') finish(new Error(data.message));
-        else if (data.type === 'result') finish(null, data.result);
+        else if (data.type === 'result') {
+          if (data.result && data.result.tableBytes === 12043251 && !app.dualCompiled) markDualCompiled({ tableBytes: data.result.tableBytes, signatures: 24743 });
+          finish(null, data.result);
+        }
+        else if (data.type === 'comparison') finish(null, data.stages);
       };
       compactWorker.onerror = () => finish(new Error('The solver worker could not run. Serve this folder over HTTP and check that solver-worker.js and compact-solver.js are available.'));
       timer = setTimeout(() => finish(new Error('Solver time limit reached. No solution is being claimed.')), 45000);
-      compactWorker.postMessage({ puzzle: buildPuzzle(3), state, timeoutMs: 30000 });
+      compactWorker.postMessage({ action, puzzle: buildPuzzle(3), state, timeoutMs: 30000 });
     } catch (error) { finish(error); }
   });
 }
@@ -1035,10 +1230,11 @@ function runningControls(running) {
   app.running = running;
   $('solveBtn').disabled = running; $('newBtn').disabled = running;
   $('stopBtn').disabled = !running; $('scanSolve').disabled = running;
+  $('ablateBtn').disabled = running;
   $('scramble').disabled = running; syncPlay();
 }
 async function solveCompactScramble() {
-  app.search = null; app.mode = 'search';
+  app.search = null; app.ablation = null; app.mode = 'search';
   graph.draw(); drawChart(); updateStats(); runningControls(true);
   const started = performance.now();
   setStatus('Preparing COVE-3 solver…');
@@ -1047,10 +1243,32 @@ async function solveCompactScramble() {
     if (toKey(stateFrom(app.startState, result.moves)) !== toKey(app.P.solved)) throw new Error('Solution verification failed.');
     app.mode = 'scan'; app.scanInfo = { split: result.split, ms: performance.now() - started, nodes: result.nodes, generatedNodes: result.generatedNodes, skippedNodes: result.skippedNodes };
     setLegend(); setSolution(result.moves); graph.draw(); drawChart(); updateStats();
-    setStatus(`COVE-3 verified solution: ${result.moves.length} turns. Shortest path not guaranteed.`);
+    const prunedNote = result.skippedNodes > 0 ? ` (${fmt(result.generatedNodes)} generated / ${fmt(result.nodes)} logical visits)` : '';
+    setStatus(`COVE-3 verified solution: ${result.moves.length} turns${prunedNote}. Shortest path not guaranteed.`);
   } catch (error) { setStatus(error.message, true); }
-  finally { runningControls(false); }
+  finally { runningControls(false); drawChart(); }
 }
+async function runLiveAblation() {
+  if (app.running || !app.startState || app.N !== 3) return;
+  runningControls(true);
+  setStatus('Running 4-stage ablation (Scalar, 1-Step Contour, Coboundary H2, Potential-Free Dual)…');
+  try {
+    const stages = await runCompact(app.startState, p => setStatus(p.stage || 'Comparing compiler stages…'), 'compare');
+    const refMoves = stages[0].moves.join(',');
+    for (const st of stages) {
+      if (st.moves.join(',') !== refMoves || st.nodes !== stages[0].nodes) throw new Error('Stage equivalence check failed.');
+      if (toKey(stateFrom(app.startState, st.moves)) !== toKey(app.P.solved)) throw new Error('Stage solution verification failed.');
+    }
+    app.ablation = stages;
+    const dual = stages[3];
+    app.scanInfo = { split: dual.split, ms: dual.ms, nodes: dual.nodes, generatedNodes: dual.generatedNodes, skippedNodes: dual.skippedNodes };
+    drawChart(); updateStats();
+    const drop = ((1 - dual.generatedNodes / Math.max(1, stages[0].generatedNodes)) * 100).toFixed(1);
+    setStatus(`4-stage ablation verified: identical ${dual.moves.length}-turn path · Dual pruned ${drop}% of visits (${fmt(dual.generatedNodes)} vs. ${fmt(stages[0].generatedNodes)}).`);
+  } catch (error) { setStatus(error.message, true); }
+  finally { runningControls(false); drawChart(); }
+}
+$('ablateBtn').onclick = runLiveAblation;
 $('stopBtn').onclick = () => {
   if (compactJob) { compactJob.cancel(); return; }
   if (app.search && app.running) { app.search.done = true; app.search.error = 'Stopped.'; }
@@ -1106,7 +1324,7 @@ function newScramble() {
 function resetView() {
   let moves = [];
   try { moves = parseScramble($('scramble').value); setStatus(''); } catch (e) { setStatus(e.message, true); }
-  app.search = null; app.sol = null; app.selected = -1; app.playing = false; app.mode = 'search'; setLegend();
+  app.search = null; app.ablation = null; app.sol = null; app.selected = -1; app.playing = false; app.mode = 'search'; setLegend();
   app.startState = stateFrom(app.P.solved, moves); app.cur = app.startState; cube3.paint(app.cur);
   renderChips(); drawNeighbours(); graph.draw(); drawChart(); updateStats(); syncPlay();
   $('inspect').textContent = 'Columns are distance from the root. Hover a dot to see how the search reached it, click it to load that state onto the cube.';
@@ -1377,7 +1595,7 @@ const scan = (() => {
       if (app.N !== 3) setPuzzle(3);
       const moves = result.moves;
       if (toKey(stateFrom(input, moves)) !== toKey(app.P.solved)) throw new Error('The solver returned a sequence that does not solve this cube.');
-      app.search = null; app.selected = -1; app.playing = false; app.mode = 'scan';
+      app.search = null; app.ablation = null; app.selected = -1; app.playing = false; app.mode = 'scan';
       app.startState = input;
       $('scramble').value = moves.slice().reverse().map(m => app.P.moves[inverse(m)].name).join(' ');
       const states = [app.startState]; for (const m of moves) states.push(applyMove(app.P, states[states.length - 1], m));
