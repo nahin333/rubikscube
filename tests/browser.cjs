@@ -42,8 +42,8 @@ let browser;
   await page.locator('#scramble').fill("R U F2 L D B' R2 U' F D2 L2 B R' D F' U2 B2 L' D2 R F U' L2 B D'");
   await page.locator('#solveBtn').click();
   console.log('Long scramble', await finished());
-  assert.equal(await page.evaluate(() => window.__workerResults.at(-1).tableBytes), 7913041);
-  assert.ok(await page.evaluate(() => window.__workerResults.at(-1).skippedNodes > 0), 'Subsequent solves must use compiled contour pruning');
+  assert.equal(await page.evaluate(() => window.__workerResults.at(-1).tableBytes), 12043251);
+  assert.ok(await page.evaluate(() => window.__workerResults.at(-1).skippedNodes > 0), 'Subsequent solves must use compiled dual-horizon pruning');
   await page.waitForTimeout(450); // Delayed input reset must not erase a fast result.
   assert.ok(await page.evaluate(() => window.__labTest.app.sol !== null));
   await page.locator('#toEnd').click();

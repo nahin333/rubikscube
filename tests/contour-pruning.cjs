@@ -2,7 +2,7 @@
 const assert = require('node:assert/strict');
 const S = require('../compact-solver.js');
 const { P, E, baselineSolver, uniformStates } = require('./cube-fixtures.cjs');
-const old = baselineSolver().solver, scalar = old.build(P), compiled = S.build(P);
+const old = baselineSolver().solver, scalar = old.build(P), compiled = S.build(P, undefined, { expansion: 'contour' });
 let checked = 0;
 // Independently check every encoded successor and all relevant slack cases.
 for (const [A, D, ids, dictionary] of [

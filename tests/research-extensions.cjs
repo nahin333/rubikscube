@@ -4,7 +4,7 @@ const S = require('../compact-solver.js');
 const R = require('./replay-candidate.cjs');
 const C = require('./corridor-candidate.cjs');
 const { P, E, uniformStates } = require('./cube-fixtures.cjs');
-const T = S.build(P);
+const T = S.build(P, undefined, { expansion: 'contour' });
 const cases = [{ stickers: P.solved }, ...P.moves.map((_, mi) => ({ stickers: E.applyMove(P, P.solved, mi) })), ...uniformStates(150, 0x61bcd7)];
 let hardest, total = -1, hits = 0, corridors = 0;
 for (const f of cases) {

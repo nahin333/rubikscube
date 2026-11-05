@@ -132,6 +132,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--fwd); outli
 #nbr { width: 100%; max-width: 300px; display: block; margin: 0 auto; }
 .explain { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }
 .explain p { margin: 0; font-size: 14px; color: var(--muted); max-width: 62ch; }
+.explain a { color: var(--fwd); text-decoration: underline; text-underline-offset: 2px; }
 .explain strong { color: var(--ink); font-weight: 600; display: block; margin-bottom: 2px; }
 code { font-family: var(--f-mono); font-size: 0.92em; }
 details.scan { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
@@ -313,7 +314,7 @@ select { font: 13px var(--f-body); color: var(--ink); background: var(--bg); bor
       <p><strong>Breadth-first search</strong>BFS visits vertices in rings of equal distance, so the first time it touches the solved state it has found a shortest path. The catch is the ring sizes: 18, 243, 3,240, 43,239… roughly ×13 per level.</p>
       <p><strong>Meeting in the middle</strong>Bidirectional BFS grows one tree from the scramble and one from solved, and stops when they touch. Two trees of depth d/2 are far smaller than one of depth d, which is why it reaches scrambles that plain BFS cannot.</p>
       <p><strong>A* with a lower bound</strong>One face turn moves at most 4 corners and 4 edges, so ⌈misplaced corners ÷ 4⌉ is a distance that can never be overestimated. A* uses it to expand promising vertices first, while still guaranteeing a shortest path.</p>
-      <p><strong>COVE-3 (3×3 only)</strong>Our two-phase solver skips moves already ruled out by its distance bounds and verifies every returned solution. It compiles faster search tables after the first solve. Results are practical solutions, without a shortest-path guarantee. See the paper for matched-output comparisons and the memory tradeoff.</p>
+      <p><strong>COVE-3 (3×3 only)</strong>Our two-phase solver answers the first request on scalar tables, then compiles potential-free dual-horizon tables in the worker—24-bit Cayley-clique SWAR syndromes in Phase 1 and a unified coboundary Horizon-2 dictionary in Phase 2—preserving exact scalar move sequences and node budgets while cutting generated visits by 93.6%. Every returned move is verified; results are practical solutions, without a shortest-path guarantee. See the <a href="research/paper.pdf" target="_blank" rel="noopener noreferrer">research paper</a> for proofs, ablations, and memory tradeoffs.</p>
     </div>
   </section>
 </div>
@@ -928,7 +929,10 @@ function updateStats() {
     const L = app.sol ? app.sol.length : 0, k1 = app.scanInfo.split;
     $('sLen').textContent = `${L} turns`; $('sNodes').textContent = fmt(app.scanInfo.nodes);
     $('sTime').textContent = `${Math.round(app.scanInfo.ms)} ms`; $('sDepth').textContent = `${k1} + ${L - k1}`;
-    $('compare').innerHTML = `COVE-3 reaches subgroup <b>H</b> in ${k1} turns, then solves inside H in ${L - k1} turns. It uses generated distance tables and bounds work per subgroup candidate. Every returned move is verified. This is a practical solution, <b>not a shortest-path guarantee</b>.`;
+    const pruned = app.scanInfo.skippedNodes > 0
+      ? ` Compiled potential-free dual-horizon tables generated <b>${fmt(app.scanInfo.generatedNodes)}</b> visits and pruned <b>${fmt(app.scanInfo.skippedNodes)}</b> while preserving exact scalar node budgets.`
+      : ' The initial solve uses fast-building scalar tables while potential-free dual-horizon tables compile in the worker.';
+    $('compare').innerHTML = `COVE-3 reaches subgroup <b>H</b> in ${k1} turns, then solves inside H in ${L - k1} turns.${pruned} Every returned move is verified. This is a practical solution, <b>not a shortest-path guarantee</b>.`;
     return;
   }
   $('sNodes').textContent = S ? fmt(S.n) : '–';
@@ -1014,7 +1018,7 @@ function runCompact(state, progress) {
       else resolve(result);
     }
     try {
-      if (!compactWorker) compactWorker = new Worker('solver-worker.js?v=contour-v1');
+      if (!compactWorker) compactWorker = new Worker('solver-worker.js?v=dual-v1');
       compactJob = { cancel: () => finish(new Error('Stopped. No solution is being claimed.')) };
       compactWorker.onmessage = ({ data }) => {
         if (data.type === 'progress') progress(data);
@@ -1041,7 +1045,7 @@ async function solveCompactScramble() {
   try {
     const result = await runCompact(app.startState, p => setStatus(p.stage || `Searching two-phase coordinates · ${fmt(p.nodes)} nodes`));
     if (toKey(stateFrom(app.startState, result.moves)) !== toKey(app.P.solved)) throw new Error('Solution verification failed.');
-    app.mode = 'scan'; app.scanInfo = { split: result.split, ms: performance.now() - started, nodes: result.nodes };
+    app.mode = 'scan'; app.scanInfo = { split: result.split, ms: performance.now() - started, nodes: result.nodes, generatedNodes: result.generatedNodes, skippedNodes: result.skippedNodes };
     setLegend(); setSolution(result.moves); graph.draw(); drawChart(); updateStats();
     setStatus(`COVE-3 verified solution: ${result.moves.length} turns. Shortest path not guaranteed.`);
   } catch (error) { setStatus(error.message, true); }
@@ -1377,7 +1381,7 @@ const scan = (() => {
       app.startState = input;
       $('scramble').value = moves.slice().reverse().map(m => app.P.moves[inverse(m)].name).join(' ');
       const states = [app.startState]; for (const m of moves) states.push(applyMove(app.P, states[states.length - 1], m));
-      app.scanInfo = { split: result.split, ms, nodes: result.nodes };
+      app.scanInfo = { split: result.split, ms, nodes: result.nodes, generatedNodes: result.generatedNodes, skippedNodes: result.skippedNodes };
       setLegend(); setSolution(moves); graph.draw(); drawChart(); updateStats();
       say(`Solved: ${moves.length} turns. Press Play next to the cube to watch it.`);
       setStatus(`Scanned cube: COVE-3 verified a ${moves.length}-turn solution. Shortest path not guaranteed. The scramble box recreates this cube.`);

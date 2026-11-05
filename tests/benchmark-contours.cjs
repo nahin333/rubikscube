@@ -13,7 +13,7 @@ assert.ok(Number.isInteger(count) && count > 0 && Number.isInteger(repeats) && r
 const pinned = baselineSolver(), old = pinned.solver;
 const setup = {};
 let begin = performance.now(); const scalar = old.build(P); setup.scalarMs = performance.now() - begin;
-begin = performance.now(); const compiled = S.build(P); setup.contourMs = performance.now() - begin;
+begin = performance.now(); const compiled = S.build(P, undefined, { expansion: 'contour' }); setup.contourMs = performance.now() - begin;
 // Ablation: identical dictionary tables and bookkeeping, scalar child generation.
 // Original: the actual pinned pre-change solver, not a rewritten slower baseline.
 const configs = ['original', 'dictionaryScalar', 'contour'];

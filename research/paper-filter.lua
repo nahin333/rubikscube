@@ -2,7 +2,12 @@
 local stringify = pandoc.utils.stringify
 local raw = function(s) return pandoc.RawBlock('latex', s) end
 local table_index, figure_index = 0, 0
-local citation_keys = {'korf1997', 'kociemba_coordinates', 'kociemba_pruning', 'cubejs', 'mcaleer2018', 'fridrich', 'demaine2011', 'rokicki_gods_number', 'felner2012', 'sturtevant2017', 'akagi2010', 'lammich2015'}
+local citation_keys = {
+  'korf1997', 'kociemba_coordinates', 'kociemba_pruning', 'cubejs',
+  'mcaleer2018', 'fridrich', 'demaine2011', 'rokicki_gods_number',
+  'felner2012', 'sturtevant2017', 'akagi2010', 'lammich2015',
+  'goldenberg2014', 'breyer2010',
+}
 
 function Str(el)
   local before, number, after = el.text:match('^(.-)%[(%d+)%](.*)$')
@@ -25,27 +30,34 @@ function Link(el)
 end
 
 function CodeBlock(el)
-  if not el.text:match('^Input: phase%-2') then return el end
-  return raw('\\begin{figure}[t]\n\\hrule\\vspace{5pt}\n\\textbf{Algorithm 1.} Budget-preserving phase-2 expansion\n\\vspace{4pt}\n\\begin{Verbatim}[fontsize=\\footnotesize,breaklines=true,breakanywhere=true]\n' .. el.text .. '\n\\end{Verbatim}\n\\vspace{3pt}\\hrule\n\\end{figure}')
+  if el.text:match('^Input: phase%-2') then
+    return raw('\\begin{figure}[t]\n\\hrule\\vspace{5pt}\n\\textbf{Algorithm 1.} Budget-preserving Horizon-1 phase-2 expansion\n\\vspace{4pt}\n\\begin{Verbatim}[fontsize=\\footnotesize,breaklines=true,breakanywhere=true]\n' .. el.text .. '\n\\end{Verbatim}\n\\vspace{3pt}\\hrule\n\\end{figure}')
+  end
+  if el.text:match('^Input: potential%-free') then
+    return raw('\\begin{figure}[t]\n\\hrule\\vspace{5pt}\n\\textbf{Algorithm 2.} Potential-free coboundary Horizon-2 expansion with three-tier accounting\n\\vspace{4pt}\n\\begin{Verbatim}[fontsize=\\footnotesize,breaklines=true,breakanywhere=true]\n' .. el.text .. '\n\\end{Verbatim}\n\\vspace{3pt}\\hrule\n\\end{figure}')
+  end
+  return el
 end
 
 function Table(el)
   table_index = table_index + 1
   local captions = {
-    'Complexity relative to the actual scalar baseline. Both methods retain exponential worst-case search; compiled expansion avoids constructing rejected children.',
-    'Primary matched-output evaluation: 500 states and five repetitions per configuration. Statistics use per-instance medians; all move sequences and logical counts are identical.',
-    'Persistent numeric storage. The flat footprint is calculated, not a measured flat-solver latency or peak heap.',
-    'Separate cubejs comparison on 200 shared scrambles. One timing per state; solution-quality targets differ.',
-    'Verification evidence. Counts concern different checks and should not be pooled as independent samples.',
-    'Follow-up negative results on 500 separate states, five repetitions. Each candidate has its own contemporaneous contour baseline; medians are not pooled across runs.',
+    'Complexity relative to the frozen scalar baseline across 1-step contour and potential-free dual-horizon compilation. Worst-case search remains exponential in depth.',
+    'Stage-1 matched-output evaluation: 500 states and five repetitions per configuration. Statistics use per-instance medians; all move sequences and logical counts are identical.',
+    'Persistent numeric storage across scalar, coboundary H2-only, 1-step contour, and potential-free/32-bit dual-horizon representations.',
+    'Separate cubejs 1.3.2 comparison on 200 shared scrambles. One timing per state; solution-length targets differ.',
+    'Verification evidence across Stage-1 contour, follow-up, and potential-free dual-horizon suites. Counts concern distinct checks and are not pooled.',
+    'Follow-up negative results on 500 separate states, five repetitions. Each candidate uses its own contemporaneous contour baseline.',
+    'Held-out 500-state evaluation (seed 0xd48a63, five repetitions) and cache-aware pairwise ablations of potential-free dual-horizon compilation at identical outputs and logical counts.',
   }
   local layouts = {
-    {'table*', '\\textwidth', '@{}p{0.20\\textwidth}LLp{0.22\\textwidth}@{}'},
+    {'table*', '\\textwidth', '@{}p{0.23\\textwidth}LLp{0.28\\textwidth}@{}'},
     {'table*', '\\textwidth', '@{}Lrrr@{}'},
     {'table', '\\columnwidth', '@{}Lrr@{}'},
-    {'table', '\\columnwidth', '@{}Lrr@{}'},
-    {'table*', '\\textwidth', '@{}p{0.23\\textwidth}Lp{0.22\\textwidth}@{}'},
     {'table*', '\\textwidth', '@{}Lrrr@{}'},
+    {'table*', '\\textwidth', '@{}p{0.24\\textwidth}Lp{0.22\\textwidth}@{}'},
+    {'table*', '\\textwidth', '@{}Lrrr@{}'},
+    {'table*', '\\textwidth', '@{}Lrrrrr@{}'},
   }
   local layout = assert(layouts[table_index], 'Unexpected manuscript table')
   local function row_latex(row)
@@ -70,10 +82,11 @@ end
 function Pandoc(doc)
   local out, references = {}, false
   local figures = {
-    {'system-pipeline', 'Browser execution. The first scalar result is posted before contour compilation; later solves use compiled tables. Photo-derived stickers require manual correction and are not an autonomous vision benchmark.'},
-    {'contour-ablation', 'Primary matched-output experiment. (a) Each point is one state\'s median of five timings. (b) Empirical latency distributions for all three configurations. (c) Persistent typed-array storage; the flat footprint is calculated. Outputs and logical counts are identical across configurations.'},
+    {'system-pipeline', 'Browser execution. The first scalar result is posted before worker compilation; later solves use potential-free clique syndromes and the unified coboundary Horizon-2 dictionary. Photo-derived stickers require manual correction and are not an autonomous vision benchmark.'},
+    {'contour-ablation', 'Stage-1 matched-output contour study. (a) Per-state medians of five timings. (b) Empirical latency distributions for scalar, dictionary+scalar, and 1-step contour configurations. (c) Stage-1 persistent typed-array storage.'},
     {'solver-comparison', 'Separate external cubejs comparison: paired latency, latency distributions, and extra moves. Different length targets prevent an equal-quality speedup claim.'},
-    {'research-extensions', 'Follow-up experiments: per-instance latency ratios relative to the concurrently interleaved contour baseline. Ratios above one indicate slower execution. Both transformations preserve the tested count-based contract, but neither improves corpus median latency.'},
+    {'research-extensions', 'Follow-up negative results: per-instance latency ratios relative to the concurrently interleaved contour baseline. Ratios above one indicate slower execution.'},
+    {'dual-horizon', 'Held-out 500-state evaluation of potential-free dual-horizon compilation (seed 0xd48a63, five repetitions). (a) Per-state median latency against pinned COVE-3 contours (499/500 faster). (b) Empirical distributions for scalar, COVE-3 contour, and potential-free dual-horizon solvers. (c) Generated visits and persistent table footprints across the five-stage ablation ladder.'},
   }
   for _, block in ipairs(doc.blocks) do
     local text = stringify(block)
@@ -88,7 +101,7 @@ function Pandoc(doc)
       table.insert(out, raw('\\begin{abstract}'))
     elseif block.t == 'Para' and text:match('^Keywords:') then
       table.insert(out, raw('\\end{abstract}'))
-    elseif block.t == 'Para' and (text:match('^Table %d') or text:match('^Algorithm %d') or text:match('^Figure %d')) then
+    elseif block.t == 'Para' and (text:match('^Table %d+%.') or text:match('^Algorithm %d+%.') or text:match('^Figure %d+%.')) then
     elseif block.t == 'Figure' or (block.t == 'Para' and block.content[1] and block.content[1].t == 'Image') then
       figure_index = figure_index + 1
       local f = assert(figures[figure_index], 'Unexpected manuscript figure')

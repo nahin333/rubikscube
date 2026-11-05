@@ -1,24 +1,25 @@
 # COVE-3 paper artifacts
 
-[Read the two-column PDF](paper.pdf) · [Read the Markdown manuscript](REPORT.md) · [Inspect the primary measurements](results/contour-ablation.json)
+[Read the two-column PDF](paper.pdf) · [Read the Markdown manuscript](REPORT.md) · [Inspect Stage-2 dual-horizon measurements](results/dual-horizon-ablation.json) · [Inspect Stage-1 contour measurements](results/contour-ablation.json)
 
-The paper evaluates **budget-preserving contour compilation in COVE-3** (Compact Output-Verified Exploration for 3×3). Its primary comparison freezes the actual previous scalar solver and requires identical returned moves and logical visit counts. It includes a dictionary-only ablation, a separate cubejs comparison, explicit contributions, prior selective-generation work, three propositions with proofs, a Big-O comparison, storage derivations, four figures, six tables, and limitations. The [project README](../README.md#reproduce-the-paper-artifacts) provides reproduction commands and environment details.
+The paper evaluates **COVE-3** (Compact Output-Verified Exploration for 3×3) across two cumulative compilation stages that preserve exact scalar move sequences, phase splits, and logical visit budgets:
 
-The follow-up study adds exact-cost failure replay and deferred-charge chain traversal. Both preserve tested outputs and count-based behavior but are slower in a separate 500-state, five-repeat evaluation. They remain research variants in `tests/`, with [replay measurements](results/failure-replay.json), [traversal measurements](results/corridor-traversal.json), a further proof, complexity analysis, and citations to prior transposition and DFS-refinement work. They are not enabled on the website.
+1. **Stage-1 budget-preserving contour compilation** (`expansion: 'contour'`, [contour-ablation.json](results/contour-ablation.json), [budget-witness.json](results/budget-witness.json)), plus two count-preserving follow-up extensions with published negative latency results ([failure-replay.json](results/failure-replay.json), [corridor-traversal.json](results/corridor-traversal.json)).
+2. **Stage-2 potential-free dual-horizon compilation** (`expansion: 'dual'`, shipped default; [dual-horizon-ablation.json](results/dual-horizon-ablation.json), [horizon2-witness.json](results/horizon2-witness.json), [cubejs-dual-horizon.json](results/cubejs-dual-horizon.json)), combining 24-bit Cayley-$K_4$ clique-syndrome SWAR compilation in Phase 1, a unified potential-free coboundary Horizon-2 dictionary in Phase 2 (`24,743` shared entries—smaller than Stage-1 COVE-3), three-tier batched ghost accounting, and a communication-complexity proof that Horizon 2 is maximal for factored unary exact accounting.
 
-The [proposed-novelty review](NOVELTY.md) distinguishes the budget-preserving compiler from reviewed prior techniques and records the remaining priority-review gaps. The [budget counterexample](results/budget-witness.json) demonstrates why removing rejected visits without accounting changes the capped-search policy. Neither document claims certified worldwide priority.
+The manuscript includes seven propositions with proofs, two algorithms, a Big-O comparison, exact byte-level storage derivations, five multi-panel figures, seven tables, and explicit novelty and limitation boundaries ([NOVELTY.md](NOVELTY.md)).
 
-To rebuild the figures, install Python 3 with NumPy and Matplotlib, then run from the repository root:
+To rebuild all five paper figures from the archived JSON measurements, run from the repository root:
 
 ```sh
 python3 research/plot_results.py
 ```
 
-To rebuild the paper, install Pandoc and Tectonic, then run from `research/`:
+To rebuild `paper.tex` and `paper.pdf`, install Pandoc and Tectonic and run from `research/`:
 
 ```sh
 pandoc REPORT.md --from=markdown+tex_math_dollars --to=latex --standalone --template=paper-template.tex --lua-filter=paper-filter.lua --number-sections --no-highlight -o paper.tex
 tectonic paper.tex
 ```
 
-`paper.tex` and `references.bib` are included. The layout and bibliography use the [official CVPR 2026 author-kit style](https://github.com/cvpr-org/author-kit) at commit `291758547e923160eb4d37079b7b9f0dfce82355`, with Liberation Serif/Sans/Mono for Unicode-capable typesetting. This is a formatting choice only: the paper has not been submitted to or accepted by CVPR. The figures use [matched-output measurements](results/contour-ablation.json) and the [separate external-baseline rerun](results/cubejs-contours.json). The earlier scalar comparison remains in `results/solver-comparison.json` for historical context.
+`paper.tex` and `references.bib` are included. Layout and bibliography use the [official CVPR 2026 author-kit style](https://github.com/cvpr-org/author-kit) at commit `291758547e923160eb4d37079b7b9f0dfce82355`, with Liberation Serif/Sans/Mono for Unicode-capable typesetting. This is a formatting choice only: the paper has not been submitted to or accepted by CVPR.

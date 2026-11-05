@@ -4,203 +4,90 @@
   <a href="https://nahin333.github.io/rubikscube/"><strong>Open the live lab →</strong></a>
   &nbsp; · &nbsp; <a href="research/paper.pdf">Read the PDF paper</a>
   &nbsp; · &nbsp; <a href="research/REPORT.md">Read the mathematics</a>
-  &nbsp; · &nbsp; <a href="research/results/contour-ablation.json">Inspect all measurements</a>
+  &nbsp; · &nbsp; <a href="research/results/dual-horizon-ablation.json">Inspect dual-horizon measurements</a>
 </p>
 
-Turn a scramble into a graph, watch algorithms explore it, and replay a verified solution on a 3D cube. **COVE-3** solves longer 3×3 scrambles in your browser; BFS, bidirectional BFS, and A* expose shortest-path search on smaller problems.
+Turn a scramble into a graph, watch algorithms explore it, and replay a verified solution on a 3D cube. **COVE-3** solves longer 3×3 scrambles in your browser; BFS, bidirectional BFS, and A\* expose shortest-path search on smaller problems.
 
-> **A measured algorithm improvement at identical output quality.** On 500 legal states, compiled COVE-3 reduced median solve latency from **6.19 ms to 2.20 ms**, returning **exactly the same moves** as the frozen scalar solver. It avoided **79.33% of recursive calls**. The cost: **7.55 MiB instead of 5.55 MiB** of persistent numeric tables, plus compilation work. Results are local Node measurements, not universal performance guarantees.
+> **Two cumulative stages of verified, identical-output search compilation.**
+> - **Stage 1 (1-step Phase-2 contour dictionary):** Cut median solve latency from **6.19 ms to 2.20 ms** on 500 states (`seed 0x913b5e`), avoiding **79.33%** of recursive visits (`7.55 MiB` vs. `5.55 MiB` scalar).
+> - **Stage 2 (Potential-Free Dual-Horizon Clique-Syndrome & Coboundary Compilation — shipped default):** Eliminates stored scalar distances from **both** phases. On a fresh held-out 500-state corpus (`seed 0xd48a63`), it cuts generated visits by **68.47% beyond Stage-1 COVE-3** (**93.62% vs. scalar**, `131.54M → 8.39M`), improves per-instance median latency on **499/500 states** (**2.57 ms → 1.84 ms** in 3-way evaluation; **1.43 ms** in 2-way L3-resident evaluation), and returns **100% identical move sequences, phase splits, and logical node budgets**. Even as a Phase-2-only drop-in (`h2only`), it uses **fewer bytes than Stage-1 COVE-3 (`7.49 MiB` vs. `7.55 MiB`)** while running faster and pruning **37.17%** more visits.
 
 ## What we contributed
 
-1. **Budget-preserving contour compilation.** We changed the phase-2 search so it constructs only children that pass both existing abstract distance tests. Skipped calls are still charged to the original logical node budget, preserving which solution is selected under count limits. The [paper](research/REPORT.md#44-preserving-the-search-budget) proves that equivalence when a wall-clock guard does not intervene.
-2. **A compact dictionary of distance and move-filter signatures.** Two ten-bit masks and a distance form a 24-bit signature. Only 40,609 distinct signatures cover 1,935,360 paired-state entries. Sixteen-bit indices reduce total persistent storage from a calculated **11.08 MiB flat representation to 7.55 MiB**; scalar byte distances remain smaller at 5.55 MiB.
-3. **A controlled, reproducible comparison.** We froze the actual previous solver, checked every abstract transition, compared identical move sequences on 500 states with five repetitions, and included an ablation disabling selective generation. The dictionary-only ablation is slower, which supports attributing the gain to the generator change.
-4. **Two further correctness constructions with published negative results.** Exact-cost failure replay and deferred sibling charges extend the budget-preservation argument. Both preserve tested outputs and cutoffs, but neither improves latency; they remain experimental. This adds an explicit account of what did **not** work, without inflating the speedup claim.
+1. **Cayley-$K_4$ clique-syndrome SWAR compilation (Phase 1).** Naive 18-move contour signatures require 40 bits and produce $>620,000$ entries per table, overflowing 32-bit words and 16-bit dictionaries. We prove that each outer face's coset forms a $K_4$ clique in every half-turn abstract Cayley graph ($M_-^{(f)} \ne \mathbf{0} \implies M_0^{(f)} = \mathbf{1}$), collapsing 64 binary move-mask pairs to **15 realizable 4-bit syndromes** per face. All 18 Phase-1 moves pack into **24 potential-free bits** (3 bytes/state), decode in parallel via branchless SWAR, and integrate child distances via the exact linear coboundary law $D(\delta(a,3f+q)) - D(a) = 1 - \mu_f(a) - v_{f,q}(a)$.
+2. **Potential-free unified coboundary Horizon-2 dictionary (Phase 2).** Over half (`53.81%`) of Stage-1 COVE-3's Phase-2 visits are dead-on-arrival Horizon-2 ghosts. Because $(M_-, M_0)$ is already the discrete coboundary $dD$ of $D$, we omit scalar distances completely—recovering root potentials once per endpoint via steepest-descent 1-form walks and freeing 10 bits in a 32-bit word for unary canonical Horizon-2 survival masks $M_-^{(2)}$. Unifying both Phase-2 abstractions yields **24,743 shared signatures (`98,972` B)**—**39.07% fewer entries and `62,440` fewer persistent bytes** than Stage-1 COVE-3 (`40,609` entries).
+3. **Three-tier ghost accounting and the Horizon-2 barrier.** Pruning at Horizon 2 or 3 requires charging exact multi-ply scalar subtrees (`1`, `1 + |A_f|`, and `1 + |A_f| + extra[nh1]`) via a 1-KiB lookup table and short-circuited child hoisting ([Proposition 6](research/REPORT.md#410-multi-tier-ghost-accounting-and-the-horizon-2-barrier)). Using a reduction from two-party set-disjointness / inner-product communication complexity, we prove **Horizon 2 is the unique maximal lookahead depth** at which factored unary parent tables can certify subtree exhaustion and exact scalar visit counts without constructing coupled child states ([Proposition 7](research/REPORT.md#410-multi-tier-ghost-accounting-and-the-horizon-2-barrier)).
+4. **Published negative results that guided the design.** Prior to Stage 2, we proved and tested exact-cost failure replay and deferred-charge chain traversal ([Section 6.5](research/REPORT.md#65-follow-up-extensions-preserved-behavior-without-a-speedup)); both preserved count budgets but slowed median latency, isolating random-read working-set size and Horizon-2 dead ends as the true bottlenecks.
 
-COVE-3 means **Compact Output-Verified Exploration for 3×3**. Two-phase solving, pattern databases, selective generation, bit masks, and dictionary coding have prior foundations. Our contribution is this implementation, its budget-preservation argument, and the measured improvement over our previous solver. The [closest selective-generation precedent](https://doi.org/10.1609/aaai.v26i1.8137) already includes Rubik’s Cube; we cite it and do not claim to have invented that general idea.
+### Proposed technical novelty and honest boundaries
 
-### Proposed technical novelty
+Two-phase solving, pattern databases, selective generation (EPEA\*/EPE-IDA\*), and modular PDB compression have rich prior foundations. Our scoped contribution—reviewed against Korf (1997), Kociemba, Breyer & Korf (AAAI 2010), Felner et al. (AAAI 2012), Goldenberg et al. (JAIR 2014), Sturtevant et al. (AAAI 2017), Akagi et al. (SoCS 2010), and Lammich & Neumann (CPP 2015) in [research/NOVELTY.md](research/NOVELTY.md)—lies in potential-free coboundary quotienting for sub-1-step-sized Horizon-2 dictionaries, Cayley-$K_4$ SWAR syndromes with closed-form coboundary integration, three-tier scalar budget preservation, and the Horizon-2 communication-complexity barrier. Certified worldwide priority across all unpublished solvers and any change to worst-case exponential search complexity are **not** claimed.
 
-**Our research proposal is a compiler that combines exact paired-bound move selection, a shared dictionary of distance/move-filter signatures, and batched charges that preserve the scalar solver’s count-budget trace.** The distinctive guarantee is that speeding up generation leaves fixed-order solution selection and count-based failure behavior unchanged. [Proposition 2](research/REPORT.md#44-preserving-the-search-budget) gives the argument; the paired experiment tests its implementation.
+**Why three-tier accounting matters ([horizon2-witness.json](research/results/horizon2-witness.json)):** On `seed 0x913b5e` state `0`, replacing our multi-tier Horizon-2/3 charges with Stage-1's unit charge `skip(1)` undercounts **185,608** ghost grandchild visits (`118,075` vs. `303,683`) and prevents the default 250,000-visit per-endpoint cutoff from firing on an earlier subgroup endpoint—causing the solver to return a **24-move solution instead of the scalar solver's 23-move solution even under unconstrained `maxNodes`**.
 
-| Closest reviewed work | Established ingredient | What our proposal adds |
-| :--- | :--- | :--- |
-| Kociemba two-phase solving | Subgroup search and pruning tables | Compiler for this solver’s paired abstractions and logical-budget contract |
-| Felner et al., EPE-IDA*, 2012 | Selective generation and operator-effect tables | Dictionary-coded signatures plus batched scalar-visit accounting |
-| Sturtevant et al., value compression, 2017 | Compression of heuristic values | Lossless encoding of distance together with exact operator filters |
+## Held-out Stage-2 evidence (`seed 0xd48a63`, 500 states × 5 repeats)
 
-**Why budget preservation matters:** on the archived [counterexample](research/results/budget-witness.json), the original solver and our compiled solver both fail at a cap of 50,375 logical visits. Removing the charges lets a naive selective generator return a 24-turn solution at that same nominal cap, because it has silently changed the policy. Our method preserves the contract while accelerating execution under the original allowance. The uncapped-by-that-limit reference returns a different, 23-turn sequence after 303,683 logical visits.
+![Held-out paired latency, empirical distributions, and five-stage ablation ladder](research/figures/dual-horizon.svg)
 
-The [dated novelty review](research/NOVELTY.md) documents sources, search scope, overlap, and remaining uncertainty. This is a specific proposed research contribution with measured evidence. Absolute worldwide priority—“nobody has done it before”—has **not** been established and is not asserted in the paper.
+| Study / Configuration | Persistent tables | Generated visits | Median latency | P95 latency | Mean moves |
+| :--- | ---: | ---: | ---: | ---: | ---: |
+| Primary 3-way: Frozen scalar (`e7023a8d`) | **5.55 MiB** | 131,538,403 | 5.583 ms | 28.388 ms | 22.962 |
+| Primary 3-way: Pinned COVE-3 (`f26aa421`) | 7.55 MiB | 26,601,908 | 2.574 ms | 10.764 ms | 22.962 |
+| Primary 3-way: Potential-free Dual (`dual`) | 11.49 MiB | **8,388,304** | **1.838 ms** | **9.024 ms** | 22.962 |
+| Pairwise A: Pinned COVE-3 (`contour`) | 7.55 MiB | 26,601,908 | 2.143 ms | 9.190 ms | 22.962 |
+| Pairwise A: Coboundary H2-only (`h2only`) | **7.49 MiB** | **16,712,753** | **2.040 ms** | **8.539 ms** | 22.962 |
+| Pairwise B: 32-bit Clique-SWAR (`dual32`) | 13.48 MiB | 8,388,304 | 1.456 ms | 7.617 ms | 22.962 |
+| Pairwise B: Potential-free Dual (`dual`) | **11.49 MiB** | 8,388,304 | **1.430 ms** | **7.565 ms** | 22.962 |
 
-### Further research: tested, not promoted as a breakthrough
+Notice Pairwise B (`dual` vs. `dual32`): omitting the 8-bit Phase-1 scalar distance byte saves **2.00 MiB** of random-access table footprint (`12,043,251` B vs. `14,139,576` B) and runs **faster on 341/500 states** (`95% CI [1.008, 1.013]`), confirming that potential-free L3 cache locality outweighs aligned 32-bit distance reads.
 
-We implemented **exact-cost failure replay** (reuse an exhausted subtree while charging its original logical cost) and **deferred-charge chain traversal** (follow a single surviving child iteratively, charging later rejected siblings only on failure). The [paper](research/REPORT.md#46-exact-cost-failure-certificates) adds a proof, assumptions, complexity, and related-work comparisons. Caching and iterative traversal have established precedents; worldwide priority is unverified.
+### Stage-1 and negative-extension archives
 
-On a separate 500-state corpus with five repetitions, failure replay took **2.507 ms versus 2.123 ms** for its paired baseline; chain traversal took **2.683 ms versus 1.954 ms**. Both were slower despite reducing generated visits or recursive calls. The website therefore retains the measured contour solver. These are research findings, **not additional speed improvements**.
-
-![Follow-up latency distributions, including slowdowns](research/figures/research-extensions.svg)
-
-[Full results and interpretation](research/REPORT.md#65-follow-up-extensions-preserved-behavior-without-a-speedup) · [Replay data](research/results/failure-replay.json) · [Traversal data](research/results/corridor-traversal.json)
-
-Reproduce these research variants from the repository root:
-
-```sh
-node tests/research-extensions.cjs
-node tests/benchmark-replay.cjs --count 500 --repeats 5 --seed 0x83d92a --output research/results/failure-replay.json
-node tests/benchmark-replay.cjs --variant corridor --count 500 --repeats 5 --seed 0x83d92a --output research/results/corridor-traversal.json
-```
-
-## Evidence: same solutions, less generated work
-
-Same 500 pseudorandom legal states; five repetitions per configuration after warmup; identical complete move sequences, phase splits, and logical visit counts. Every output was replayed independently on all 54 stickers.
-
-| Metric | Frozen original | Dictionary + scalar ablation | Compiled COVE-3 |
-| :--- | ---: | ---: | ---: |
-| Verified states | 500/500 | 500/500 | 500/500 |
-| Median solve latency | 6.192 ms | 7.001 ms | **2.199 ms** |
-| P95 solve latency | 36.855 ms | 42.848 ms | **10.616 ms** |
-| Mean solution length | 22.838 | 22.838 | 22.838 |
-| Persistent numeric tables | **5.55 MiB** | 7.55 MiB | 7.55 MiB |
-
-![Identical-output latency comparison, selective-generation ablation, and storage cost](research/figures/contour-ablation.svg)
-
-The ratio of corpus medians is **2.82×**. The median of paired per-instance speedups is **3.18×**, with a paired-instance bootstrap interval of **[3.12, 3.26]** conditional on this machine and corpus. Those are different statistics. All 500 per-instance medians favor the compiled solver in this run.
-
-The scalar trace has 129,254,791 logical visits. Compiled execution makes 26,722,082 recursive visits and charges 102,532,709 omitted ones. This is a reduction in immediately rejected recursive calls, not a reduction in distinct states or an increase in the permitted search budget.
-
-Measurements used Node 18.19.1, Linux x64, AMD EPYC 9254. Timings include symbolic decode and internal verification, excluding table construction and external sticker replay. [Raw states, all repeated times, move sequences, source hashes and protocol](research/results/contour-ablation.json) are included. The corpus was reused for final verification; it is not an independently held-out or preregistered study.
-
-Full standalone table construction was **604.7 ms scalar versus 815.5 ms compiled** in one setup observation. To keep compilation off the first-response path, the browser posts its first scalar solution, then compiles in the worker for later solves. A request made during compilation can still wait. No reduction in peak heap or cold end-to-end latency has been established.
-
-### Big-O comparison with the scalar baseline
-
-Let $b_2=10$ be phase-2 branching, $k$ the number of successors passing both abstract bounds, $D_2$ the number of paired phase-2 states, and $U\le D_2$ the number of dictionary signatures.
-
-| Cost | Scalar baseline | Compiled COVE-3 |
-| :--- | :--- | :--- |
-| One admitted phase-2 expansion | $O(b_2)$ child generation | $O(1+k)$ mask selection and selected generation |
-| Extra contour compilation | None | $O(b_2D_2)$ expected, including dictionary interning |
-| Persistent abstraction storage | $O(D_1+D_2)$ | $O(D_1+D_2+U)$ |
-| Search stack/path | $O(d_1+d_2)$ | $O(d_1+d_2)$ |
-| Worst-case unrestricted search | Exponential in depth | Exponential in depth |
-
-Because $b_2$ is fixed and $k$ can equal $b_2$, **the worst-case complexity class is unchanged**. The measured gain comes from constructing fewer rejected children. Both versions retain the same logical work caps and may fail on valid cubes. The [paper’s derivation](research/REPORT.md#45-complexity-comparison) also covers preprocessing, exact storage constants, and verification costs. These are fixed 3×3 results, not arbitrary-$N$ complexity claims.
-
-### External baseline: cubejs 1.3.2
-
-A separate 200-scramble experiment compares the shipped compiled solver with the previous application dependency. There is one timing per case, alternating solver order; this experiment does not use the primary study’s repeated warmup protocol.
-
-| Metric | cubejs 1.3.2 | Compiled COVE-3 |
-| :--- | ---: | ---: |
-| Verified states | 200/200 | 200/200 |
-| Median latency | 42.932 ms | **3.916 ms** |
-| P95 latency | 246.646 ms | **14.319 ms** |
-| Mean moves | **21.71** | 22.77 |
-| Longest observed solution | **22** | 26 |
-
-cubejs has a default 22-move target; COVE-3 accepts its first verified completion within its budgets. This is a configuration-level latency/length tradeoff. The identical-output primary experiment above isolates our new improvement. See [current external results](research/results/cubejs-contours.json); the [earlier scalar comparison](research/results/solver-comparison.json) remains archived separately and is not pooled with these observations.
-
-## Choose a question to explore
-
-| What you want to do | Choose | Meaning of the result |
-| :--- | :--- | :--- |
-| Solve a longer 3×3 scramble | **COVE-3 (two-phase)** | Verified solution; shortest path not guaranteed |
-| Find a shortest path on a manageable problem | **Bidirectional BFS** | Optimal in the half-turn metric when it completes |
-| See exhaustive search grow | **BFS** | Optimal when it completes; strict storage cap |
-| Explore heuristic search | **A\*** | Optimal when it completes; admissible misplaced-piece bound |
-| Solve a photographed 3×3 | **Scan a real cube** | Correct and validate stickers, then solve with COVE-3 |
-
-All modes run on the visitor’s device. GitHub Pages serves static files; it does not perform the solving. Rotate the cube, enter or generate turns, inspect sampled graph nodes, and step through the verified path. The photo interface accepts two corner-view photos and requires alignment and color correction; sample images are included.
-
-Exact search also retains earlier improvements: on the fixed ten-turn example `R U F2 L D B' R2 U' F D2`, bidirectional BFS stores **775,168 entries instead of 1,243,298** with the same optimal length. It stops at the first provably optimal meeting under complete-layer expansion, packs state keys, and maintains bounded graph samples. This separate result is documented in [the exact-search archive](research/results/exact-search.json).
+The original Stage-1 evaluation ([contour-ablation.json](research/results/contour-ablation.json), ![contour figure](research/figures/contour-ablation.svg)) and the negative follow-up studies ([failure-replay.json](research/results/failure-replay.json), [corridor-traversal.json](research/results/corridor-traversal.json)) remain preserved verbatim. On the separate 200-scramble external comparison against `cubejs 1.3.2` ([cubejs-dual-horizon.json](research/results/cubejs-dual-horizon.json)), `dual` solves all 200 scrambles in **2.136 ms median / 9.403 ms P95** (setup `960.1 ms`) versus `30.956 ms median / 173.257 ms P95` (setup `1,271.1 ms`) for `cubejs 1.3.2`, reflecting their different length targets (`22.77` vs. `21.71` mean moves).
 
 ## Run locally
-
-No application build step or package installation:
 
 ```sh
 python3 -m http.server 8000
 ```
 
-Open **http://localhost:8000**. Keep `index.html`, `compact-solver.js`, and `solver-worker.js` together. Use HTTP because solving uses a worker. The solver is local; the renderer and fonts load from external CDNs.
+Open **http://localhost:8000**. The worker returns the first result immediately using `5.55 MiB` scalar tables, then compiles the `11.49 MiB` potential-free dual-horizon tables in place for subsequent solves.
 
-## Check the evidence
-
-The solver and compiler tests require Node and a Git checkout containing the pinned pre-change revision:
+## Verify every theorem, certificate, and benchmark
 
 ```sh
 node tests/search.cjs
 node tests/compact-solver.cjs
 node tests/contour-pruning.cjs
 node tests/budget-witness.cjs
+node tests/research-extensions.cjs
+node tests/dual-horizon.cjs --witness-output research/results/horizon2-witness.json
+node tests/benchmark-dual-horizon.cjs --output research/results/dual-horizon-ablation.json
 ```
 
-| Verification | Coverage |
+| Verification check | Coverage |
 | :--- | :--- |
-| Contour certificates | All 19,353,600 paired abstract transitions; distances and both masks |
-| Scalar/compiled trace equivalence | 139 fixtures and 15 count-budget boundary checks |
-| Exact search | 2013 searches, shallow BFS oracle, replay, parent chains, samples, strict caps |
-| Practical solver | 219 cases; 1000 cubie/sticker transitions; all 40,320 permutation ranks |
-| Primary comparison | 500 states × 3 configurations × 5 repetitions; all outputs identical and replayed |
-| Browser integration | Initial scalar response, compiled follow-up, desktop/mobile viewport, playback, photos, cancellation, worker failure |
+| Phase-1 Cayley-$K_4$ & SWAR certificates | All 37,733,850 transitions (`coSl`, `eoSl`), 15/15 syndromes, linear coboundary law |
+| Phase-2 coboundary & 1-form walks | All 19,353,600 transitions (`cpSp`, `epSp`), `h2s0` masks, all 1,935,360 root walks |
+| Multi-mode trace & budget equivalence | 439 fixtures × 4 modes + 139 global node-cap boundaries × 3 modes |
+| Multi-tier & uncharged witnesses | Constructive counterexamples in `horizon2-witness.json` and `budget-witness.json` |
+| Held-out & Stage-1 benchmarks | 500 states (`0xd48a63`) + 500 states (`0x913b5e`), 5 repeats, external 54-sticker replay |
+| Exact search, practical & browser E2E | 2013 BFS/A\* checks, 219 scrambles, Chromium desktop/mobile, photo flow, worker recovery |
 
-For optional browser and external-baseline tests, install tools outside the static site:
-
-```sh
-npm install --prefix /tmp/rubiks-tools playwright@1.51.1 cubejs@1.3.2
-/tmp/rubiks-tools/node_modules/.bin/playwright install chromium
-
-# Start the local HTTP server in another terminal first.
-PLAYWRIGHT_MODULE=/tmp/rubiks-tools/node_modules/playwright node tests/browser.cjs
-CUBEJS_MODULE=/tmp/rubiks-tools/node_modules/cubejs node tests/compare-solvers.cjs --output research/results/cubejs-contours.json
-```
-
-### Reproduce the paper artifacts
-
-The primary baseline is frozen at **`e7023a8d96681c6a4c23a19c4c4ecb5208b910e4`**. The experiment loads that exact solver source into the same JavaScript realm as the candidate. The [archive](research/results/contour-ablation.json) records baseline and candidate SHA-256 values, environment, all states, repeated timings, returned moves, and logical/generated counts. No solver implementation changed after those measurements.
-
-```sh
-node tests/benchmark-contours.cjs --output research/results/contour-ablation.json
-node tests/budget-witness.cjs --output research/results/budget-witness.json
-```
-
-The default protocol uses seed `0x913b5e`, 500 pseudorandom legal cubie states, 30 warmup states from the separate development corpus, five repetitions, rotating solver order, and alternating corpus direction. It takes per-instance medians before computing corpus statistics. The 2000 bootstrap resamples operate on paired instances, not on repeated runs as if they were independent states. Rerunning changes timings; the checked-in figures describe the checked-in archive.
-
-| Implementation setting | Value |
-| :--- | :--- |
-| Phase-1 / phase-2 maximum depth | 12 / 18 |
-| Phase-2 budget per subgroup endpoint | 250,000 logical visits |
-| Global search budget | 20,000,000 logical visits |
-| Search deadline / worker watchdog | 30 s / 45 s |
-| Scalar / compiled persistent numeric tables | 5,815,245 / 7,913,041 bytes |
-| Corner / edge dictionary signatures | 5806 / 34,803 |
-| Display sample limit | 420 node IDs per side and depth, plus the solution path |
-
-The visit triggering a guard can be counted. Count-budget equivalence excludes an intervening wall-clock guard. Temporary queues, compiler maps, JavaScript objects and peak heap are excluded from persistent-array bytes.
-
-To regenerate the three paper figures, install NumPy and Matplotlib (recorded rendering: Matplotlib 3.10.7), then run:
+Rebuild figures and PDF paper:
 
 ```sh
 python3 research/plot_results.py
-```
-
-This exports SVG, PDF and PNG from archived measurements without rerunning the experiments. To rebuild the paper, install Pandoc and Tectonic and run from `research/`:
-
-```sh
+cd research
 pandoc REPORT.md --from=markdown+tex_math_dollars --to=latex --standalone --template=paper-template.tex --lua-filter=paper-filter.lua --number-sections --no-highlight -o paper.tex
 tectonic paper.tex
 ```
 
-The generated [LaTeX source](research/paper.tex), [BibTeX database](research/references.bib), and pinned CVPR author-kit styles are included. Table values are rendered from the Markdown manuscript, avoiding a second hard-coded set of PDF measurements. Conference styling is a presentation choice; the paper has not been submitted to or accepted by CVPR.
-
 ## Scope and limitations
 
-Supported models are **2×2 and 3×3**, with compiled two-phase solving for **3×3 only**. Arbitrary-size reduction, inner-layer moves, and large-cube center/edge algorithms are not implemented.
-
-COVE-3 has finite work and time limits, may fail on valid cubes, and does not guarantee shortest solutions. The optimization preserves its scalar baseline’s count-based policy and improves measured execution time; it does not change worst-case exponential search. Broader novelty and state-of-the-art performance have not been established. Testing covers one measured machine and Chromium desktop/mobile-sized viewports, not physical phones or a cross-browser performance study. There is no trained model or evaluated autonomous vision component.
+Supported models are **2×2 and 3×3**, with compiled two-phase solving for **3×3 only**. COVE-3 enforces finite node and wall-clock caps, does not guarantee globally shortest solutions, and retains exponential worst-case search complexity. Measurements reflect single-machine Node 18.19.1 / Chromium testing on AMD EPYC 9254, not cross-device mobile hardware or certified worldwide algorithmic priority.
 
 ---
 
-**Read next:** [PDF paper →](research/paper.pdf) · [Method, proofs and comparisons](research/REPORT.md) · [Paper artifact guide](research/README.md)
+**Read next:** [PDF paper →](research/paper.pdf) · [Method, proofs and comparisons](research/REPORT.md) · [Novelty review](research/NOVELTY.md) · [Paper artifact guide](research/README.md)

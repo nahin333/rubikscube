@@ -1,0 +1,54 @@
+{
+  "experiment": "Multi-tier Horizon-2/3 accounting witness: unit-charge vs exact subtree-charge under Horizon-2/3 pruning",
+  "baselineRevision": "e7023a8d96681c6a4c23a19c4c4ecb5208b910e4",
+  "candidateSha256": "6347a162db0f9db2484df7fde09917ca0f75ba88c922e1f16094b9f151a1be8f",
+  "unitChargeControlSha256": "4609a47b3980a3fdffd5b79ddad6c375b38f404853e07da2f7c12d52f16d8f9e",
+  "fixtureSeed": "0x913b5e",
+  "fixtureId": 0,
+  "maxNodes": 118075,
+  "scalarReferenceNodes": 303683,
+  "dualGeneratedNodes": 18821,
+  "dualSkippedNodes": 284862,
+  "unitChargeReportedNodes": 118075,
+  "undercountedGhostChildrenVisits": 185608,
+  "atCap": {
+    "scalar": {
+      "solved": false,
+      "error": "Search node budget reached; no solution is being claimed."
+    },
+    "dualMultiTier": {
+      "solved": false,
+      "error": "Search node budget reached; no solution is being claimed."
+    },
+    "naiveUnitChargeH2": {
+      "solved": true,
+      "nodes": 118075,
+      "moves": [
+        1,
+        3,
+        1,
+        7,
+        14,
+        1,
+        15,
+        4,
+        11,
+        12,
+        0,
+        13,
+        7,
+        9,
+        16,
+        2,
+        16,
+        10,
+        7,
+        0,
+        13,
+        2,
+        13,
+        16
+      ]
+    }
+  }
+}

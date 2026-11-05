@@ -14,7 +14,7 @@ const count = Number(arg('--count', 100)), repeats = Number(arg('--repeats', 3))
 const seed = Number(arg('--seed', '0xb217ef'));
 const options = { replayMinDepth: Number(arg('--min-depth', 3)), replayMaxDepth: Number(arg('--max-depth', 8)), replayBits: Number(arg('--bits', 16)) };
 assert.ok(Number.isInteger(count) && count > 0 && Number.isInteger(repeats) && repeats > 0);
-const T = S.build(P), fixtures = uniformStates(count, seed);
+const T = S.build(P, undefined, { expansion: 'contour' }), fixtures = uniformStates(count, seed);
 const run = (name, state, extra = {}) => (name === 'contour' ? S : R).solve(T, state, { ...options, ...extra });
 for (const f of uniformStates(20, 0xabc123)) for (const name of ['contour', 'candidate']) run(name, f.stickers);
 const rows = fixtures.map(f => ({ id: f.id, stickers: Array.from(f.stickers), times: { contour: [], candidate: [] } }));
