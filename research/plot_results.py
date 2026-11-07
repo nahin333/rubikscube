@@ -221,10 +221,94 @@ for extension in ("svg", "pdf", "png"):
     fig.savefig(out / f"dual-horizon.{extension}", dpi=200)
 plt.close(fig)
 
+# Stage-3 Holonomy-Guided Bifurcated Eikonal Wavefront (HBEW) evaluation.
+holo = json.loads((ROOT / "results/holonomy-ablation.json").read_text())
+cube_holo = json.loads((ROOT / "results/cubejs-holonomy.json").read_text())
+holo_rows = holo["rows"]
+ch_rows = cube_holo["rows"]
+assert len(holo_rows) == holo["corpus"]["count"] == 500
+assert len(ch_rows) == 200
+purple = "#6b46c1"
+
+fig, axes = plt.subplots(1, 3, figsize=(13.2, 3.95), layout="constrained")
+
+# (a) Held-out 500-state solution-length distributions.
+ax = axes[0]
+len_cove = np.array([r["metrics"]["cove3Dual"]["length"] for r in holo_rows])
+len_fast = np.array([r["metrics"]["hbewFast"]["length"] for r in holo_rows])
+len_def = np.array([r["metrics"]["hbewDefault"]["length"] for r in holo_rows])
+assert np.isclose(len_cove.mean(), holo["summary"]["cove3Dual"]["meanMoves"])
+assert np.isclose(len_def.mean(), holo["summary"]["hbewDefault"]["meanMoves"])
+bins = np.arange(17, 26)
+w = 0.27
+for idx, (arr, label, color) in enumerate([
+    (len_cove, f"COVE-3 Dual ({len_cove.mean():.2f})", "#94a3b8"),
+    (len_fast, f"HBEW Fast δ=1 ({len_fast.mean():.2f})", blue),
+    (len_def, f"HBEW Default δ=2 ({len_def.mean():.2f})", teal),
+]):
+    counts = np.array([np.sum(arr == b) for b in bins])
+    ax.bar(bins + (idx - 1) * w, counts, width=w, color=color, label=label)
+ax.axvline(22.5, color="#b42318", linestyle="--", linewidth=1.0, alpha=0.75)
+ax.text(22.62, 268, "≤22 cap\n(100% HBEW)", fontsize=7.6, color="#b42318", va="top")
+ax.set(xlabel="Verified HTM solution length (moves)", ylabel="States out of 500",
+       xticks=bins, ylim=(0, 278), title="(a) Held-out 500-state lengths")
+ax.legend(frameon=False, fontsize=7.6, loc="upper left")
+
+# (b) External 200-scramble latency & length head-to-head vs cubejs 1.3.2.
+ax = axes[1]
+for key, label, color in [
+    ("cove3Dual", f"COVE-3 Dual (1.61 ms, {cube_holo['summary']['cove3Dual']['meanMoves']:.2f} mv)", "#747b85"),
+    ("hbewFast", f"HBEW Fast (4.40 ms, {cube_holo['summary']['hbewFast']['meanMoves']:.2f} mv)", blue),
+    ("hbewDefault", f"HBEW Default (4.70 ms, {cube_holo['summary']['hbewDefault']['meanMoves']:.2f} mv)", teal),
+    ("hbewExact", f"HBEW Exact (5.93 ms, {cube_holo['summary']['hbewExact']['meanMoves']:.2f} mv)", purple),
+    ("cubejs", f"cubejs 1.3.2 (30.7 ms, {cube_holo['summary']['cubejs']['meanMoves']:.2f} mv)", orange),
+]:
+    times = np.sort([r[key]["ms"] for r in ch_rows])
+    ax.step(times, np.arange(1, len(times) + 1) / len(times),
+            where="post", label=label, color=color, linewidth=1.75)
+ax.set(xscale="log", xlim=(0.18, 22000), ylim=(0, 1.03),
+       xlabel="Per-scramble median latency (ms)",
+       ylabel="Empirical cumulative fraction",
+       title="(b) 200-scramble latency vs. cubejs")
+ax.legend(frameon=False, fontsize=7.2, loc="lower right")
+
+# (c) Harvested subgroup-H lifts across multi-shell ablations.
+ax = axes[2]
+abl_labels = ["Unpruned\nshells", "No σ₂\nstrata", "No 0-slack\nsieve", "HBEW\n(δ=2)", "HBEW\n(δ=1)"]
+lift_vals = np.array([
+    holo["ablations"]["unprunedMultiShell"]["ablatedMode"]["meanHarvestedLifts"],
+    holo["ablations"]["noStratifiedWavefront"]["ablatedMode"]["meanHarvestedLifts"],
+    holo["ablations"]["noZeroSlackSieve"]["ablatedMode"]["meanHarvestedLifts"],
+    holo["summary"]["hbewDefault"]["meanHarvestedLifts"],
+    holo["summary"]["hbewFast"]["meanHarvestedLifts"],
+])
+mean_ms_vals = np.array([
+    holo["ablations"]["unprunedMultiShell"]["ablatedMode"]["meanMs"],
+    holo["ablations"]["noStratifiedWavefront"]["ablatedMode"]["meanMs"],
+    holo["ablations"]["noZeroSlackSieve"]["ablatedMode"]["meanMs"],
+    holo["summary"]["hbewDefault"]["meanMs"],
+    holo["summary"]["hbewFast"]["meanMs"],
+])
+bars = ax.bar(abl_labels, lift_vals,
+              color=[orange, "#747b85", "#5c7cfa", teal, blue], width=0.58)
+ax.bar_label(bars, labels=[f"{l:.0f}\n({m:.2f} ms)" for l, m in zip(lift_vals, mean_ms_vals)],
+             padding=3, fontsize=7.6)
+ax.set(ylabel="Mean harvested subgroup-H lifts / state",
+       ylim=(0, lift_vals.max() * 1.24),
+       title="(c) Fiber-lift pruning & mean latency")
+for ax in axes:
+    ax.grid(axis="y", alpha=0.15)
+    ax.set_axisbelow(True)
+for extension in ("svg", "pdf", "png"):
+    fig.savefig(out / f"holonomy-wavefront.{extension}", dpi=200)
+plt.close(fig)
+
 for artifact in out.glob("*.svg"):
     artifact.write_text("\n".join(line.rstrip() for line in artifact.read_text().splitlines()) + "\n")
 
 print(json.dumps({"cases": len(rows), "compact_faster": int(np.sum(candidate < baseline)),
                   "dual_faster_vs_contour": int(np.sum(dh_dual < dh_cont)),
                   "dual_median_ms": float(np.median(dh_dual)),
-                  "contour_median_ms": float(np.median(dh_cont))}))
+                  "contour_median_ms": float(np.median(dh_cont)),
+                  "hbew_default_mean_moves": float(len_def.mean()),
+                  "hbew_vs_cubejs_speedup": float(cube_holo["headToHead"]["hbewDefaultVsCubejs"]["medianSpeedup"])}))

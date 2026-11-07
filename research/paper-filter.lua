@@ -6,7 +6,7 @@ local citation_keys = {
   'korf1997', 'kociemba_coordinates', 'kociemba_pruning', 'cubejs',
   'mcaleer2018', 'fridrich', 'demaine2011', 'rokicki_gods_number',
   'felner2012', 'sturtevant2017', 'akagi2010', 'lammich2015',
-  'goldenberg2014', 'breyer2010',
+  'goldenberg2014', 'breyer2010', 'sethian1996',
 }
 
 function Str(el)
@@ -36,19 +36,24 @@ function CodeBlock(el)
   if el.text:match('^Input: potential%-free') then
     return raw('\\begin{figure}[t]\n\\hrule\\vspace{5pt}\n\\textbf{Algorithm 2.} Potential-free coboundary Horizon-2 expansion with three-tier accounting\n\\vspace{4pt}\n\\begin{Verbatim}[fontsize=\\footnotesize,breaklines=true,breakanywhere=true]\n' .. el.text .. '\n\\end{Verbatim}\n\\vspace{3pt}\\hrule\n\\end{figure}')
   end
+  if el.text:match('^Input: holonomy%-compiled') then
+    return raw('\\begin{figure}[t]\n\\hrule\\vspace{5pt}\n\\textbf{Algorithm 3.} Holonomy-Guided Bifurcated Eikonal Wavefront Search (HBEW)\n\\vspace{4pt}\n\\begin{Verbatim}[fontsize=\\footnotesize,breaklines=true,breakanywhere=true]\n' .. el.text .. '\n\\end{Verbatim}\n\\vspace{3pt}\\hrule\n\\end{figure}')
+  end
   return el
 end
 
 function Table(el)
   table_index = table_index + 1
   local captions = {
-    'Complexity relative to the frozen scalar baseline across 1-step contour and potential-free dual-horizon compilation. Worst-case search remains exponential in depth.',
+    'Complexity relative to the frozen scalar baseline across 1-step contour, potential-free dual-horizon, and HBEW holonomy search. Worst-case search remains exponential in depth.',
     'Stage-1 matched-output evaluation: 500 states and five repetitions per configuration. Statistics use per-instance medians; all move sequences and logical counts are identical.',
-    'Persistent numeric storage across scalar, coboundary H2-only, 1-step contour, and potential-free/32-bit dual-horizon representations.',
-    'Separate cubejs 1.3.2 comparison on 200 shared scrambles. One timing per state; solution-length targets differ.',
-    'Verification evidence across Stage-1 contour, follow-up, and potential-free dual-horizon suites. Counts concern distinct checks and are not pooled.',
+    'Persistent numeric storage across scalar, coboundary H2-only, 1-step contour, potential-free/32-bit dual-horizon, and HBEW holonomy representations.',
+    'Archived Stage-2 cubejs 1.3.2 comparison on 200 shared scrambles. One timing per state; solution-length targets differ.',
+    'Verification evidence across Stage-1 contour, Stage-2 dual-horizon, and Stage-3 HBEW holonomy suites. Counts concern distinct checks and are not pooled.',
     'Follow-up negative results on 500 separate states, five repetitions. Each candidate uses its own contemporaneous contour baseline.',
     'Held-out 500-state evaluation (seed 0xd48a63, five repetitions) and cache-aware pairwise ablations of potential-free dual-horizon compilation at identical outputs and logical counts.',
+    'Stage-3 held-out 500-state evaluation (seed 0x5e71a9, five repetitions) and five-mode component ablations of Holonomy-Guided Bifurcated Eikonal Wavefront Search (HBEW).',
+    'Stage-3 head-to-head comparison against cubejs 1.3.2 and COVE-3 Dual-Horizon on 200 shared scrambles (seed 0x74bc39, three interleaved repetitions per solver).',
   }
   local layouts = {
     {'table*', '\\textwidth', '@{}p{0.23\\textwidth}LLp{0.28\\textwidth}@{}'},
@@ -57,6 +62,8 @@ function Table(el)
     {'table*', '\\textwidth', '@{}Lrrr@{}'},
     {'table*', '\\textwidth', '@{}p{0.24\\textwidth}Lp{0.22\\textwidth}@{}'},
     {'table*', '\\textwidth', '@{}Lrrr@{}'},
+    {'table*', '\\textwidth', '@{}Lrrrrr@{}'},
+    {'table*', '\\textwidth', '@{}Lrrrrr@{}'},
     {'table*', '\\textwidth', '@{}Lrrrrr@{}'},
   }
   local layout = assert(layouts[table_index], 'Unexpected manuscript table')
@@ -87,6 +94,7 @@ function Pandoc(doc)
     {'solver-comparison', 'Separate external cubejs comparison: paired latency, latency distributions, and extra moves. Different length targets prevent an equal-quality speedup claim.'},
     {'research-extensions', 'Follow-up negative results: per-instance latency ratios relative to the concurrently interleaved contour baseline. Ratios above one indicate slower execution.'},
     {'dual-horizon', 'Held-out 500-state evaluation of potential-free dual-horizon compilation (seed 0xd48a63, five repetitions). (a) Per-state median latency against pinned COVE-3 contours (499/500 faster). (b) Empirical distributions for scalar, COVE-3 contour, and potential-free dual-horizon solvers. (c) Generated visits and persistent table footprints across the five-stage ablation ladder.'},
+    {'holonomy-wavefront', 'Stage-3 Holonomy-Guided Bifurcated Eikonal Wavefront Search (HBEW) evaluation. (a) Held-out 500-state solution-length distributions (seed 0x5e71a9): HBEW lowers mean length from 22.94 to 20.58 moves with 500/500 states at or below 22 moves. (b) External 200-scramble latency CDFs against cubejs 1.3.2 (seed 0x74bc39): HBEW Default runs 6.54x faster at the median (15.7x at P95) while averaging 1.25 fewer moves. (c) Mean harvested subgroup-H lifts and solve latency across component ablations.'},
   }
   for _, block in ipairs(doc.blocks) do
     local text = stringify(block)

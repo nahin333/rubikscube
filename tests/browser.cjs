@@ -50,6 +50,29 @@ let browser;
     const a = window.__labTest.app.ablation;
     return a[3].generatedNodes < a[2].generatedNodes && a[2].generatedNodes < a[1].generatedNodes && a[1].generatedNodes < a[0].generatedNodes;
   }), 'Live 4-stage ablation must monotonically prune visits');
+
+  // Stage-3 HBEW interactive solve, fiber-fan diagnostics, and live 4-solver comparison.
+  await page.locator('[data-a="holonomy"]').click();
+  await page.locator('#scramble').fill("R U F2 L D B' R2 U' F D2 L2 B R' D F' U2 B2 L' D2 R F U' L2 B D'");
+  await page.locator('#solveBtn').click();
+  const holoRes = await finished();
+  console.log('HBEW long scramble', holoRes);
+  assert.ok(holoRes.moves <= 22, `HBEW must solve in <= 22 moves, got ${holoRes.moves}`);
+  assert.equal(await page.evaluate(() => window.__workerResults.at(-1).holonomyTotalBytes), 14708554);
+  assert.ok(await page.evaluate(() => {
+    const { app } = window.__labTest;
+    if (!app.scanInfo || !app.scanInfo.isHolonomy) return false;
+    for (let i = 1; i < app.sol.length; i++) if (((app.sol[i] / 3) | 0) === ((app.sol[i - 1] / 3) | 0)) return false;
+    return true;
+  }), 'HBEW must populate holonomy diagnostics and emit zero adjacent same-face turns');
+  await page.locator('#compareSolversBtn').click();
+  await page.waitForFunction(() => window.__labTest && !window.__labTest.app.running && Array.isArray(window.__labTest.app.solverComparison) && window.__labTest.app.solverComparison.length === 4, null, { timeout: 60000 });
+  assert.ok(await page.evaluate(() => {
+    const s = window.__labTest.app.solverComparison;
+    return s[2].moves.length <= s[0].moves.length && s[3].moves.length <= s[2].moves.length;
+  }), 'HBEW Default and Exact must match or beat COVE-3 Dual move length');
+  assert.equal(await page.locator('#holonomy-wavefront').isVisible(), true);
+
   await page.screenshot({ path: '/tmp/rubiks-desktop.png', fullPage: true });
   await page.waitForTimeout(450); // Delayed input reset must not erase a fast result.
   assert.ok(await page.evaluate(() => window.__labTest.app.sol !== null));

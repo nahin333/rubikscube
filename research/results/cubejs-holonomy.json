@@ -1,0 +1,6928 @@
+{
+  "compactSourceSha256": "559b0f015d7d821217a6efe6b060ba32a1cbd80d1bf1ba35f747301b31d10a94",
+  "baselineVersion": "cubejs 1.3.2",
+  "environment": {
+    "node": "v18.19.1",
+    "platform": "linux",
+    "arch": "x64",
+    "cpu": "AMD EPYC 9254 24-Core Processor"
+  },
+  "seed": "0x74bc39",
+  "repeats": 3,
+  "fixture": "200 seeded 20–40-turn scrambles, no consecutive same-face turns; 3 interleaved repeats per solver",
+  "setupMs": {
+    "cubejs": 1247.278323173523,
+    "cove3Dual": 941.7979650497437,
+    "hbewExtra": 220.31887197494507,
+    "hbewTotal": 1162.1168370246887
+  },
+  "tableBytes": {
+    "cove3Dual": 12043251,
+    "hbewExtra": 2665303,
+    "hbewTotal": 14708554
+  },
+  "summary": {
+    "cubejs": {
+      "verified": 200,
+      "medianMs": 30.698020100593567,
+      "p95Ms": 169.432599067688,
+      "meanMs": 56.39989662766457,
+      "maxMs": 1039.4401161670685,
+      "meanMoves": 21.71,
+      "medianMoves": 22,
+      "maxMoves": 22,
+      "minMoves": 19,
+      "le20Fraction": 0.04,
+      "le21Fraction": 0.245,
+      "le22Fraction": 1
+    },
+    "cove3Dual": {
+      "verified": 200,
+      "medianMs": 1.605599045753479,
+      "p95Ms": 8.618188858032227,
+      "meanMs": 2.644967986345291,
+      "maxMs": 23.49839186668396,
+      "meanMoves": 22.77,
+      "medianMoves": 23,
+      "maxMoves": 26,
+      "minMoves": 19,
+      "le20Fraction": 0.045,
+      "le21Fraction": 0.15,
+      "le22Fraction": 0.365,
+      "meanVisitedNodes": 15716.79
+    },
+    "hbewFast": {
+      "verified": 200,
+      "medianMs": 4.39806592464447,
+      "p95Ms": 12.109730958938599,
+      "meanMs": 5.191970826387405,
+      "maxMs": 41.795086145401,
+      "meanMoves": 20.675,
+      "medianMoves": 21,
+      "maxMoves": 22,
+      "minMoves": 17,
+      "le20Fraction": 0.41,
+      "le21Fraction": 0.785,
+      "le22Fraction": 1,
+      "meanVisitedNodes": 37427.915
+    },
+    "hbewDefault": {
+      "verified": 200,
+      "medianMs": 4.696750998497009,
+      "p95Ms": 10.785240888595581,
+      "meanMs": 5.183763095140457,
+      "maxMs": 35.4961519241333,
+      "meanMoves": 20.46,
+      "medianMoves": 20,
+      "maxMoves": 22,
+      "minMoves": 17,
+      "le20Fraction": 0.51,
+      "le21Fraction": 0.855,
+      "le22Fraction": 1,
+      "meanVisitedNodes": 46877.08
+    },
+    "hbewExact": {
+      "verified": 200,
+      "medianMs": 5.933403491973877,
+      "p95Ms": 10.379625082015991,
+      "meanMs": 6.02707253575325,
+      "maxMs": 13.544494152069092,
+      "meanMoves": 20.45,
+      "medianMoves": 20,
+      "maxMoves": 23,
+      "minMoves": 17,
+      "le20Fraction": 0.51,
+      "le21Fraction": 0.85,
+      "le22Fraction": 0.99,
+      "meanVisitedNodes": 52026.08
+    }
+  },
+  "headToHead": {
+    "hbewDefaultVsCubejs": {
+      "medianSpeedup": 6.536011832523617,
+      "p95Speedup": 15.70967221018194,
+      "meanMoveReduction": 1.25,
+      "hbewShorterCases": 156,
+      "tiedCases": 43,
+      "cubejsShorterCases": 1,
+      "hbewFasterCases": 192
+    },
+    "hbewFastVsCubejs": {
+      "medianSpeedup": 6.979890848970193,
+      "p95Speedup": 13.991442059464095,
+      "meanMoveReduction": 1.0350000000000001,
+      "hbewShorterCases": 133,
+      "tiedCases": 67,
+      "cubejsShorterCases": 0,
+      "hbewFasterCases": 195
+    },
+    "hbewDefaultVsCove3Dual": {
+      "meanMoveReduction": 2.3099999999999987,
+      "hbewShorterCases": 187,
+      "tiedCases": 12,
+      "cove3ShorterCases": 1
+    }
+  },
+  "rows": [
+    {
+      "trial": 0,
+      "scramble": "L R' L D' R' U' R2 L F2 R2 B2 D2 R L D2 B' L B2 L' R2 U' R2 U'",
+      "cubejs": {
+        "ms": 109.21011590957642,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 1.4703221321105957,
+        "length": 24,
+        "nodes": 4175
+      },
+      "hbewFast": {
+        "ms": 14.048290967941284,
+        "length": 21,
+        "nodes": 83711,
+        "harvestedLifts": 409,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 8.670578956604004,
+        "length": 21,
+        "nodes": 83711,
+        "harvestedLifts": 409,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 7.438902139663696,
+        "length": 21,
+        "nodes": 68913,
+        "harvestedLifts": 444,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 1,
+      "scramble": "U2 R U2 R' U' B' R2 B2 R' L2 B2 D F2 D U D2 B F' U F2 L D2 L F2 D2 B' R2 L U2 B R2 B' R2 U' F B U' D' L U",
+      "cubejs": {
+        "ms": 39.58846306800842,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 1.6002039909362793,
+        "length": 23,
+        "nodes": 6261
+      },
+      "hbewFast": {
+        "ms": 6.957353830337524,
+        "length": 20,
+        "nodes": 49374,
+        "harvestedLifts": 227,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 5.34486985206604,
+        "length": 20,
+        "nodes": 49374,
+        "harvestedLifts": 227,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 4.771211862564087,
+        "length": 20,
+        "nodes": 43727,
+        "harvestedLifts": 228,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 2,
+      "scramble": "D L' F2 R2 F2 L U' R D2 U' F2 R2 D' R' U2 L2 R' D' B2 D2 L B' D' F' B2 D2 R F' B2 U' L' B' R' B L2",
+      "cubejs": {
+        "ms": 35.47833204269409,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 5.640033960342407,
+        "length": 24,
+        "nodes": 39538
+      },
+      "hbewFast": {
+        "ms": 6.383975982666016,
+        "length": 22,
+        "nodes": 44747,
+        "harvestedLifts": 131,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 4.7502710819244385,
+        "length": 22,
+        "nodes": 44747,
+        "harvestedLifts": 131,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 5.910197973251343,
+        "length": 22,
+        "nodes": 49338,
+        "harvestedLifts": 192,
+        "zeroSlackHits": 3
+      }
+    },
+    {
+      "trial": 3,
+      "scramble": "B R' L2 F' U' D' B' L U L2 D U' B' D U2 B2 R2 U' B2 U2 F' R F' L' B2 F2 U2 L' F' L B L2 U R",
+      "cubejs": {
+        "ms": 50.09501099586487,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 5.6907360553741455,
+        "length": 21,
+        "nodes": 35866
+      },
+      "hbewFast": {
+        "ms": 3.054405927658081,
+        "length": 19,
+        "nodes": 24230,
+        "harvestedLifts": 62,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 1.9946589469909668,
+        "length": 19,
+        "nodes": 24230,
+        "harvestedLifts": 62,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 11.751885890960693,
+        "length": 19,
+        "nodes": 95475,
+        "harvestedLifts": 761,
+        "zeroSlackHits": 4
+      }
+    },
+    {
+      "trial": 4,
+      "scramble": "L B U2 F' D' U' D2 L2 U2 B' R2 D L B2 L' B' D F R2 F L' B U F' L U2 F B2 U",
+      "cubejs": {
+        "ms": 1.859868049621582,
+        "length": 20
+      },
+      "cove3Dual": {
+        "ms": 0.12205195426940918,
+        "length": 20,
+        "nodes": 361
+      },
+      "hbewFast": {
+        "ms": 1.415390968322754,
+        "length": 20,
+        "nodes": 11673,
+        "harvestedLifts": 30,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 3.901218891143799,
+        "length": 19,
+        "nodes": 31346,
+        "harvestedLifts": 224,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 7.75728702545166,
+        "length": 19,
+        "nodes": 64900,
+        "harvestedLifts": 317,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 5,
+      "scramble": "F B' R2 D2 R' L' B2 U' B2 D U F2 D B' F L R2 D' L2 U' D2 R2 L B D' F2 R",
+      "cubejs": {
+        "ms": 26.701989889144897,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.40201592445373535,
+        "length": 23,
+        "nodes": 1845
+      },
+      "hbewFast": {
+        "ms": 0.7158210277557373,
+        "length": 22,
+        "nodes": 5600,
+        "harvestedLifts": 12,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 4.437167167663574,
+        "length": 21,
+        "nodes": 36473,
+        "harvestedLifts": 146,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 3.483341932296753,
+        "length": 21,
+        "nodes": 33445,
+        "harvestedLifts": 146,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 6,
+      "scramble": "B' R2 D2 B2 R2 L U2 L R2 U2 D R2 D2 U' F R U' F' L R' U L U L D' R F D F' L2 B2 R U2 D' F' U2",
+      "cubejs": {
+        "ms": 1.5735039710998535,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 0.0932319164276123,
+        "length": 21,
+        "nodes": 351
+      },
+      "hbewFast": {
+        "ms": 1.4764020442962646,
+        "length": 21,
+        "nodes": 8498,
+        "harvestedLifts": 50,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 7.856487989425659,
+        "length": 20,
+        "nodes": 59352,
+        "harvestedLifts": 351,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 6.908743143081665,
+        "length": 20,
+        "nodes": 60498,
+        "harvestedLifts": 474,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 7,
+      "scramble": "R2 F R' B D' F' R F L' F' U2 R2 L2 F2 L' R2 F2 B2 U' R U F' U2 B' L' R2 L' B F2 D U2 F R",
+      "cubejs": {
+        "ms": 24.49895715713501,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.9644451141357422,
+        "length": 23,
+        "nodes": 4322
+      },
+      "hbewFast": {
+        "ms": 1.1747479438781738,
+        "length": 20,
+        "nodes": 6728,
+        "harvestedLifts": 32,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 0.7285599708557129,
+        "length": 20,
+        "nodes": 6728,
+        "harvestedLifts": 32,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 7.172528028488159,
+        "length": 20,
+        "nodes": 60488,
+        "harvestedLifts": 209,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 8,
+      "scramble": "R' F' B U2 R' D' L F L2 F2 L2 B2 D' B L' F L2 R' B L B2 R' U F D F2 B F2 U B2 F'",
+      "cubejs": {
+        "ms": 21.216658115386963,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 1.142167091369629,
+        "length": 22,
+        "nodes": 5751
+      },
+      "hbewFast": {
+        "ms": 4.470616817474365,
+        "length": 21,
+        "nodes": 32652,
+        "harvestedLifts": 130,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 5.304089069366455,
+        "length": 19,
+        "nodes": 41397,
+        "harvestedLifts": 381,
+        "zeroSlackHits": 2
+      },
+      "hbewExact": {
+        "ms": 9.136037111282349,
+        "length": 19,
+        "nodes": 74428,
+        "harvestedLifts": 416,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 9,
+      "scramble": "L U B2 U F' R' D' B' L2 D U2 D2 U' R B' R2 D' F U2 D2",
+      "cubejs": {
+        "ms": 25.73426604270935,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 1.346740961074829,
+        "length": 22,
+        "nodes": 7709
+      },
+      "hbewFast": {
+        "ms": 1.8228068351745605,
+        "length": 21,
+        "nodes": 14446,
+        "harvestedLifts": 40,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 4.75524115562439,
+        "length": 20,
+        "nodes": 35701,
+        "harvestedLifts": 199,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 4.383394956588745,
+        "length": 20,
+        "nodes": 37388,
+        "harvestedLifts": 334,
+        "zeroSlackHits": 0
+      }
+    },
+    {
+      "trial": 10,
+      "scramble": "F2 U2 F D2 R' L' F2 R2 D R' F' L' B2 R' D' F2 R' F D' L2 U' D' L2 F2 R' B' L2 D' F L' U D2",
+      "cubejs": {
+        "ms": 10.180802822113037,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 0.8044419288635254,
+        "length": 21,
+        "nodes": 3923
+      },
+      "hbewFast": {
+        "ms": 3.763136148452759,
+        "length": 21,
+        "nodes": 27315,
+        "harvestedLifts": 42,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 10.576668977737427,
+        "length": 20,
+        "nodes": 84500,
+        "harvestedLifts": 713,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 8.429847002029419,
+        "length": 20,
+        "nodes": 76815,
+        "harvestedLifts": 763,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 11,
+      "scramble": "L B L' D L' U R' L D L2 B' F' R' U D2 B' D2 U2 L U L2 R L2 D R' U'",
+      "cubejs": {
+        "ms": 36.88739204406738,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 0.5758190155029297,
+        "length": 21,
+        "nodes": 1863
+      },
+      "hbewFast": {
+        "ms": 4.325515031814575,
+        "length": 21,
+        "nodes": 31368,
+        "harvestedLifts": 107,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 3.4240708351135254,
+        "length": 21,
+        "nodes": 31368,
+        "harvestedLifts": 107,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 4.5987489223480225,
+        "length": 21,
+        "nodes": 40073,
+        "harvestedLifts": 200,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 12,
+      "scramble": "U B D' U' B D U B D' L2 R' B' F2 R' B' L2 F2 D2 B' L2 F2 U R B2 D2 R L' R' F2 D' F2 L2 R F2 L R F2 L U' F",
+      "cubejs": {
+        "ms": 75.68391394615173,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 7.2176079750061035,
+        "length": 23,
+        "nodes": 40045
+      },
+      "hbewFast": {
+        "ms": 8.824182033538818,
+        "length": 21,
+        "nodes": 49445,
+        "harvestedLifts": 207,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 5.311089992523193,
+        "length": 21,
+        "nodes": 49445,
+        "harvestedLifts": 207,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 5.18634819984436,
+        "length": 21,
+        "nodes": 47896,
+        "harvestedLifts": 207,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 13,
+      "scramble": "F' B D2 R2 L2 F' R' U2 D' U' B L' B2 D' U F' L U' B' L' F L D2 U2",
+      "cubejs": {
+        "ms": 4.1239118576049805,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 0.2867248058319092,
+        "length": 21,
+        "nodes": 1112
+      },
+      "hbewFast": {
+        "ms": 0.27477407455444336,
+        "length": 20,
+        "nodes": 1498,
+        "harvestedLifts": 8,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 0.16986298561096191,
+        "length": 20,
+        "nodes": 1498,
+        "harvestedLifts": 8,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 6.0241100788116455,
+        "length": 20,
+        "nodes": 45041,
+        "harvestedLifts": 144,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 14,
+      "scramble": "F B2 R U2 R L2 B2 U' F B F2 D' R' B D2 U2 D2 U R2 B' L' R L R U' B' L R",
+      "cubejs": {
+        "ms": 2.140312910079956,
+        "length": 20
+      },
+      "cove3Dual": {
+        "ms": 0.19083309173583984,
+        "length": 20,
+        "nodes": 296
+      },
+      "hbewFast": {
+        "ms": 0.5137581825256348,
+        "length": 18,
+        "nodes": 3383,
+        "harvestedLifts": 30,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 0.414456844329834,
+        "length": 18,
+        "nodes": 3383,
+        "harvestedLifts": 30,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 6.872982978820801,
+        "length": 18,
+        "nodes": 47994,
+        "harvestedLifts": 369,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 15,
+      "scramble": "R' D2 L' D F2 B D' B2 U D2 B D' L' B' D2 B2 U2 F2 D' B' R2 U D'",
+      "cubejs": {
+        "ms": 61.83896613121033,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 4.319385051727295,
+        "length": 24,
+        "nodes": 25156
+      },
+      "hbewFast": {
+        "ms": 0.2888040542602539,
+        "length": 20,
+        "nodes": 1730,
+        "harvestedLifts": 10,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 0.19358301162719727,
+        "length": 20,
+        "nodes": 1730,
+        "harvestedLifts": 10,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 8.723110914230347,
+        "length": 20,
+        "nodes": 61058,
+        "harvestedLifts": 754,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 16,
+      "scramble": "L' D2 B2 U' D2 B D B2 L' B' F2 B F U D2 U2 B2 F B' L2",
+      "cubejs": {
+        "ms": 16.614089012145996,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.19305181503295898,
+        "length": 24,
+        "nodes": 703
+      },
+      "hbewFast": {
+        "ms": 5.236397981643677,
+        "length": 21,
+        "nodes": 39304,
+        "harvestedLifts": 160,
+        "zeroSlackHits": 2
+      },
+      "hbewDefault": {
+        "ms": 4.1391520500183105,
+        "length": 21,
+        "nodes": 39304,
+        "harvestedLifts": 160,
+        "zeroSlackHits": 2
+      },
+      "hbewExact": {
+        "ms": 4.164911985397339,
+        "length": 21,
+        "nodes": 39304,
+        "harvestedLifts": 160,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 17,
+      "scramble": "U2 L F2 R F' R2 U D2 U' L D2 L D L2 D F2 B2 D2 F2 U' F' B2 D' R",
+      "cubejs": {
+        "ms": 77.80834579467773,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 3.745445966720581,
+        "length": 23,
+        "nodes": 18459
+      },
+      "hbewFast": {
+        "ms": 10.695220947265625,
+        "length": 20,
+        "nodes": 63499,
+        "harvestedLifts": 318,
+        "zeroSlackHits": 2
+      },
+      "hbewDefault": {
+        "ms": 6.438507080078125,
+        "length": 20,
+        "nodes": 63499,
+        "harvestedLifts": 318,
+        "zeroSlackHits": 2
+      },
+      "hbewExact": {
+        "ms": 6.324095010757446,
+        "length": 20,
+        "nodes": 60879,
+        "harvestedLifts": 331,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 18,
+      "scramble": "U D L2 B L U2 L D F2 U' B' D B R2 D2 F2 L2 U L2 U2 R L B' U2 B2 U2 B'",
+      "cubejs": {
+        "ms": 4.962724924087524,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 0.2995140552520752,
+        "length": 21,
+        "nodes": 1447
+      },
+      "hbewFast": {
+        "ms": 1.6084041595458984,
+        "length": 19,
+        "nodes": 13599,
+        "harvestedLifts": 98,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 1.204308032989502,
+        "length": 19,
+        "nodes": 13599,
+        "harvestedLifts": 98,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 7.424471139907837,
+        "length": 19,
+        "nodes": 54456,
+        "harvestedLifts": 375,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 19,
+      "scramble": "D U2 F D' L2 B L2 B2 L2 U2 D' B' F2 B' L F' U R' F B",
+      "cubejs": {
+        "ms": 53.70342516899109,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 2.608268976211548,
+        "length": 24,
+        "nodes": 13481
+      },
+      "hbewFast": {
+        "ms": 8.397944927215576,
+        "length": 20,
+        "nodes": 50248,
+        "harvestedLifts": 294,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 5.4223010540008545,
+        "length": 20,
+        "nodes": 50248,
+        "harvestedLifts": 294,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 6.377184867858887,
+        "length": 20,
+        "nodes": 53901,
+        "harvestedLifts": 481,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 20,
+      "scramble": "R2 L2 D' F' R' U2 L' R D F2 R2 B2 R' L2 F2 R L D2 R' D F B2 U F' L R2 U2 F' R' U' F'",
+      "cubejs": {
+        "ms": 27.19802689552307,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 3.4179110527038574,
+        "length": 23,
+        "nodes": 20858
+      },
+      "hbewFast": {
+        "ms": 2.5862390995025635,
+        "length": 21,
+        "nodes": 15322,
+        "harvestedLifts": 48,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 3.9071390628814697,
+        "length": 20,
+        "nodes": 29430,
+        "harvestedLifts": 183,
+        "zeroSlackHits": 2
+      },
+      "hbewExact": {
+        "ms": 9.610244035720825,
+        "length": 20,
+        "nodes": 76359,
+        "harvestedLifts": 334,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 21,
+      "scramble": "U F' L2 F' D L U B F2 R' B2 F2 U2 L2 R' D' F2 R U2 D' R2 B U'",
+      "cubejs": {
+        "ms": 16.237812995910645,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.7745411396026611,
+        "length": 22,
+        "nodes": 4258
+      },
+      "hbewFast": {
+        "ms": 10.299015045166016,
+        "length": 20,
+        "nodes": 84002,
+        "harvestedLifts": 472,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 8.925194025039673,
+        "length": 20,
+        "nodes": 84002,
+        "harvestedLifts": 472,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 7.298079013824463,
+        "length": 20,
+        "nodes": 65572,
+        "harvestedLifts": 514,
+        "zeroSlackHits": 3
+      }
+    },
+    {
+      "trial": 22,
+      "scramble": "D F' U2 B D B2 L R' B' U2 L B' U L F2 R2 D' L' R' L' B' D' L2 D2 L' F",
+      "cubejs": {
+        "ms": 22.432345867156982,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 1.2951099872589111,
+        "length": 22,
+        "nodes": 7138
+      },
+      "hbewFast": {
+        "ms": 2.689440965652466,
+        "length": 21,
+        "nodes": 24016,
+        "harvestedLifts": 66,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 8.391455888748169,
+        "length": 21,
+        "nodes": 68360,
+        "harvestedLifts": 450,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 5.9959001541137695,
+        "length": 21,
+        "nodes": 51524,
+        "harvestedLifts": 564,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 23,
+      "scramble": "R' B' D' R2 L' U2 R2 F2 U F2 L2 F B2 R D U F' U D B'",
+      "cubejs": {
+        "ms": 7.289278984069824,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 0.23651385307312012,
+        "length": 21,
+        "nodes": 898
+      },
+      "hbewFast": {
+        "ms": 4.075581073760986,
+        "length": 20,
+        "nodes": 33742,
+        "harvestedLifts": 115,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 3.651474952697754,
+        "length": 20,
+        "nodes": 33742,
+        "harvestedLifts": 115,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 4.35481595993042,
+        "length": 20,
+        "nodes": 35656,
+        "harvestedLifts": 213,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 24,
+      "scramble": "D B' F' L B R' D R' B F' L2 R' D' F' B2 F D2 R' L R' F' U D2 U' D2 U' R' D2 L B' D' B2 F D2 F U'",
+      "cubejs": {
+        "ms": 25.62912392616272,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 1.2783501148223877,
+        "length": 22,
+        "nodes": 3972
+      },
+      "hbewFast": {
+        "ms": 5.293478965759277,
+        "length": 20,
+        "nodes": 37753,
+        "harvestedLifts": 118,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 4.018519878387451,
+        "length": 20,
+        "nodes": 37753,
+        "harvestedLifts": 118,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 5.695105075836182,
+        "length": 20,
+        "nodes": 44022,
+        "harvestedLifts": 265,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 25,
+      "scramble": "R' D' R' B' D' R B2 L F D' R' D2 F' L2 U2 D' F B' R' D B' L2 D'",
+      "cubejs": {
+        "ms": 21.20360803604126,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 2.0682010650634766,
+        "length": 23,
+        "nodes": 11246
+      },
+      "hbewFast": {
+        "ms": 10.018869876861572,
+        "length": 20,
+        "nodes": 69160,
+        "harvestedLifts": 713,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 7.624214172363281,
+        "length": 20,
+        "nodes": 69160,
+        "harvestedLifts": 713,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 6.867213010787964,
+        "length": 20,
+        "nodes": 62429,
+        "harvestedLifts": 713,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 26,
+      "scramble": "B' F' R2 F' L U' D B' F' D U2 B U' L' D U2 B' D U2 R2 B D2 B R L' D2 R F2 U F",
+      "cubejs": {
+        "ms": 33.360519886016846,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 6.257284164428711,
+        "length": 23,
+        "nodes": 45787
+      },
+      "hbewFast": {
+        "ms": 4.273043870925903,
+        "length": 22,
+        "nodes": 52372,
+        "harvestedLifts": 30,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 7.495951890945435,
+        "length": 21,
+        "nodes": 74684,
+        "harvestedLifts": 220,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 4.131521940231323,
+        "length": 21,
+        "nodes": 40536,
+        "harvestedLifts": 269,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 27,
+      "scramble": "F' L2 R2 U L R' D L' R2 F' L2 R B2 L U L' F2 L' F2 B D U2 B L R' D2 F B U' F B' D2 L D2 R2 L2 D U' D'",
+      "cubejs": {
+        "ms": 30.69993019104004,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 1.9902300834655762,
+        "length": 25,
+        "nodes": 10440
+      },
+      "hbewFast": {
+        "ms": 4.752201795578003,
+        "length": 22,
+        "nodes": 30248,
+        "harvestedLifts": 86,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 3.2928390502929688,
+        "length": 22,
+        "nodes": 30248,
+        "harvestedLifts": 86,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 3.1841979026794434,
+        "length": 22,
+        "nodes": 30248,
+        "harvestedLifts": 86,
+        "zeroSlackHits": 0
+      }
+    },
+    {
+      "trial": 28,
+      "scramble": "D L' B2 D F2 D L' U B D F2 B2 L2 D B U2 R' F R F' R2 L D' L R'",
+      "cubejs": {
+        "ms": 79.38636898994446,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 10.139721870422363,
+        "length": 23,
+        "nodes": 64979
+      },
+      "hbewFast": {
+        "ms": 8.095070838928223,
+        "length": 22,
+        "nodes": 45219,
+        "harvestedLifts": 104,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 4.701271057128906,
+        "length": 22,
+        "nodes": 45219,
+        "harvestedLifts": 104,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 4.5269880294799805,
+        "length": 22,
+        "nodes": 43352,
+        "harvestedLifts": 104,
+        "zeroSlackHits": 0
+      }
+    },
+    {
+      "trial": 29,
+      "scramble": "B2 U' F U R' L D U B F D2 R U F R2 D R D B R2 U",
+      "cubejs": {
+        "ms": 19.53124189376831,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 1.628443956375122,
+        "length": 23,
+        "nodes": 9556
+      },
+      "hbewFast": {
+        "ms": 6.142492055892944,
+        "length": 21,
+        "nodes": 44719,
+        "harvestedLifts": 180,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 4.580078840255737,
+        "length": 21,
+        "nodes": 44719,
+        "harvestedLifts": 180,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 3.4981720447540283,
+        "length": 21,
+        "nodes": 31941,
+        "harvestedLifts": 180,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 30,
+      "scramble": "L' F2 L2 B' F' R2 U F2 R2 L R' F2 B2 D2 B L B F2 U2 D2 L R2 F2 R' D F' L' D B' F2 L' U D' R2 U' B F L' D' U2",
+      "cubejs": {
+        "ms": 169.432599067688,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 3.120457172393799,
+        "length": 24,
+        "nodes": 14128
+      },
+      "hbewFast": {
+        "ms": 9.159637928009033,
+        "length": 22,
+        "nodes": 70506,
+        "harvestedLifts": 178,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 6.722861051559448,
+        "length": 22,
+        "nodes": 70506,
+        "harvestedLifts": 178,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 5.598843097686768,
+        "length": 22,
+        "nodes": 56574,
+        "harvestedLifts": 189,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 31,
+      "scramble": "D2 U' D2 R B' D2 L2 D U' D' L2 U' D2 U2 B2 U' B L2 F2 L' U B2 D2 B' F2 L2 F U' F U' R' F' B' F' B D2 U'",
+      "cubejs": {
+        "ms": 27.394931077957153,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 1.4933829307556152,
+        "length": 23,
+        "nodes": 8624
+      },
+      "hbewFast": {
+        "ms": 2.316805124282837,
+        "length": 20,
+        "nodes": 14740,
+        "harvestedLifts": 71,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 8.968744039535522,
+        "length": 20,
+        "nodes": 73969,
+        "harvestedLifts": 429,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 10.152591943740845,
+        "length": 20,
+        "nodes": 87232,
+        "harvestedLifts": 921,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 32,
+      "scramble": "U F2 D' B' D2 R' U F2 U' D2 B' R L2 B2 D2 U2 F' B' U' D2 U' D' F2 R2 F U B L D' U2 R2 U F' U B' D L2 U2",
+      "cubejs": {
+        "ms": 16.0105299949646,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.8935129642486572,
+        "length": 22,
+        "nodes": 4469
+      },
+      "hbewFast": {
+        "ms": 0.1103219985961914,
+        "length": 20,
+        "nodes": 306,
+        "harvestedLifts": 4,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 0.09916210174560547,
+        "length": 20,
+        "nodes": 306,
+        "harvestedLifts": 4,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 8.869503021240234,
+        "length": 19,
+        "nodes": 62669,
+        "harvestedLifts": 167,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 33,
+      "scramble": "R2 F U R2 U F D2 F2 B' D2 U D2 L D2 L F2 L' U D L2",
+      "cubejs": {
+        "ms": 20.10025119781494,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 3.585994005203247,
+        "length": 24,
+        "nodes": 22969
+      },
+      "hbewFast": {
+        "ms": 1.4119408130645752,
+        "length": 18,
+        "nodes": 8883,
+        "harvestedLifts": 82,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 0.9425449371337891,
+        "length": 18,
+        "nodes": 8883,
+        "harvestedLifts": 82,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 10.298354864120483,
+        "length": 18,
+        "nodes": 81180,
+        "harvestedLifts": 697,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 34,
+      "scramble": "L2 R' F2 L D' F U' B2 F' R D B2 L' B R' F B' L' D2 F",
+      "cubejs": {
+        "ms": 52.16568207740784,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 1.0991668701171875,
+        "length": 23,
+        "nodes": 3644
+      },
+      "hbewFast": {
+        "ms": 3.564413070678711,
+        "length": 21,
+        "nodes": 18104,
+        "harvestedLifts": 96,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 10.785240888595581,
+        "length": 19,
+        "nodes": 78767,
+        "harvestedLifts": 561,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 9.14370608329773,
+        "length": 19,
+        "nodes": 74827,
+        "harvestedLifts": 849,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 35,
+      "scramble": "F R' U2 R2 D L' U D' F B2 U2 F2 D2 L2 F' B' D' R F' B' L2 B' F2 D2 B2 L2 U2 B' U2 L R2 D2",
+      "cubejs": {
+        "ms": 230.4104619026184,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 1.4154210090637207,
+        "length": 24,
+        "nodes": 5708
+      },
+      "hbewFast": {
+        "ms": 17.516382932662964,
+        "length": 21,
+        "nodes": 114524,
+        "harvestedLifts": 686,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 11.958250045776367,
+        "length": 21,
+        "nodes": 114524,
+        "harvestedLifts": 686,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 8.523288011550903,
+        "length": 21,
+        "nodes": 75319,
+        "harvestedLifts": 708,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 36,
+      "scramble": "F' U D' F2 R' F' D B R2 L D' B U2 B2 F2 B R B' L D'",
+      "cubejs": {
+        "ms": 34.2572340965271,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 9.378239870071411,
+        "length": 24,
+        "nodes": 70740
+      },
+      "hbewFast": {
+        "ms": 4.136722087860107,
+        "length": 19,
+        "nodes": 30914,
+        "harvestedLifts": 283,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 3.365060806274414,
+        "length": 19,
+        "nodes": 30914,
+        "harvestedLifts": 283,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 8.05846095085144,
+        "length": 19,
+        "nodes": 75780,
+        "harvestedLifts": 499,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 37,
+      "scramble": "B' R2 D B2 U' D' B L' F2 U' B D F2 R2 L2 R2 F R' U2 D' L D2 B' D L' F' U' D' B' U' R' D' B2",
+      "cubejs": {
+        "ms": 87.29784798622131,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 3.8963677883148193,
+        "length": 23,
+        "nodes": 18983
+      },
+      "hbewFast": {
+        "ms": 19.92233896255493,
+        "length": 21,
+        "nodes": 156046,
+        "harvestedLifts": 879,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 15.899667978286743,
+        "length": 21,
+        "nodes": 156046,
+        "harvestedLifts": 879,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 10.976294040679932,
+        "length": 21,
+        "nodes": 104551,
+        "harvestedLifts": 893,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 38,
+      "scramble": "R' L B2 L2 D' L' U F2 B' L F' B F2 L D F' R B2 R F R F' R B U' R' U B D U' R",
+      "cubejs": {
+        "ms": 25.51605200767517,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 1.5259230136871338,
+        "length": 21,
+        "nodes": 8080
+      },
+      "hbewFast": {
+        "ms": 0.1012411117553711,
+        "length": 18,
+        "nodes": 256,
+        "harvestedLifts": 4,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 0.06254005432128906,
+        "length": 18,
+        "nodes": 256,
+        "harvestedLifts": 4,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 0.7856321334838867,
+        "length": 17,
+        "nodes": 2995,
+        "harvestedLifts": 8,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 39,
+      "scramble": "R L2 B' F D' U2 F' L D2 L' F' R B2 U2 R L D L' D R2 L' R' L B' R' B' F2 B' L2",
+      "cubejs": {
+        "ms": 51.519871950149536,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 2.541548013687134,
+        "length": 24,
+        "nodes": 12375
+      },
+      "hbewFast": {
+        "ms": 5.332849025726318,
+        "length": 21,
+        "nodes": 27114,
+        "harvestedLifts": 94,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 2.803532123565674,
+        "length": 21,
+        "nodes": 27114,
+        "harvestedLifts": 94,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 2.4229061603546143,
+        "length": 21,
+        "nodes": 23757,
+        "harvestedLifts": 94,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 40,
+      "scramble": "B2 R' D' F U D2 F' U2 L' B' R2 D R U2 L B2 F' D2 R' U2 R F' U D F2 R D2 B F2",
+      "cubejs": {
+        "ms": 72.83248114585876,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 4.837922096252441,
+        "length": 22,
+        "nodes": 26062
+      },
+      "hbewFast": {
+        "ms": 2.188253164291382,
+        "length": 20,
+        "nodes": 8184,
+        "harvestedLifts": 70,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 0.8667430877685547,
+        "length": 20,
+        "nodes": 8184,
+        "harvestedLifts": 70,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 9.471352100372314,
+        "length": 20,
+        "nodes": 63010,
+        "harvestedLifts": 538,
+        "zeroSlackHits": 3
+      }
+    },
+    {
+      "trial": 41,
+      "scramble": "L F' B2 F U' D B D2 R2 F2 U D2 L' U2 R2 B2 L' B2 F' D' L2 R2",
+      "cubejs": {
+        "ms": 33.65807390213013,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 2.7052810192108154,
+        "length": 23,
+        "nodes": 15202
+      },
+      "hbewFast": {
+        "ms": 8.011319875717163,
+        "length": 19,
+        "nodes": 57152,
+        "harvestedLifts": 336,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 6.6635901927948,
+        "length": 19,
+        "nodes": 57152,
+        "harvestedLifts": 336,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 6.72209095954895,
+        "length": 19,
+        "nodes": 58740,
+        "harvestedLifts": 498,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 42,
+      "scramble": "D U R2 D F' D' F2 B U2 F2 D2 R L' U2 D L' R' F' B L F2 B L2 D B2 U' L2 B' L2 D2 L' U2 D L' U2",
+      "cubejs": {
+        "ms": 15.81322693824768,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.21274304389953613,
+        "length": 22,
+        "nodes": 754
+      },
+      "hbewFast": {
+        "ms": 3.9008991718292236,
+        "length": 22,
+        "nodes": 28948,
+        "harvestedLifts": 66,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 3.1062068939208984,
+        "length": 22,
+        "nodes": 28948,
+        "harvestedLifts": 66,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 4.598098993301392,
+        "length": 22,
+        "nodes": 37435,
+        "harvestedLifts": 123,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 43,
+      "scramble": "F2 U2 R' D' U B U' F' L2 D2 R2 U2 L R U L R F' B' L D' U' B'",
+      "cubejs": {
+        "ms": 24.895062923431396,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 1.6163837909698486,
+        "length": 23,
+        "nodes": 7516
+      },
+      "hbewFast": {
+        "ms": 4.8482630252838135,
+        "length": 20,
+        "nodes": 34022,
+        "harvestedLifts": 190,
+        "zeroSlackHits": 3
+      },
+      "hbewDefault": {
+        "ms": 3.3937911987304688,
+        "length": 20,
+        "nodes": 34022,
+        "harvestedLifts": 190,
+        "zeroSlackHits": 3
+      },
+      "hbewExact": {
+        "ms": 5.839927911758423,
+        "length": 20,
+        "nodes": 52662,
+        "harvestedLifts": 238,
+        "zeroSlackHits": 3
+      }
+    },
+    {
+      "trial": 44,
+      "scramble": "F' D B D L2 R2 U B' R' U B' U2 D B F' B' D F' R' F2 U2 R' F U B2 R D2 L2 B2 L2 R' D L' U L U R B",
+      "cubejs": {
+        "ms": 74.65532803535461,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 3.5699031352996826,
+        "length": 21,
+        "nodes": 17234
+      },
+      "hbewFast": {
+        "ms": 3.0060858726501465,
+        "length": 21,
+        "nodes": 22612,
+        "harvestedLifts": 30,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 7.349979877471924,
+        "length": 20,
+        "nodes": 45427,
+        "harvestedLifts": 302,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 4.211703062057495,
+        "length": 20,
+        "nodes": 41618,
+        "harvestedLifts": 302,
+        "zeroSlackHits": 0
+      }
+    },
+    {
+      "trial": 45,
+      "scramble": "F' D' R2 U' L2 D' R2 F' L' R' F D U2 R D2 B' R2 U F L' R F L2 R' L' F D'",
+      "cubejs": {
+        "ms": 157.42304801940918,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 11.47150206565857,
+        "length": 23,
+        "nodes": 72733
+      },
+      "hbewFast": {
+        "ms": 12.061620950698853,
+        "length": 21,
+        "nodes": 92028,
+        "harvestedLifts": 266,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 7.330579042434692,
+        "length": 21,
+        "nodes": 74912,
+        "harvestedLifts": 266,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 6.198662996292114,
+        "length": 21,
+        "nodes": 61645,
+        "harvestedLifts": 266,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 46,
+      "scramble": "U' D' L F' R2 L2 F2 D' L2 R2 U' D' F' U2 L' D B' U B2 L R' L2 U2 L D B U' L B' F2 U'",
+      "cubejs": {
+        "ms": 10.419245958328247,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 1.1875178813934326,
+        "length": 23,
+        "nodes": 7595
+      },
+      "hbewFast": {
+        "ms": 3.7711269855499268,
+        "length": 21,
+        "nodes": 25397,
+        "harvestedLifts": 86,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 2.7555510997772217,
+        "length": 21,
+        "nodes": 25397,
+        "harvestedLifts": 86,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 3.2591779232025146,
+        "length": 21,
+        "nodes": 28842,
+        "harvestedLifts": 122,
+        "zeroSlackHits": 0
+      }
+    },
+    {
+      "trial": 47,
+      "scramble": "R2 U2 R B R L2 R L' D B2 U L U' L B L R2 F R' U' F D B' D' R2 L U'",
+      "cubejs": {
+        "ms": 48.021538972854614,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 2.166563034057617,
+        "length": 23,
+        "nodes": 11073
+      },
+      "hbewFast": {
+        "ms": 8.37970495223999,
+        "length": 21,
+        "nodes": 71787,
+        "harvestedLifts": 186,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 18.124481916427612,
+        "length": 20,
+        "nodes": 158135,
+        "harvestedLifts": 971,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 13.21927809715271,
+        "length": 20,
+        "nodes": 114506,
+        "harvestedLifts": 1094,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 48,
+      "scramble": "B F' U' B2 D2 R2 L' R' U R' U2 D' F2 D B D F2 L2 B' U B U D R D' F2 R2 B' R' F' D U D2 L2 U' D2 R2 F",
+      "cubejs": {
+        "ms": 32.17654204368591,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 1.297950029373169,
+        "length": 24,
+        "nodes": 6575
+      },
+      "hbewFast": {
+        "ms": 2.6340599060058594,
+        "length": 20,
+        "nodes": 14270,
+        "harvestedLifts": 85,
+        "zeroSlackHits": 2
+      },
+      "hbewDefault": {
+        "ms": 1.5475730895996094,
+        "length": 20,
+        "nodes": 14270,
+        "harvestedLifts": 85,
+        "zeroSlackHits": 2
+      },
+      "hbewExact": {
+        "ms": 7.186197996139526,
+        "length": 20,
+        "nodes": 52223,
+        "harvestedLifts": 196,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 49,
+      "scramble": "F' L B2 L' B2 F2 R L' D R F2 L U2 F2 B F2 U2 L2 D2 L U2 R U' F' U' D U R2 U2 R' L",
+      "cubejs": {
+        "ms": 8.784741163253784,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.311154842376709,
+        "length": 22,
+        "nodes": 1374
+      },
+      "hbewFast": {
+        "ms": 5.207767963409424,
+        "length": 22,
+        "nodes": 37101,
+        "harvestedLifts": 151,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 3.918428897857666,
+        "length": 22,
+        "nodes": 37101,
+        "harvestedLifts": 151,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 3.7098450660705566,
+        "length": 22,
+        "nodes": 35722,
+        "harvestedLifts": 151,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 50,
+      "scramble": "U L2 F2 D' F U' D F U' R F2 L2 D2 F' R B R2 F2 R' D F' U D R D U2 F' U B",
+      "cubejs": {
+        "ms": 117.62950301170349,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 4.8910839557647705,
+        "length": 22,
+        "nodes": 26571
+      },
+      "hbewFast": {
+        "ms": 1.7249557971954346,
+        "length": 21,
+        "nodes": 10242,
+        "harvestedLifts": 26,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 7.336590051651001,
+        "length": 21,
+        "nodes": 49275,
+        "harvestedLifts": 241,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 6.022630214691162,
+        "length": 21,
+        "nodes": 53614,
+        "harvestedLifts": 360,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 51,
+      "scramble": "L' F R L' F U' B F2 U' B' F R2 U' B' L2 R' F U R' D B2",
+      "cubejs": {
+        "ms": 52.32447385787964,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 2.6263389587402344,
+        "length": 22,
+        "nodes": 15410
+      },
+      "hbewFast": {
+        "ms": 1.274608850479126,
+        "length": 17,
+        "nodes": 10334,
+        "harvestedLifts": 29,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 0.8578929901123047,
+        "length": 17,
+        "nodes": 10334,
+        "harvestedLifts": 29,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 4.357075929641724,
+        "length": 17,
+        "nodes": 30597,
+        "harvestedLifts": 53,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 52,
+      "scramble": "U2 D' B2 R2 U L' U' R U' F2 R2 L2 F B2 L' B2 R' U' R' U D2",
+      "cubejs": {
+        "ms": 60.858092069625854,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 0.8562431335449219,
+        "length": 23,
+        "nodes": 2389
+      },
+      "hbewFast": {
+        "ms": 14.584189176559448,
+        "length": 20,
+        "nodes": 103335,
+        "harvestedLifts": 306,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 10.311344146728516,
+        "length": 20,
+        "nodes": 103335,
+        "harvestedLifts": 306,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 6.3133440017700195,
+        "length": 20,
+        "nodes": 54957,
+        "harvestedLifts": 306,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 53,
+      "scramble": "U B' U2 D2 R' D U' R' B2 L R2 L B2 U' F L2 F B' L F D L' B U2 B2 R F' L' F2 L2 F D U",
+      "cubejs": {
+        "ms": 49.31162905693054,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 1.1009559631347656,
+        "length": 23,
+        "nodes": 3878
+      },
+      "hbewFast": {
+        "ms": 4.712570905685425,
+        "length": 20,
+        "nodes": 31273,
+        "harvestedLifts": 199,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 5.317929029464722,
+        "length": 20,
+        "nodes": 44372,
+        "harvestedLifts": 465,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 8.374046087265015,
+        "length": 20,
+        "nodes": 64606,
+        "harvestedLifts": 691,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 54,
+      "scramble": "U2 R B' F' B2 R2 B L2 F2 L U D' L D' L2 B R2 B' L D' U2 B2 D U' L' R' L' R2 B2 D B2 F R",
+      "cubejs": {
+        "ms": 22.30721402168274,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 3.6673648357391357,
+        "length": 24,
+        "nodes": 23895
+      },
+      "hbewFast": {
+        "ms": 2.752591133117676,
+        "length": 20,
+        "nodes": 18139,
+        "harvestedLifts": 48,
+        "zeroSlackHits": 2
+      },
+      "hbewDefault": {
+        "ms": 1.8335869312286377,
+        "length": 20,
+        "nodes": 18139,
+        "harvestedLifts": 48,
+        "zeroSlackHits": 2
+      },
+      "hbewExact": {
+        "ms": 5.530212879180908,
+        "length": 20,
+        "nodes": 45528,
+        "harvestedLifts": 154,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 55,
+      "scramble": "L D U' B2 L R' U R' L' F2 U' D2 L' R' F B' F U2 F R2 U L' U2 R' B' D U",
+      "cubejs": {
+        "ms": 2.578218936920166,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.12334203720092773,
+        "length": 22,
+        "nodes": 362
+      },
+      "hbewFast": {
+        "ms": 5.5711939334869385,
+        "length": 21,
+        "nodes": 38327,
+        "harvestedLifts": 105,
+        "zeroSlackHits": 2
+      },
+      "hbewDefault": {
+        "ms": 4.066870927810669,
+        "length": 21,
+        "nodes": 38327,
+        "harvestedLifts": 105,
+        "zeroSlackHits": 2
+      },
+      "hbewExact": {
+        "ms": 4.042540073394775,
+        "length": 21,
+        "nodes": 38327,
+        "harvestedLifts": 105,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 56,
+      "scramble": "L D2 B2 L2 U2 D' B2 R2 D R L2 F' R' B' F2 L2 B' F2 B U R' D' B2",
+      "cubejs": {
+        "ms": 164.8510000705719,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 9.561454057693481,
+        "length": 23,
+        "nodes": 64094
+      },
+      "hbewFast": {
+        "ms": 5.7342658042907715,
+        "length": 19,
+        "nodes": 57047,
+        "harvestedLifts": 178,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 4.658210039138794,
+        "length": 19,
+        "nodes": 57047,
+        "harvestedLifts": 178,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 13.544494152069092,
+        "length": 19,
+        "nodes": 124076,
+        "harvestedLifts": 257,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 57,
+      "scramble": "B' U F2 U2 F2 R2 B2 F2 L' U2 F2 L' U' B' F2 L D U F U' D'",
+      "cubejs": {
+        "ms": 110.66729807853699,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 6.114771842956543,
+        "length": 23,
+        "nodes": 34360
+      },
+      "hbewFast": {
+        "ms": 6.461677074432373,
+        "length": 21,
+        "nodes": 32953,
+        "harvestedLifts": 84,
+        "zeroSlackHits": 2
+      },
+      "hbewDefault": {
+        "ms": 3.409471035003662,
+        "length": 21,
+        "nodes": 32953,
+        "harvestedLifts": 84,
+        "zeroSlackHits": 2
+      },
+      "hbewExact": {
+        "ms": 2.711709976196289,
+        "length": 21,
+        "nodes": 25973,
+        "harvestedLifts": 84,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 58,
+      "scramble": "L' U B F U2 R D2 U' F D2 F2 U D' L U2 F R' D2 B R2 L' B D2 L2 F2 R U B R2 F B' L' R L R F' U'",
+      "cubejs": {
+        "ms": 10.361155986785889,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 0.4629671573638916,
+        "length": 21,
+        "nodes": 2617
+      },
+      "hbewFast": {
+        "ms": 2.099142074584961,
+        "length": 21,
+        "nodes": 18487,
+        "harvestedLifts": 32,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 9.122256994247437,
+        "length": 21,
+        "nodes": 74624,
+        "harvestedLifts": 464,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 7.182208061218262,
+        "length": 21,
+        "nodes": 66988,
+        "harvestedLifts": 470,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 59,
+      "scramble": "U' L' F B D F2 U F' L2 U' D B R2 B F' B L2 R' F' U' F2 B2 D F' D2 U' R' D' U2",
+      "cubejs": {
+        "ms": 288.05336594581604,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 5.658164978027344,
+        "length": 23,
+        "nodes": 32292
+      },
+      "hbewFast": {
+        "ms": 0.27805399894714355,
+        "length": 20,
+        "nodes": 777,
+        "harvestedLifts": 6,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 0.11103200912475586,
+        "length": 20,
+        "nodes": 777,
+        "harvestedLifts": 6,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 10.29461407661438,
+        "length": 20,
+        "nodes": 78069,
+        "harvestedLifts": 886,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 60,
+      "scramble": "B' L' B' L U D U' R' L2 U' B L2 F' D L R' F2 R F D2 B D",
+      "cubejs": {
+        "ms": 27.249898195266724,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 1.6051139831542969,
+        "length": 23,
+        "nodes": 8772
+      },
+      "hbewFast": {
+        "ms": 9.833148002624512,
+        "length": 22,
+        "nodes": 63263,
+        "harvestedLifts": 244,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 6.02512001991272,
+        "length": 22,
+        "nodes": 63263,
+        "harvestedLifts": 244,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 5.838458061218262,
+        "length": 22,
+        "nodes": 63263,
+        "harvestedLifts": 244,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 61,
+      "scramble": "F U2 F' L2 B' R B2 D B2 R L' B D' R2 D' U B' L B2 D L U2 R D L D F R F' U2 F B' F' L2 R' B2 D' F2",
+      "cubejs": {
+        "ms": 30.696110010147095,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 2.267673969268799,
+        "length": 21,
+        "nodes": 14974
+      },
+      "hbewFast": {
+        "ms": 0.42900705337524414,
+        "length": 20,
+        "nodes": 2439,
+        "harvestedLifts": 12,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 0.2605440616607666,
+        "length": 20,
+        "nodes": 2439,
+        "harvestedLifts": 12,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 2.016439914703369,
+        "length": 20,
+        "nodes": 14816,
+        "harvestedLifts": 108,
+        "zeroSlackHits": 0
+      }
+    },
+    {
+      "trial": 62,
+      "scramble": "L' B2 D2 B2 F B2 L' R B L B2 U L F' L2 R U2 R' L B L' B",
+      "cubejs": {
+        "ms": 93.66981315612793,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 2.6083290576934814,
+        "length": 24,
+        "nodes": 10126
+      },
+      "hbewFast": {
+        "ms": 9.931728839874268,
+        "length": 21,
+        "nodes": 60654,
+        "harvestedLifts": 199,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 6.00626015663147,
+        "length": 21,
+        "nodes": 60654,
+        "harvestedLifts": 199,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 5.165297031402588,
+        "length": 21,
+        "nodes": 46463,
+        "harvestedLifts": 206,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 63,
+      "scramble": "R' L2 F2 B' F' D U' F D U' R2 L' D' L2 F R2 B2 R U F D' R2 L' R' F' L2 R2 F' D2 B2 D2 B2 U' B' U' L' D2 R' D",
+      "cubejs": {
+        "ms": 6.08099102973938,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.3176448345184326,
+        "length": 22,
+        "nodes": 1918
+      },
+      "hbewFast": {
+        "ms": 1.0260050296783447,
+        "length": 21,
+        "nodes": 8714,
+        "harvestedLifts": 16,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 4.801851987838745,
+        "length": 21,
+        "nodes": 34045,
+        "harvestedLifts": 125,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 4.686609983444214,
+        "length": 21,
+        "nodes": 40675,
+        "harvestedLifts": 194,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 64,
+      "scramble": "L2 R2 F U2 D2 B U2 F U' F2 R D' U' B2 D L2 F2 U' R2 D2 B F' U B2 R2 U' R2 U' B2 F D2 F D2 B2 D' L",
+      "cubejs": {
+        "ms": 421.2740821838379,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 1.6060841083526611,
+        "length": 23,
+        "nodes": 4451
+      },
+      "hbewFast": {
+        "ms": 41.795086145401,
+        "length": 21,
+        "nodes": 326851,
+        "harvestedLifts": 1208,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 35.4961519241333,
+        "length": 21,
+        "nodes": 326851,
+        "harvestedLifts": 1208,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 5.254549026489258,
+        "length": 23,
+        "nodes": 50754,
+        "harvestedLifts": 74,
+        "zeroSlackHits": 0
+      }
+    },
+    {
+      "trial": 65,
+      "scramble": "D U' F2 U F U L' D' R' D' R' U' B2 L U2 D' B' D U' D L B U2 L' D' L' B' D2 F L F' B2 F2 B R2 D U' F U2",
+      "cubejs": {
+        "ms": 53.305598974227905,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 6.319803953170776,
+        "length": 23,
+        "nodes": 42482
+      },
+      "hbewFast": {
+        "ms": 2.683490037918091,
+        "length": 22,
+        "nodes": 31182,
+        "harvestedLifts": 2,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 1.4807429313659668,
+        "length": 21,
+        "nodes": 6841,
+        "harvestedLifts": 18,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 0.6866500377655029,
+        "length": 21,
+        "nodes": 6841,
+        "harvestedLifts": 18,
+        "zeroSlackHits": 0
+      }
+    },
+    {
+      "trial": 66,
+      "scramble": "F2 R2 D F' U' B F2 R2 U2 B R' F U L2 F B' L U' B' R' B U2 L2 D2 U' D F' R' U",
+      "cubejs": {
+        "ms": 52.319283962249756,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 6.424255847930908,
+        "length": 23,
+        "nodes": 43961
+      },
+      "hbewFast": {
+        "ms": 2.4390969276428223,
+        "length": 22,
+        "nodes": 19655,
+        "harvestedLifts": 58,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 8.430095911026001,
+        "length": 21,
+        "nodes": 60771,
+        "harvestedLifts": 376,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 6.095651865005493,
+        "length": 21,
+        "nodes": 53447,
+        "harvestedLifts": 530,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 67,
+      "scramble": "L D R2 F' D' F B' F U2 L U F B F' R2 U B2 F U F2",
+      "cubejs": {
+        "ms": 127.06603384017944,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 2.5281178951263428,
+        "length": 23,
+        "nodes": 10059
+      },
+      "hbewFast": {
+        "ms": 12.269804000854492,
+        "length": 22,
+        "nodes": 73567,
+        "harvestedLifts": 264,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 7.550183057785034,
+        "length": 22,
+        "nodes": 73567,
+        "harvestedLifts": 264,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 7.683544874191284,
+        "length": 22,
+        "nodes": 75861,
+        "harvestedLifts": 277,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 68,
+      "scramble": "F' U2 R' L U2 B2 R2 U2 L2 D2 B2 U2 F D2 F B U2 F' B' L2 U D2 F2 D B D2 B' U F2 B2 R2 F L'",
+      "cubejs": {
+        "ms": 213.4549379348755,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 8.618188858032227,
+        "length": 21,
+        "nodes": 55009
+      },
+      "hbewFast": {
+        "ms": 3.551302909851074,
+        "length": 21,
+        "nodes": 39887,
+        "harvestedLifts": 10,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 4.312324047088623,
+        "length": 21,
+        "nodes": 48659,
+        "harvestedLifts": 61,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 1.3676700592041016,
+        "length": 21,
+        "nodes": 15612,
+        "harvestedLifts": 62,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 69,
+      "scramble": "D' R' F L2 U2 D2 L' R' F' U F L D U R2 L2 B2 L' B2 U2 R L2 F U R' F2 B",
+      "cubejs": {
+        "ms": 14.119000911712646,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 0.21885395050048828,
+        "length": 20,
+        "nodes": 597
+      },
+      "hbewFast": {
+        "ms": 0.17933320999145508,
+        "length": 19,
+        "nodes": 822,
+        "harvestedLifts": 4,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 0.09998202323913574,
+        "length": 19,
+        "nodes": 822,
+        "harvestedLifts": 4,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 1.212838888168335,
+        "length": 19,
+        "nodes": 4530,
+        "harvestedLifts": 83,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 70,
+      "scramble": "F L2 F2 D U F' D2 R2 B' L2 F R F2 U L B' D2 U F' B2 D U' L2 D2 U D U' F'",
+      "cubejs": {
+        "ms": 2.458996057510376,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 0.13994193077087402,
+        "length": 21,
+        "nodes": 534
+      },
+      "hbewFast": {
+        "ms": 1.0224659442901611,
+        "length": 21,
+        "nodes": 4595,
+        "harvestedLifts": 12,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 5.883107900619507,
+        "length": 20,
+        "nodes": 39431,
+        "harvestedLifts": 150,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 4.2681238651275635,
+        "length": 20,
+        "nodes": 39089,
+        "harvestedLifts": 237,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 71,
+      "scramble": "L R2 F2 R L2 R' F D' B F2 D R2 U B R2 B' R' D2 F R L F R U' B' R2",
+      "cubejs": {
+        "ms": 27.65817403793335,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 1.3599300384521484,
+        "length": 24,
+        "nodes": 7162
+      },
+      "hbewFast": {
+        "ms": 5.0245161056518555,
+        "length": 21,
+        "nodes": 37216,
+        "harvestedLifts": 116,
+        "zeroSlackHits": 2
+      },
+      "hbewDefault": {
+        "ms": 3.8461380004882812,
+        "length": 21,
+        "nodes": 37216,
+        "harvestedLifts": 116,
+        "zeroSlackHits": 2
+      },
+      "hbewExact": {
+        "ms": 3.335700035095215,
+        "length": 21,
+        "nodes": 32346,
+        "harvestedLifts": 116,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 72,
+      "scramble": "F' L2 D L2 D' F2 B' D2 R2 D R B' R' U' L' R2 U' F' B' U2 R' L' U D' L2 D' R U D2 R' L D2",
+      "cubejs": {
+        "ms": 9.875508069992065,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 2.710310935974121,
+        "length": 24,
+        "nodes": 21617
+      },
+      "hbewFast": {
+        "ms": 5.798015832901001,
+        "length": 22,
+        "nodes": 51362,
+        "harvestedLifts": 215,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 5.175757884979248,
+        "length": 22,
+        "nodes": 51362,
+        "harvestedLifts": 215,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 5.168526887893677,
+        "length": 22,
+        "nodes": 49009,
+        "harvestedLifts": 227,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 73,
+      "scramble": "F' R2 D' U2 D L B' R F' L R2 L2 D R2 D' B' U B F B' R2 U R2 B2 D U' L R D' R' B",
+      "cubejs": {
+        "ms": 3.4380908012390137,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 0.17229199409484863,
+        "length": 21,
+        "nodes": 788
+      },
+      "hbewFast": {
+        "ms": 2.5992188453674316,
+        "length": 20,
+        "nodes": 28017,
+        "harvestedLifts": 56,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 2.192182779312134,
+        "length": 20,
+        "nodes": 28017,
+        "harvestedLifts": 56,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 8.391474962234497,
+        "length": 20,
+        "nodes": 69333,
+        "harvestedLifts": 540,
+        "zeroSlackHits": 3
+      }
+    },
+    {
+      "trial": 74,
+      "scramble": "B L2 R B' D U' L' R' F B' L' D' U L R2 U B R F' L' F",
+      "cubejs": {
+        "ms": 3.7154548168182373,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 0.16713309288024902,
+        "length": 21,
+        "nodes": 654
+      },
+      "hbewFast": {
+        "ms": 4.663548946380615,
+        "length": 20,
+        "nodes": 55165,
+        "harvestedLifts": 20,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 4.007530212402344,
+        "length": 20,
+        "nodes": 55165,
+        "harvestedLifts": 20,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 8.413455963134766,
+        "length": 20,
+        "nodes": 72198,
+        "harvestedLifts": 124,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 75,
+      "scramble": "R2 D' L2 B' R D F D' B' L' R' D2 U' B2 R' U' D2 R' L2 U' D2 L' R B2 L R D B2 F",
+      "cubejs": {
+        "ms": 15.537832975387573,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 1.3184700012207031,
+        "length": 23,
+        "nodes": 7797
+      },
+      "hbewFast": {
+        "ms": 1.7457458972930908,
+        "length": 21,
+        "nodes": 12518,
+        "harvestedLifts": 76,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 9.827237129211426,
+        "length": 21,
+        "nodes": 83767,
+        "harvestedLifts": 539,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 9.147816896438599,
+        "length": 21,
+        "nodes": 83918,
+        "harvestedLifts": 567,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 76,
+      "scramble": "F2 B2 D2 R2 L2 B R' F2 L F B D L2 D B2 D L B' L2 D2 L",
+      "cubejs": {
+        "ms": 2.967073917388916,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 0.0838921070098877,
+        "length": 22,
+        "nodes": 314
+      },
+      "hbewFast": {
+        "ms": 3.270228862762451,
+        "length": 21,
+        "nodes": 25159,
+        "harvestedLifts": 35,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 3.2708489894866943,
+        "length": 21,
+        "nodes": 25159,
+        "harvestedLifts": 35,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 2.6104791164398193,
+        "length": 21,
+        "nodes": 25159,
+        "harvestedLifts": 35,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 77,
+      "scramble": "L2 F' U2 R D B U F2 L2 D L B L2 U F' B D F' R F U' L' D L D F B2 D2 B' L B U L2 B2 L' F' D2",
+      "cubejs": {
+        "ms": 115.8287250995636,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 2.955965042114258,
+        "length": 24,
+        "nodes": 13457
+      },
+      "hbewFast": {
+        "ms": 8.67533016204834,
+        "length": 22,
+        "nodes": 45152,
+        "harvestedLifts": 150,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 4.6625800132751465,
+        "length": 22,
+        "nodes": 45152,
+        "harvestedLifts": 150,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 4.134151935577393,
+        "length": 22,
+        "nodes": 38801,
+        "harvestedLifts": 150,
+        "zeroSlackHits": 0
+      }
+    },
+    {
+      "trial": 78,
+      "scramble": "D L' F L' R2 L' D' U' B2 R2 D2 B' L2 D L2 R' U2 B' R' D U2 R2 L B' D2 B F' B2 U' L' B2 L2 R'",
+      "cubejs": {
+        "ms": 5.556794166564941,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.2734549045562744,
+        "length": 22,
+        "nodes": 1227
+      },
+      "hbewFast": {
+        "ms": 5.574063062667847,
+        "length": 20,
+        "nodes": 45040,
+        "harvestedLifts": 177,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 4.692230939865112,
+        "length": 20,
+        "nodes": 45040,
+        "harvestedLifts": 177,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 8.273534059524536,
+        "length": 20,
+        "nodes": 71594,
+        "harvestedLifts": 348,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 79,
+      "scramble": "R2 D' R' U' D2 U' F R2 L' F' U' R' F2 U' D' U2 D2 F' D F2 U2 B D' L' D2",
+      "cubejs": {
+        "ms": 16.06438112258911,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 1.7203760147094727,
+        "length": 23,
+        "nodes": 10358
+      },
+      "hbewFast": {
+        "ms": 0.5934481620788574,
+        "length": 20,
+        "nodes": 3281,
+        "harvestedLifts": 26,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 0.3679850101470947,
+        "length": 20,
+        "nodes": 3281,
+        "harvestedLifts": 26,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 5.198538064956665,
+        "length": 20,
+        "nodes": 37019,
+        "harvestedLifts": 230,
+        "zeroSlackHits": 3
+      }
+    },
+    {
+      "trial": 80,
+      "scramble": "U2 L' R2 B' R B' U2 B' L F U D B2 D' B F2 U B2 D2 U' D' U2 R2 D L U R D' F U2 F'",
+      "cubejs": {
+        "ms": 41.843286991119385,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 5.25105881690979,
+        "length": 24,
+        "nodes": 33146
+      },
+      "hbewFast": {
+        "ms": 7.353140830993652,
+        "length": 21,
+        "nodes": 41783,
+        "harvestedLifts": 120,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 4.280734062194824,
+        "length": 21,
+        "nodes": 41783,
+        "harvestedLifts": 120,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 4.034170866012573,
+        "length": 21,
+        "nodes": 39359,
+        "harvestedLifts": 120,
+        "zeroSlackHits": 0
+      }
+    },
+    {
+      "trial": 81,
+      "scramble": "D2 B2 L' R' D L' U2 D' R' B F' U' D R2 U R2 U2 D2 F' D' B2 D F' U2",
+      "cubejs": {
+        "ms": 168.05667805671692,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 1.8728981018066406,
+        "length": 24,
+        "nodes": 7604
+      },
+      "hbewFast": {
+        "ms": 13.039916038513184,
+        "length": 22,
+        "nodes": 118573,
+        "harvestedLifts": 207,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 10.192921876907349,
+        "length": 22,
+        "nodes": 118573,
+        "harvestedLifts": 207,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 5.7461161613464355,
+        "length": 22,
+        "nodes": 58784,
+        "harvestedLifts": 210,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 82,
+      "scramble": "R B2 L R2 L2 R' L B F2 U' B D' F B U' R' B U2 D' U2 R F U2 R2 L",
+      "cubejs": {
+        "ms": 32.355475187301636,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 2.939213991165161,
+        "length": 22,
+        "nodes": 19219
+      },
+      "hbewFast": {
+        "ms": 1.0804259777069092,
+        "length": 22,
+        "nodes": 6211,
+        "harvestedLifts": 10,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 4.479826927185059,
+        "length": 22,
+        "nodes": 30462,
+        "harvestedLifts": 83,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 4.895082950592041,
+        "length": 22,
+        "nodes": 38470,
+        "harvestedLifts": 140,
+        "zeroSlackHits": 0
+      }
+    },
+    {
+      "trial": 83,
+      "scramble": "D2 L F2 L2 R2 F2 B L2 R' F' D2 U' F2 R D F' L' F2 R2 B2 U' R'",
+      "cubejs": {
+        "ms": 24.24694299697876,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 1.8370568752288818,
+        "length": 24,
+        "nodes": 11385
+      },
+      "hbewFast": {
+        "ms": 4.65172004699707,
+        "length": 21,
+        "nodes": 31085,
+        "harvestedLifts": 115,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 3.4032509326934814,
+        "length": 21,
+        "nodes": 31085,
+        "harvestedLifts": 115,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 4.257223844528198,
+        "length": 21,
+        "nodes": 36114,
+        "harvestedLifts": 205,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 84,
+      "scramble": "D2 F' R2 B U' D F' R2 B2 D R U F D' R U' F R' L2 U2 L B2 D R' L2 F U L F L' U D B' L",
+      "cubejs": {
+        "ms": 58.768001079559326,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 3.6538050174713135,
+        "length": 22,
+        "nodes": 19957
+      },
+      "hbewFast": {
+        "ms": 1.8470771312713623,
+        "length": 22,
+        "nodes": 10166,
+        "harvestedLifts": 14,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 7.2388880252838135,
+        "length": 20,
+        "nodes": 44240,
+        "harvestedLifts": 244,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 6.932683944702148,
+        "length": 20,
+        "nodes": 58494,
+        "harvestedLifts": 334,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 85,
+      "scramble": "D' R F' R2 L2 U' B F B' R F2 B F' U' R' L2 D' U2 B U' D2 B' R B2 U L U2 L' R'",
+      "cubejs": {
+        "ms": 33.37727093696594,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 3.3142199516296387,
+        "length": 23,
+        "nodes": 19197
+      },
+      "hbewFast": {
+        "ms": 2.2140629291534424,
+        "length": 20,
+        "nodes": 10970,
+        "harvestedLifts": 110,
+        "zeroSlackHits": 2
+      },
+      "hbewDefault": {
+        "ms": 1.164687156677246,
+        "length": 20,
+        "nodes": 10970,
+        "harvestedLifts": 110,
+        "zeroSlackHits": 2
+      },
+      "hbewExact": {
+        "ms": 12.078191041946411,
+        "length": 20,
+        "nodes": 86647,
+        "harvestedLifts": 956,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 86,
+      "scramble": "U' F2 U2 R2 B F L2 U2 R2 L2 F' L2 F U B2 R' L2 D2 U B' D' U F2 B2 U' D' U2 L F' B D2",
+      "cubejs": {
+        "ms": 37.42805099487305,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 3.2250678539276123,
+        "length": 22,
+        "nodes": 21277
+      },
+      "hbewFast": {
+        "ms": 0.5615279674530029,
+        "length": 21,
+        "nodes": 2770,
+        "harvestedLifts": 12,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 3.2691588401794434,
+        "length": 21,
+        "nodes": 22012,
+        "harvestedLifts": 62,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 3.6602649688720703,
+        "length": 21,
+        "nodes": 28848,
+        "harvestedLifts": 116,
+        "zeroSlackHits": 0
+      }
+    },
+    {
+      "trial": 87,
+      "scramble": "R L2 U2 D F D' R U B2 U F' R2 D2 U F2 L R U2 D' U' D2 B2 U2 D2 L B2 U2 L2 D2 R U2 D F2 L U R2 F'",
+      "cubejs": {
+        "ms": 12.048020124435425,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 0.3762059211730957,
+        "length": 20,
+        "nodes": 1584
+      },
+      "hbewFast": {
+        "ms": 0.23046398162841797,
+        "length": 19,
+        "nodes": 1135,
+        "harvestedLifts": 12,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 0.14263296127319336,
+        "length": 19,
+        "nodes": 1135,
+        "harvestedLifts": 12,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 1.810506820678711,
+        "length": 19,
+        "nodes": 8853,
+        "harvestedLifts": 118,
+        "zeroSlackHits": 0
+      }
+    },
+    {
+      "trial": 88,
+      "scramble": "B U2 L2 R2 D R F L F' B' L2 U2 L' U2 R U' F' L2 R' U2 R' F' R' F2 U' L D' B2 R'",
+      "cubejs": {
+        "ms": 28.783921003341675,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 5.356290817260742,
+        "length": 23,
+        "nodes": 38093
+      },
+      "hbewFast": {
+        "ms": 2.894733190536499,
+        "length": 22,
+        "nodes": 31263,
+        "harvestedLifts": 40,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 8.917112827301025,
+        "length": 21,
+        "nodes": 68848,
+        "harvestedLifts": 249,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 6.746621131896973,
+        "length": 21,
+        "nodes": 61275,
+        "harvestedLifts": 400,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 89,
+      "scramble": "D' U' R2 B' F' U' R2 D' R F D R2 U' B' L' D2 R2 L2 U B D2 L2 F' D' U2 R' L' F L2 F2 L U R D F L2",
+      "cubejs": {
+        "ms": 32.82273197174072,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 1.0131750106811523,
+        "length": 22,
+        "nodes": 3688
+      },
+      "hbewFast": {
+        "ms": 6.648190021514893,
+        "length": 20,
+        "nodes": 45363,
+        "harvestedLifts": 209,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 4.950294017791748,
+        "length": 20,
+        "nodes": 45363,
+        "harvestedLifts": 209,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 6.539897918701172,
+        "length": 20,
+        "nodes": 51295,
+        "harvestedLifts": 351,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 90,
+      "scramble": "B D' U B2 U D' R' L' B2 L2 D' U2 B2 R B D2 R' B2 F2 B' U D U L2 U' D' B' U' L R U2 D B' R U2 F' L2 D' L2",
+      "cubejs": {
+        "ms": 54.466755867004395,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 2.3595850467681885,
+        "length": 24,
+        "nodes": 10363
+      },
+      "hbewFast": {
+        "ms": 4.125700950622559,
+        "length": 20,
+        "nodes": 23056,
+        "harvestedLifts": 98,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 2.291814088821411,
+        "length": 20,
+        "nodes": 23056,
+        "harvestedLifts": 98,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 7.800175905227661,
+        "length": 20,
+        "nodes": 63117,
+        "harvestedLifts": 216,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 91,
+      "scramble": "B2 D' B' D U' B' F2 D L2 R' B U2 R F' U' D' U2 B L' B F' B' F2 U2 R2 L' U F R2 D' B' R2 B R2 F D L' F2 U2 D",
+      "cubejs": {
+        "ms": 13.145866870880127,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.7807621955871582,
+        "length": 22,
+        "nodes": 4083
+      },
+      "hbewFast": {
+        "ms": 0.09127211570739746,
+        "length": 20,
+        "nodes": 266,
+        "harvestedLifts": 4,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 0.06898117065429688,
+        "length": 20,
+        "nodes": 266,
+        "harvestedLifts": 4,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 8.395665884017944,
+        "length": 20,
+        "nodes": 65017,
+        "harvestedLifts": 294,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 92,
+      "scramble": "R2 F B' F2 B L F' R2 L2 U2 F D2 U' F' R' L2 F2 D F2 D2 L F R2 B' F' B D' U2 D L2 U F2 U",
+      "cubejs": {
+        "ms": 38.03257894515991,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 1.8345370292663574,
+        "length": 24,
+        "nodes": 9076
+      },
+      "hbewFast": {
+        "ms": 7.089465856552124,
+        "length": 22,
+        "nodes": 45666,
+        "harvestedLifts": 144,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 4.776611089706421,
+        "length": 22,
+        "nodes": 45666,
+        "harvestedLifts": 144,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 7.425491809844971,
+        "length": 22,
+        "nodes": 66700,
+        "harvestedLifts": 230,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 93,
+      "scramble": "F' B2 D2 U2 R' B' U L2 F2 L B2 U L R' D' R D2 U B U2 F2 R L' B2 F' L' F B' U' L' D2 R",
+      "cubejs": {
+        "ms": 49.75536489486694,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.9995348453521729,
+        "length": 22,
+        "nodes": 3252
+      },
+      "hbewFast": {
+        "ms": 4.224093914031982,
+        "length": 20,
+        "nodes": 24237,
+        "harvestedLifts": 83,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 2.4834768772125244,
+        "length": 20,
+        "nodes": 24237,
+        "harvestedLifts": 83,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 7.249068975448608,
+        "length": 20,
+        "nodes": 55277,
+        "harvestedLifts": 214,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 94,
+      "scramble": "D2 F' L' D' L F D' F2 U D' U' B2 D' B2 L U2 F R2 B D' B' F U2 R L' D' F' B R L' F2 L2 D' U2 R' F B U2",
+      "cubejs": {
+        "ms": 46.441805839538574,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 1.5620031356811523,
+        "length": 22,
+        "nodes": 6527
+      },
+      "hbewFast": {
+        "ms": 8.294993877410889,
+        "length": 21,
+        "nodes": 54884,
+        "harvestedLifts": 232,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 5.6732048988342285,
+        "length": 21,
+        "nodes": 54884,
+        "harvestedLifts": 232,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 6.0813210010528564,
+        "length": 21,
+        "nodes": 54315,
+        "harvestedLifts": 277,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 95,
+      "scramble": "F R D2 F2 U2 F' D' B L' F R2 L B2 D U D2 F B R2 L' U' R B2 R2 L R2",
+      "cubejs": {
+        "ms": 21.28873896598816,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 3.269138813018799,
+        "length": 23,
+        "nodes": 21085
+      },
+      "hbewFast": {
+        "ms": 2.3673160076141357,
+        "length": 20,
+        "nodes": 15028,
+        "harvestedLifts": 50,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 9.154927015304565,
+        "length": 20,
+        "nodes": 69199,
+        "harvestedLifts": 385,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 12.04896092414856,
+        "length": 20,
+        "nodes": 111543,
+        "harvestedLifts": 902,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 96,
+      "scramble": "B' D2 B2 L' D B R D F' L F L F U2 D' F2 L U2 B' D F' U' F U2 B D2 L2",
+      "cubejs": {
+        "ms": 30.694869995117188,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.21494317054748535,
+        "length": 23,
+        "nodes": 557
+      },
+      "hbewFast": {
+        "ms": 4.663449048995972,
+        "length": 20,
+        "nodes": 33699,
+        "harvestedLifts": 124,
+        "zeroSlackHits": 2
+      },
+      "hbewDefault": {
+        "ms": 3.577503204345703,
+        "length": 20,
+        "nodes": 33699,
+        "harvestedLifts": 124,
+        "zeroSlackHits": 2
+      },
+      "hbewExact": {
+        "ms": 3.5724639892578125,
+        "length": 20,
+        "nodes": 33009,
+        "harvestedLifts": 128,
+        "zeroSlackHits": 3
+      }
+    },
+    {
+      "trial": 97,
+      "scramble": "L2 U B' R F2 L2 R2 L' U L2 B' D2 R' B' D L R' B2 L' D L2 F D' R' L U' B D B2 L2 R' L U2 F L2 D' L",
+      "cubejs": {
+        "ms": 13.144957065582275,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 2.214323043823242,
+        "length": 24,
+        "nodes": 15651
+      },
+      "hbewFast": {
+        "ms": 1.9696199893951416,
+        "length": 21,
+        "nodes": 15438,
+        "harvestedLifts": 128,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 10.867383003234863,
+        "length": 21,
+        "nodes": 87961,
+        "harvestedLifts": 698,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 12.692630052566528,
+        "length": 21,
+        "nodes": 109291,
+        "harvestedLifts": 1149,
+        "zeroSlackHits": 3
+      }
+    },
+    {
+      "trial": 98,
+      "scramble": "F L2 B' F2 B' L' R B' D2 L2 F' D2 U' D B' F2 U' R B2 F2 B' R U2 L2 D L D F' U2",
+      "cubejs": {
+        "ms": 19.71389603614807,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 1.052166223526001,
+        "length": 22,
+        "nodes": 5955
+      },
+      "hbewFast": {
+        "ms": 2.356955051422119,
+        "length": 22,
+        "nodes": 18579,
+        "harvestedLifts": 37,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 9.936218976974487,
+        "length": 21,
+        "nodes": 80029,
+        "harvestedLifts": 493,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 9.2255380153656,
+        "length": 21,
+        "nodes": 86213,
+        "harvestedLifts": 567,
+        "zeroSlackHits": 3
+      }
+    },
+    {
+      "trial": 99,
+      "scramble": "F' U2 R' D2 L F2 U R F' R2 B2 L2 F D' R2 D' U D' F2 D' R B' L' U B F' R L2 F' D' R B2 L2 U2 L",
+      "cubejs": {
+        "ms": 26.579768896102905,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 4.032571077346802,
+        "length": 23,
+        "nodes": 28025
+      },
+      "hbewFast": {
+        "ms": 2.446866989135742,
+        "length": 22,
+        "nodes": 18417,
+        "harvestedLifts": 36,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 3.217127799987793,
+        "length": 20,
+        "nodes": 28205,
+        "harvestedLifts": 104,
+        "zeroSlackHits": 2
+      },
+      "hbewExact": {
+        "ms": 8.456755876541138,
+        "length": 20,
+        "nodes": 64883,
+        "harvestedLifts": 208,
+        "zeroSlackHits": 3
+      }
+    },
+    {
+      "trial": 100,
+      "scramble": "F' D F' R L2 R2 F' D F2 B D2 L' R U' D L2 F' R' U2 D R U2 R U2 B' D B D' F' R L F2 D2 B2 D2 R2",
+      "cubejs": {
+        "ms": 24.40130615234375,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 6.169351816177368,
+        "length": 24,
+        "nodes": 44893
+      },
+      "hbewFast": {
+        "ms": 5.539642810821533,
+        "length": 22,
+        "nodes": 36465,
+        "harvestedLifts": 112,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 3.700875997543335,
+        "length": 22,
+        "nodes": 36465,
+        "harvestedLifts": 112,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 3.90746808052063,
+        "length": 22,
+        "nodes": 37457,
+        "harvestedLifts": 134,
+        "zeroSlackHits": 0
+      }
+    },
+    {
+      "trial": 101,
+      "scramble": "D' U D2 U R2 U' R2 F' L' R L U2 D2 F2 L2 B' D' R L R2 U' D2 U2 R2 L' B' L2 D' L' R B2",
+      "cubejs": {
+        "ms": 25.255107879638672,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 1.2539188861846924,
+        "length": 23,
+        "nodes": 6563
+      },
+      "hbewFast": {
+        "ms": 3.890928030014038,
+        "length": 19,
+        "nodes": 30696,
+        "harvestedLifts": 145,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 2.9299840927124023,
+        "length": 19,
+        "nodes": 30696,
+        "harvestedLifts": 145,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 4.594809055328369,
+        "length": 19,
+        "nodes": 37521,
+        "harvestedLifts": 155,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 102,
+      "scramble": "L' U2 B' D2 F2 D' U' D F' U' L2 D' R' B U R' L' D L2 R2",
+      "cubejs": {
+        "ms": 125.25696682929993,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 4.830411911010742,
+        "length": 24,
+        "nodes": 25541
+      },
+      "hbewFast": {
+        "ms": 12.513497829437256,
+        "length": 21,
+        "nodes": 105521,
+        "harvestedLifts": 188,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 8.895712852478027,
+        "length": 21,
+        "nodes": 105521,
+        "harvestedLifts": 188,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 4.87168288230896,
+        "length": 21,
+        "nodes": 48070,
+        "harvestedLifts": 194,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 103,
+      "scramble": "B' U B' U R' U D' F2 L2 B L U2 D2 B2 F2 L2 D2 R D2 B' F' D2 B' R D2 F' B R F' L2 B R B' L2 B D' R2 F2 L",
+      "cubejs": {
+        "ms": 39.32961988449097,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 9.41227102279663,
+        "length": 26,
+        "nodes": 67247
+      },
+      "hbewFast": {
+        "ms": 7.139256954193115,
+        "length": 21,
+        "nodes": 50613,
+        "harvestedLifts": 247,
+        "zeroSlackHits": 3
+      },
+      "hbewDefault": {
+        "ms": 5.0611560344696045,
+        "length": 21,
+        "nodes": 50613,
+        "harvestedLifts": 247,
+        "zeroSlackHits": 3
+      },
+      "hbewExact": {
+        "ms": 4.806452035903931,
+        "length": 21,
+        "nodes": 47460,
+        "harvestedLifts": 247,
+        "zeroSlackHits": 3
+      }
+    },
+    {
+      "trial": 104,
+      "scramble": "B U B R2 U L B2 D U L' B' L' D' R' F2 U D' B2 D' B L' D L F2 L U' B' U R2 F' B F' D",
+      "cubejs": {
+        "ms": 32.41443586349487,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.898813009262085,
+        "length": 23,
+        "nodes": 3261
+      },
+      "hbewFast": {
+        "ms": 8.662109136581421,
+        "length": 20,
+        "nodes": 61910,
+        "harvestedLifts": 328,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 6.551748037338257,
+        "length": 20,
+        "nodes": 61910,
+        "harvestedLifts": 328,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 7.010255813598633,
+        "length": 20,
+        "nodes": 61666,
+        "harvestedLifts": 371,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 105,
+      "scramble": "D' U2 D' R2 U2 B2 F D' R U' B' F2 L2 U' D L2 U' F2 L' D' L R2 B' D2 F' R U2 D2 R U' L F2 U2 R2 D2 B U2 F2 B'",
+      "cubejs": {
+        "ms": 91.9538369178772,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 8.907133102416992,
+        "length": 24,
+        "nodes": 56660
+      },
+      "hbewFast": {
+        "ms": 8.122130870819092,
+        "length": 21,
+        "nodes": 51787,
+        "harvestedLifts": 307,
+        "zeroSlackHits": 2
+      },
+      "hbewDefault": {
+        "ms": 5.497052907943726,
+        "length": 21,
+        "nodes": 51787,
+        "harvestedLifts": 307,
+        "zeroSlackHits": 2
+      },
+      "hbewExact": {
+        "ms": 5.343250036239624,
+        "length": 21,
+        "nodes": 51190,
+        "harvestedLifts": 307,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 106,
+      "scramble": "B U' L' F L' D2 R' U R2 L F' U' R' L2 U D L2 D' F L2 B2 D R U' B2 U2",
+      "cubejs": {
+        "ms": 17.469831943511963,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.981334924697876,
+        "length": 24,
+        "nodes": 5736
+      },
+      "hbewFast": {
+        "ms": 4.785161972045898,
+        "length": 21,
+        "nodes": 35379,
+        "harvestedLifts": 111,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 3.7284061908721924,
+        "length": 21,
+        "nodes": 35379,
+        "harvestedLifts": 111,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 4.491007089614868,
+        "length": 21,
+        "nodes": 41495,
+        "harvestedLifts": 160,
+        "zeroSlackHits": 0
+      }
+    },
+    {
+      "trial": 107,
+      "scramble": "D' R2 B2 D2 L U R' U B' R' F L R2 B U2 L' D L2 B' D' U2 B2 L' B' U2 R U2 R2 B' R' U2 F U' D U2 B' L2",
+      "cubejs": {
+        "ms": 4.41658616065979,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.18110203742980957,
+        "length": 22,
+        "nodes": 782
+      },
+      "hbewFast": {
+        "ms": 0.6883201599121094,
+        "length": 19,
+        "nodes": 5078,
+        "harvestedLifts": 42,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 0.5700790882110596,
+        "length": 19,
+        "nodes": 5078,
+        "harvestedLifts": 42,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 8.915482997894287,
+        "length": 19,
+        "nodes": 65366,
+        "harvestedLifts": 549,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 108,
+      "scramble": "D F2 U2 R' U' R' L B U B2 R F2 L D2 U2 D' B2 L' F B' D B' F' R B2 R2 F' D2 U D B2 D2 U2 R' D' R2 U2 B2 R' F",
+      "cubejs": {
+        "ms": 15.931798934936523,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.6734600067138672,
+        "length": 24,
+        "nodes": 3560
+      },
+      "hbewFast": {
+        "ms": 8.792262077331543,
+        "length": 21,
+        "nodes": 71046,
+        "harvestedLifts": 264,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 6.949624061584473,
+        "length": 21,
+        "nodes": 71046,
+        "harvestedLifts": 264,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 4.432575941085815,
+        "length": 21,
+        "nodes": 40280,
+        "harvestedLifts": 264,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 109,
+      "scramble": "B2 L2 F U' L U' F' L U2 F2 L2 D' R D2 R2 L2 B R L U2 D2 L U' B2 D F2 R' B L D2 F",
+      "cubejs": {
+        "ms": 32.01432991027832,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.6145401000976562,
+        "length": 24,
+        "nodes": 2144
+      },
+      "hbewFast": {
+        "ms": 0.598848819732666,
+        "length": 20,
+        "nodes": 3000,
+        "harvestedLifts": 16,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 0.3390650749206543,
+        "length": 20,
+        "nodes": 3000,
+        "harvestedLifts": 16,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 4.753702163696289,
+        "length": 20,
+        "nodes": 36568,
+        "harvestedLifts": 205,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 110,
+      "scramble": "L2 R2 L B2 U' D F2 B D2 R B' D B2 U' D B R2 B' R' U B' L' F2 R' L U' F2 L F' L2 D' F B D F' U R D",
+      "cubejs": {
+        "ms": 58.8692729473114,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.43709707260131836,
+        "length": 23,
+        "nodes": 846
+      },
+      "hbewFast": {
+        "ms": 6.63598895072937,
+        "length": 22,
+        "nodes": 31473,
+        "harvestedLifts": 57,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 3.3274099826812744,
+        "length": 22,
+        "nodes": 31473,
+        "harvestedLifts": 57,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 3.474461793899536,
+        "length": 22,
+        "nodes": 31625,
+        "harvestedLifts": 64,
+        "zeroSlackHits": 0
+      }
+    },
+    {
+      "trial": 111,
+      "scramble": "R F2 U' F' R2 U2 L2 D U' F B2 U2 L' D2 F' B2 F' B' D' R2 B' R' D L2 F' L U2 R2 B L R B2 R B' R U F2 R2 U",
+      "cubejs": {
+        "ms": 78.1187801361084,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 3.168416976928711,
+        "length": 23,
+        "nodes": 14362
+      },
+      "hbewFast": {
+        "ms": 1.2997691631317139,
+        "length": 21,
+        "nodes": 7388,
+        "harvestedLifts": 54,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 7.189137935638428,
+        "length": 21,
+        "nodes": 53520,
+        "harvestedLifts": 427,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 8.15153193473816,
+        "length": 21,
+        "nodes": 69271,
+        "harvestedLifts": 701,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 112,
+      "scramble": "L' U' R L2 R2 F' L' D B L' B2 F2 D R2 L2 F R L R F R' B D R2 U B R2 B L F U2 F' R2 D2 L' R' F' U R2",
+      "cubejs": {
+        "ms": 64.44742488861084,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 4.751951217651367,
+        "length": 24,
+        "nodes": 24680
+      },
+      "hbewFast": {
+        "ms": 9.050075054168701,
+        "length": 22,
+        "nodes": 51440,
+        "harvestedLifts": 195,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 5.484011888504028,
+        "length": 22,
+        "nodes": 51440,
+        "harvestedLifts": 195,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 5.172297954559326,
+        "length": 22,
+        "nodes": 46842,
+        "harvestedLifts": 197,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 113,
+      "scramble": "D U' D' L2 D L' B' R F2 B2 D' R2 D' L' F' R2 U2 D2 U B2 L' D B' D U D2 F' D' L2 F R2 B'",
+      "cubejs": {
+        "ms": 23.55983304977417,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.3480949401855469,
+        "length": 23,
+        "nodes": 1280
+      },
+      "hbewFast": {
+        "ms": 12.109730958938599,
+        "length": 20,
+        "nodes": 98253,
+        "harvestedLifts": 677,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 10.117650985717773,
+        "length": 20,
+        "nodes": 98253,
+        "harvestedLifts": 677,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 10.94158411026001,
+        "length": 20,
+        "nodes": 99972,
+        "harvestedLifts": 908,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 114,
+      "scramble": "B D' L2 B' L' U' F' B L B2 R' B2 L2 R U D2 R U2 L F' D' R' B L2 B L F R' L2 U' B2 D2 U' B L U L2 B2 R2",
+      "cubejs": {
+        "ms": 39.60505414009094,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 2.1555819511413574,
+        "length": 24,
+        "nodes": 12169
+      },
+      "hbewFast": {
+        "ms": 6.337465047836304,
+        "length": 21,
+        "nodes": 40347,
+        "harvestedLifts": 134,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 4.127851963043213,
+        "length": 21,
+        "nodes": 40347,
+        "harvestedLifts": 134,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 5.032794952392578,
+        "length": 21,
+        "nodes": 46817,
+        "harvestedLifts": 153,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 115,
+      "scramble": "B' L2 B F U' B' F2 L U L' R D2 R B L' F2 U B' D' F' L2 D' L' R B2 U' D2 B2 F2",
+      "cubejs": {
+        "ms": 46.36003494262695,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 5.536153078079224,
+        "length": 25,
+        "nodes": 36351
+      },
+      "hbewFast": {
+        "ms": 9.276608943939209,
+        "length": 20,
+        "nodes": 65611,
+        "harvestedLifts": 244,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 6.206223011016846,
+        "length": 20,
+        "nodes": 65611,
+        "harvestedLifts": 244,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 4.225953102111816,
+        "length": 20,
+        "nodes": 40193,
+        "harvestedLifts": 244,
+        "zeroSlackHits": 0
+      }
+    },
+    {
+      "trial": 116,
+      "scramble": "F' B2 L' R2 U2 L2 R' F2 R' F' B U' F2 B' F2 U F' L2 F2 D' R2 U F' L D2",
+      "cubejs": {
+        "ms": 16.931453943252563,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 1.5949640274047852,
+        "length": 23,
+        "nodes": 11616
+      },
+      "hbewFast": {
+        "ms": 1.0795860290527344,
+        "length": 20,
+        "nodes": 8353,
+        "harvestedLifts": 37,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 0.767690896987915,
+        "length": 20,
+        "nodes": 8353,
+        "harvestedLifts": 37,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 7.138646841049194,
+        "length": 20,
+        "nodes": 51473,
+        "harvestedLifts": 491,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 117,
+      "scramble": "B' L U D2 R2 B2 R' D2 F B D' B2 F L R2 U D' R' F R2 U' R2 U2 L D2 L2 D",
+      "cubejs": {
+        "ms": 123.55923080444336,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 7.844306945800781,
+        "length": 24,
+        "nodes": 44896
+      },
+      "hbewFast": {
+        "ms": 8.691091060638428,
+        "length": 21,
+        "nodes": 61315,
+        "harvestedLifts": 212,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 5.834357023239136,
+        "length": 21,
+        "nodes": 61315,
+        "harvestedLifts": 212,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 4.512726783752441,
+        "length": 21,
+        "nodes": 43303,
+        "harvestedLifts": 219,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 118,
+      "scramble": "B2 D' F2 B2 L2 D B2 R D2 B L F2 R2 U2 B R2 F' B2 F' U L' U D B U' B R2 D' B2 D R2",
+      "cubejs": {
+        "ms": 5.609934091567993,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 0.41753602027893066,
+        "length": 21,
+        "nodes": 2592
+      },
+      "hbewFast": {
+        "ms": 0.8602230548858643,
+        "length": 21,
+        "nodes": 6993,
+        "harvestedLifts": 28,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 6.1788330078125,
+        "length": 21,
+        "nodes": 44801,
+        "harvestedLifts": 232,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 7.058226108551025,
+        "length": 21,
+        "nodes": 60545,
+        "harvestedLifts": 477,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 119,
+      "scramble": "F' R2 U2 R B2 D' B F2 R' F' R2 B L B' L' R2 F' B F R2 L D B D U B' U L' B2 L2 U",
+      "cubejs": {
+        "ms": 32.27980303764343,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 1.70672607421875,
+        "length": 23,
+        "nodes": 8457
+      },
+      "hbewFast": {
+        "ms": 4.8274219036102295,
+        "length": 20,
+        "nodes": 33367,
+        "harvestedLifts": 156,
+        "zeroSlackHits": 2
+      },
+      "hbewDefault": {
+        "ms": 3.4197819232940674,
+        "length": 20,
+        "nodes": 33367,
+        "harvestedLifts": 156,
+        "zeroSlackHits": 2
+      },
+      "hbewExact": {
+        "ms": 6.710929870605469,
+        "length": 20,
+        "nodes": 59373,
+        "harvestedLifts": 202,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 120,
+      "scramble": "F D' B2 U2 F2 D' R F' L B' F' R L' U' R2 U2 F L F2 R' D2 B' L B2 D U R",
+      "cubejs": {
+        "ms": 25.35198998451233,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 1.305279016494751,
+        "length": 22,
+        "nodes": 7515
+      },
+      "hbewFast": {
+        "ms": 2.2631239891052246,
+        "length": 21,
+        "nodes": 15023,
+        "harvestedLifts": 33,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 3.654554843902588,
+        "length": 21,
+        "nodes": 28810,
+        "harvestedLifts": 167,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 2.662899971008301,
+        "length": 21,
+        "nodes": 28055,
+        "harvestedLifts": 167,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 121,
+      "scramble": "R2 F' U2 F' U2 R L F2 R D U2 F U' B' F2 U2 L2 F D B2 R' U' L' R U R' B2 L U' L2 D2 F2",
+      "cubejs": {
+        "ms": 35.838977098464966,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.6129891872406006,
+        "length": 23,
+        "nodes": 2295
+      },
+      "hbewFast": {
+        "ms": 6.499146938323975,
+        "length": 22,
+        "nodes": 41452,
+        "harvestedLifts": 106,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 4.1933228969573975,
+        "length": 22,
+        "nodes": 41452,
+        "harvestedLifts": 106,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 4.13397216796875,
+        "length": 22,
+        "nodes": 41452,
+        "harvestedLifts": 106,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 122,
+      "scramble": "U2 B2 F' B' R' U' F2 B' D2 B2 R L2 F' B2 D' L2 D L U2 L2 R F B D' U F' U F D' U'",
+      "cubejs": {
+        "ms": 19.499541997909546,
+        "length": 20
+      },
+      "cove3Dual": {
+        "ms": 0.9466140270233154,
+        "length": 20,
+        "nodes": 5850
+      },
+      "hbewFast": {
+        "ms": 6.288513898849487,
+        "length": 20,
+        "nodes": 78526,
+        "harvestedLifts": 14,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 6.509347915649414,
+        "length": 18,
+        "nodes": 89395,
+        "harvestedLifts": 94,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 0.5633590221405029,
+        "length": 18,
+        "nodes": 6660,
+        "harvestedLifts": 98,
+        "zeroSlackHits": 0
+      }
+    },
+    {
+      "trial": 123,
+      "scramble": "R B' D2 L2 F' B' R' F B U2 L2 B L2 R2 D F' R F L D' U",
+      "cubejs": {
+        "ms": 25.62057399749756,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 0.8131818771362305,
+        "length": 23,
+        "nodes": 3800
+      },
+      "hbewFast": {
+        "ms": 1.2939190864562988,
+        "length": 20,
+        "nodes": 7189,
+        "harvestedLifts": 73,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 0.7716219425201416,
+        "length": 20,
+        "nodes": 7189,
+        "harvestedLifts": 73,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 9.304469108581543,
+        "length": 20,
+        "nodes": 61887,
+        "harvestedLifts": 311,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 124,
+      "scramble": "D' F' B D2 U2 F2 D' L' R2 F' L2 B2 F' R' F' D F B2 U' B' F2 B' R D U2 L2 D' R2 U R L R' U B' U B' R2",
+      "cubejs": {
+        "ms": 26.58146905899048,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 3.3691909313201904,
+        "length": 24,
+        "nodes": 22754
+      },
+      "hbewFast": {
+        "ms": 5.9758501052856445,
+        "length": 21,
+        "nodes": 40403,
+        "harvestedLifts": 184,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 4.380755186080933,
+        "length": 21,
+        "nodes": 40403,
+        "harvestedLifts": 184,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 7.545042991638184,
+        "length": 21,
+        "nodes": 63199,
+        "harvestedLifts": 425,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 125,
+      "scramble": "U2 F' B2 U2 D L D' B2 R2 L' U2 B2 L' D2 F' D' R L2 D' U2 B2 D2 L' D' U'",
+      "cubejs": {
+        "ms": 10.568657875061035,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.5497579574584961,
+        "length": 22,
+        "nodes": 2159
+      },
+      "hbewFast": {
+        "ms": 7.43304181098938,
+        "length": 21,
+        "nodes": 46241,
+        "harvestedLifts": 218,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 5.113986015319824,
+        "length": 21,
+        "nodes": 46241,
+        "harvestedLifts": 218,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 5.505651950836182,
+        "length": 21,
+        "nodes": 48132,
+        "harvestedLifts": 254,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 126,
+      "scramble": "L B2 F2 R' F' L R B2 R D2 F' R' L2 B2 F D' L' B' R' F' L2 B D' F2 L U R' B' L' B D U' D' R2 B2 F' L B U2 F",
+      "cubejs": {
+        "ms": 71.95753788948059,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 4.834252834320068,
+        "length": 23,
+        "nodes": 26274
+      },
+      "hbewFast": {
+        "ms": 8.781782150268555,
+        "length": 21,
+        "nodes": 67930,
+        "harvestedLifts": 509,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 7.610713958740234,
+        "length": 21,
+        "nodes": 67930,
+        "harvestedLifts": 509,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 9.027316093444824,
+        "length": 21,
+        "nodes": 78290,
+        "harvestedLifts": 703,
+        "zeroSlackHits": 3
+      }
+    },
+    {
+      "trial": 127,
+      "scramble": "U2 F L2 R L2 D2 U' B R' D2 F' U' D U2 F2 B R2 B' F2 D L2 B' F",
+      "cubejs": {
+        "ms": 8.689389944076538,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.8838229179382324,
+        "length": 23,
+        "nodes": 4821
+      },
+      "hbewFast": {
+        "ms": 5.521662950515747,
+        "length": 20,
+        "nodes": 46682,
+        "harvestedLifts": 222,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 4.9213340282440186,
+        "length": 20,
+        "nodes": 46682,
+        "harvestedLifts": 222,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 4.508557081222534,
+        "length": 20,
+        "nodes": 43224,
+        "harvestedLifts": 222,
+        "zeroSlackHits": 0
+      }
+    },
+    {
+      "trial": 128,
+      "scramble": "L F' U' L' R2 B' U2 D L B2 L' B F2 L U' D F2 L' D U' L2 F' R2",
+      "cubejs": {
+        "ms": 23.962188959121704,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 2.2927651405334473,
+        "length": 23,
+        "nodes": 13386
+      },
+      "hbewFast": {
+        "ms": 5.034994840621948,
+        "length": 22,
+        "nodes": 34478,
+        "harvestedLifts": 128,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 3.6176540851593018,
+        "length": 22,
+        "nodes": 34478,
+        "harvestedLifts": 128,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 3.6074941158294678,
+        "length": 22,
+        "nodes": 34478,
+        "harvestedLifts": 128,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 129,
+      "scramble": "D2 R2 D2 B L2 U2 D2 U' B2 F R2 U' R' D' B' F2 D' F B' D2 B2 L'",
+      "cubejs": {
+        "ms": 89.2414870262146,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 3.5568230152130127,
+        "length": 22,
+        "nodes": 18017
+      },
+      "hbewFast": {
+        "ms": 8.621569156646729,
+        "length": 22,
+        "nodes": 80711,
+        "harvestedLifts": 28,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 10.644060134887695,
+        "length": 21,
+        "nodes": 79586,
+        "harvestedLifts": 295,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 5.956609010696411,
+        "length": 21,
+        "nodes": 54149,
+        "harvestedLifts": 298,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 130,
+      "scramble": "U2 L2 R D R B' D R2 F2 B2 L2 B2 U2 B' U2 R2 L2 F2 R2 U' F2 U2 L2 D2 B' L D2 B L D' L U B L'",
+      "cubejs": {
+        "ms": 57.89771819114685,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 2.8057918548583984,
+        "length": 23,
+        "nodes": 15083
+      },
+      "hbewFast": {
+        "ms": 1.877877950668335,
+        "length": 21,
+        "nodes": 8616,
+        "harvestedLifts": 39,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 8.508296966552734,
+        "length": 21,
+        "nodes": 57899,
+        "harvestedLifts": 294,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 5.986559152603149,
+        "length": 21,
+        "nodes": 56891,
+        "harvestedLifts": 294,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 131,
+      "scramble": "L2 F' D U R2 F' U2 F U' R' U' B U R2 B2 D' U R' U' R D' U' F'",
+      "cubejs": {
+        "ms": 3.603343963623047,
+        "length": 19
+      },
+      "cove3Dual": {
+        "ms": 0.1253509521484375,
+        "length": 19,
+        "nodes": 522
+      },
+      "hbewFast": {
+        "ms": 0.763681173324585,
+        "length": 18,
+        "nodes": 5360,
+        "harvestedLifts": 21,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 0.7721118927001953,
+        "length": 20,
+        "nodes": 6977,
+        "harvestedLifts": 46,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 1.25701904296875,
+        "length": 18,
+        "nodes": 8975,
+        "harvestedLifts": 132,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 132,
+      "scramble": "R B2 F' U' L R' D' R' F2 U2 F B' R B R' B' U F B2 R2 F B D' L2 R L' R' L2",
+      "cubejs": {
+        "ms": 20.542747020721436,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.2707040309906006,
+        "length": 23,
+        "nodes": 943
+      },
+      "hbewFast": {
+        "ms": 4.250033855438232,
+        "length": 21,
+        "nodes": 29222,
+        "harvestedLifts": 75,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 3.0371360778808594,
+        "length": 21,
+        "nodes": 29222,
+        "harvestedLifts": 75,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 4.0244200229644775,
+        "length": 21,
+        "nodes": 36904,
+        "harvestedLifts": 96,
+        "zeroSlackHits": 0
+      }
+    },
+    {
+      "trial": 133,
+      "scramble": "R' D L D' U2 L2 D F L2 U' B' U B F D2 B F' L' D' R' F U2 L2 B' R' D' B2 U2 D2 R2 F2 D' R D2 U' F D' L' B R",
+      "cubejs": {
+        "ms": 11.263288021087646,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 8.675529956817627,
+        "length": 24,
+        "nodes": 72859
+      },
+      "hbewFast": {
+        "ms": 1.2274088859558105,
+        "length": 20,
+        "nodes": 9457,
+        "harvestedLifts": 52,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 0.8576428890228271,
+        "length": 20,
+        "nodes": 9457,
+        "harvestedLifts": 52,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 8.942094087600708,
+        "length": 20,
+        "nodes": 65394,
+        "harvestedLifts": 619,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 134,
+      "scramble": "R' D2 B R2 B2 F' R2 D2 F2 R' D U D F2 R' F2 D U' R2 L F2 B' D2 B' L2 U' R U' L U",
+      "cubejs": {
+        "ms": 3.48238205909729,
+        "length": 20
+      },
+      "cove3Dual": {
+        "ms": 0.07391214370727539,
+        "length": 19,
+        "nodes": 215
+      },
+      "hbewFast": {
+        "ms": 0.26392388343811035,
+        "length": 18,
+        "nodes": 1657,
+        "harvestedLifts": 10,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 1.2411792278289795,
+        "length": 18,
+        "nodes": 10815,
+        "harvestedLifts": 58,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 0.5002970695495605,
+        "length": 18,
+        "nodes": 3718,
+        "harvestedLifts": 60,
+        "zeroSlackHits": 0
+      }
+    },
+    {
+      "trial": 135,
+      "scramble": "F2 B L2 D B U2 D U' B2 R L2 U F L F B2 R L R' U2 L' B L' D' B2 D F2 D2 F' L R' B' L B D F' R' F D' R",
+      "cubejs": {
+        "ms": 26.421576023101807,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 3.0840258598327637,
+        "length": 22,
+        "nodes": 17180
+      },
+      "hbewFast": {
+        "ms": 10.530048131942749,
+        "length": 20,
+        "nodes": 73322,
+        "harvestedLifts": 390,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 7.832496881484985,
+        "length": 20,
+        "nodes": 73322,
+        "harvestedLifts": 390,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 7.739645957946777,
+        "length": 20,
+        "nodes": 72626,
+        "harvestedLifts": 405,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 136,
+      "scramble": "L2 R2 F B2 U2 D U' L2 R2 U2 D' B2 F' U F2 R' U R2 B2 F2 U D B2 F' R' L' B' D L D2 U2 D B2 L' F' L D' F2 L R2",
+      "cubejs": {
+        "ms": 73.29342794418335,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 3.188148021697998,
+        "length": 24,
+        "nodes": 14257
+      },
+      "hbewFast": {
+        "ms": 7.078566074371338,
+        "length": 20,
+        "nodes": 61557,
+        "harvestedLifts": 164,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 5.7900168895721436,
+        "length": 20,
+        "nodes": 61557,
+        "harvestedLifts": 164,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 3.8269169330596924,
+        "length": 20,
+        "nodes": 37807,
+        "harvestedLifts": 164,
+        "zeroSlackHits": 0
+      }
+    },
+    {
+      "trial": 137,
+      "scramble": "U' B' R L2 B F R' B' L R2 D' L B R U F B' F R2 B2 U' R2 F B' U B' F2 B2",
+      "cubejs": {
+        "ms": 3.608154058456421,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.20077300071716309,
+        "length": 22,
+        "nodes": 952
+      },
+      "hbewFast": {
+        "ms": 0.18384289741516113,
+        "length": 19,
+        "nodes": 946,
+        "harvestedLifts": 14,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 0.13231182098388672,
+        "length": 19,
+        "nodes": 946,
+        "harvestedLifts": 14,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 11.02991509437561,
+        "length": 19,
+        "nodes": 92056,
+        "harvestedLifts": 155,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 138,
+      "scramble": "F2 B' U2 D L F L' U2 F U' F B L F2 B2 D2 L2 B U D L U' D U2 D2 B' F' B L' U2 R2 D U' F U' R B2 L R",
+      "cubejs": {
+        "ms": 44.53266787528992,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 8.42259693145752,
+        "length": 24,
+        "nodes": 57017
+      },
+      "hbewFast": {
+        "ms": 7.824007034301758,
+        "length": 20,
+        "nodes": 59189,
+        "harvestedLifts": 247,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 5.61967396736145,
+        "length": 20,
+        "nodes": 59189,
+        "harvestedLifts": 247,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 4.665549993515015,
+        "length": 20,
+        "nodes": 46947,
+        "harvestedLifts": 247,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 139,
+      "scramble": "F L2 D' B2 L U B2 U2 L2 R D' U2 F L' B2 U' L B' L2 D2",
+      "cubejs": {
+        "ms": 18.061211109161377,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.8052220344543457,
+        "length": 24,
+        "nodes": 4981
+      },
+      "hbewFast": {
+        "ms": 8.631219148635864,
+        "length": 21,
+        "nodes": 70900,
+        "harvestedLifts": 325,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 6.902723073959351,
+        "length": 21,
+        "nodes": 70900,
+        "harvestedLifts": 325,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 6.684270143508911,
+        "length": 21,
+        "nodes": 62332,
+        "harvestedLifts": 374,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 140,
+      "scramble": "B U L U R' B' L F R2 D' R' L' R' F D' B2 L F L' U2 D2 F L2 R2",
+      "cubejs": {
+        "ms": 30.75982093811035,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.7296910285949707,
+        "length": 23,
+        "nodes": 3244
+      },
+      "hbewFast": {
+        "ms": 11.245678901672363,
+        "length": 22,
+        "nodes": 94028,
+        "harvestedLifts": 231,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 8.879942893981934,
+        "length": 22,
+        "nodes": 94028,
+        "harvestedLifts": 231,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 7.39673113822937,
+        "length": 22,
+        "nodes": 76461,
+        "harvestedLifts": 231,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 141,
+      "scramble": "L' F L' U2 B2 F R' L2 R2 D U2 R' U2 R' F L2 B F' U R2 U' D' F L2",
+      "cubejs": {
+        "ms": 21.21560788154602,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.30991482734680176,
+        "length": 23,
+        "nodes": 1226
+      },
+      "hbewFast": {
+        "ms": 6.715030908584595,
+        "length": 21,
+        "nodes": 47632,
+        "harvestedLifts": 208,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 5.104825973510742,
+        "length": 21,
+        "nodes": 47632,
+        "harvestedLifts": 208,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 6.571949005126953,
+        "length": 21,
+        "nodes": 62017,
+        "harvestedLifts": 239,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 142,
+      "scramble": "F2 D2 R U2 L U2 L' F D2 U R' L2 B R2 U2 L' F B L' R' U' F2",
+      "cubejs": {
+        "ms": 66.50246596336365,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 1.909287929534912,
+        "length": 25,
+        "nodes": 6030
+      },
+      "hbewFast": {
+        "ms": 5.232239007949829,
+        "length": 22,
+        "nodes": 24945,
+        "harvestedLifts": 84,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 2.6915500164031982,
+        "length": 22,
+        "nodes": 24945,
+        "harvestedLifts": 84,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 2.649440050125122,
+        "length": 22,
+        "nodes": 24945,
+        "harvestedLifts": 84,
+        "zeroSlackHits": 0
+      }
+    },
+    {
+      "trial": 143,
+      "scramble": "B F2 U2 D2 L' B L R2 F2 R2 F2 B' F' R2 L' U D2 R2 D2 U R' D2 R D2 B2 D2 U R' L2 D' R' D2 L2 B' U' L' B' R'",
+      "cubejs": {
+        "ms": 18.7896409034729,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 1.5068628787994385,
+        "length": 23,
+        "nodes": 7619
+      },
+      "hbewFast": {
+        "ms": 0.825512170791626,
+        "length": 21,
+        "nodes": 4250,
+        "harvestedLifts": 20,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 6.1859118938446045,
+        "length": 20,
+        "nodes": 41660,
+        "harvestedLifts": 222,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 6.554347991943359,
+        "length": 20,
+        "nodes": 53363,
+        "harvestedLifts": 366,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 144,
+      "scramble": "L' F' L2 F' B' R U B2 F U' R2 F' R F2 R' F2 R F2 R2 F2 R' U' D2 R2 D' L2 D' R",
+      "cubejs": {
+        "ms": 51.934978008270264,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 3.88268780708313,
+        "length": 22,
+        "nodes": 21249
+      },
+      "hbewFast": {
+        "ms": 4.318414926528931,
+        "length": 22,
+        "nodes": 28646,
+        "harvestedLifts": 27,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 9.719835996627808,
+        "length": 21,
+        "nodes": 70414,
+        "harvestedLifts": 389,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 5.9581098556518555,
+        "length": 21,
+        "nodes": 53066,
+        "harvestedLifts": 390,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 145,
+      "scramble": "B2 U' R U B L2 F L U2 F' B' L2 U B2 F R' U' B' L F' D F D2 B2 L' U' F' U2 R B2",
+      "cubejs": {
+        "ms": 20.738590955734253,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 1.4136409759521484,
+        "length": 24,
+        "nodes": 8876
+      },
+      "hbewFast": {
+        "ms": 5.799856901168823,
+        "length": 21,
+        "nodes": 47250,
+        "harvestedLifts": 88,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 9.49867296218872,
+        "length": 20,
+        "nodes": 82721,
+        "harvestedLifts": 361,
+        "zeroSlackHits": 3
+      },
+      "hbewExact": {
+        "ms": 9.427050828933716,
+        "length": 20,
+        "nodes": 81423,
+        "harvestedLifts": 459,
+        "zeroSlackHits": 3
+      }
+    },
+    {
+      "trial": 146,
+      "scramble": "B2 F L' B D2 R D R' D2 F' D' L F2 R2 B' F B2 U' L' R' B R2 D' L2 F2 L' D' F U B2 D2 B2 U R' L2 D U F'",
+      "cubejs": {
+        "ms": 80.31058287620544,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 5.065645933151245,
+        "length": 25,
+        "nodes": 30959
+      },
+      "hbewFast": {
+        "ms": 5.5617430210113525,
+        "length": 22,
+        "nodes": 43478,
+        "harvestedLifts": 190,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 4.3929150104522705,
+        "length": 22,
+        "nodes": 43478,
+        "harvestedLifts": 190,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 4.052979946136475,
+        "length": 22,
+        "nodes": 39777,
+        "harvestedLifts": 194,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 147,
+      "scramble": "L' D2 R B D' L2 R2 L2 D F D' L2 D2 R2 D2 B2 R D U R' D L2 B2 R L2 D' B'",
+      "cubejs": {
+        "ms": 12.298635005950928,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.5432281494140625,
+        "length": 22,
+        "nodes": 3314
+      },
+      "hbewFast": {
+        "ms": 2.702130079269409,
+        "length": 22,
+        "nodes": 26198,
+        "harvestedLifts": 20,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 10.998075008392334,
+        "length": 22,
+        "nodes": 82275,
+        "harvestedLifts": 371,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 7.790846824645996,
+        "length": 22,
+        "nodes": 71568,
+        "harvestedLifts": 417,
+        "zeroSlackHits": 3
+      }
+    },
+    {
+      "trial": 148,
+      "scramble": "B R2 U' F' L2 U D2 F' U2 B R U B' R2 D' L D' L2 F' B' L F' L' U2 D2 L B L R2 D' R' D",
+      "cubejs": {
+        "ms": 143.4731090068817,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.8153519630432129,
+        "length": 23,
+        "nodes": 1861
+      },
+      "hbewFast": {
+        "ms": 6.969805002212524,
+        "length": 22,
+        "nodes": 29603,
+        "harvestedLifts": 94,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 3.2469980716705322,
+        "length": 22,
+        "nodes": 29603,
+        "harvestedLifts": 94,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 3.103347063064575,
+        "length": 22,
+        "nodes": 29603,
+        "harvestedLifts": 94,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 149,
+      "scramble": "R2 L2 U' L2 U2 F2 U' B F' D' R U2 F2 D L F' B2 F2 R' B2 U' R U2 R U' L U' F' U2 D F' D B F2 L2 B' D2 F2 L2",
+      "cubejs": {
+        "ms": 13.48458218574524,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 1.55668306350708,
+        "length": 24,
+        "nodes": 9183
+      },
+      "hbewFast": {
+        "ms": 7.60607385635376,
+        "length": 21,
+        "nodes": 61109,
+        "harvestedLifts": 159,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 5.683115005493164,
+        "length": 21,
+        "nodes": 61109,
+        "harvestedLifts": 159,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 3.4905529022216797,
+        "length": 21,
+        "nodes": 32778,
+        "harvestedLifts": 163,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 150,
+      "scramble": "F2 R2 B' U' R2 L' R D2 F2 B2 R2 D F D2 F L' B D' F L R2 L2",
+      "cubejs": {
+        "ms": 1039.4401161670685,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 2.2516329288482666,
+        "length": 25,
+        "nodes": 8400
+      },
+      "hbewFast": {
+        "ms": 27.729295015335083,
+        "length": 22,
+        "nodes": 227962,
+        "harvestedLifts": 450,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 24.386255025863647,
+        "length": 22,
+        "nodes": 227962,
+        "harvestedLifts": 450,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 2.6440699100494385,
+        "length": 23,
+        "nodes": 25749,
+        "harvestedLifts": 20,
+        "zeroSlackHits": 0
+      }
+    },
+    {
+      "trial": 151,
+      "scramble": "F B2 F D' R L2 B L2 F U2 D U' L D L D' R F2 L2 D' B L' R2 U'",
+      "cubejs": {
+        "ms": 30.387845993041992,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 2.8129618167877197,
+        "length": 25,
+        "nodes": 15802
+      },
+      "hbewFast": {
+        "ms": 5.974758863449097,
+        "length": 22,
+        "nodes": 44702,
+        "harvestedLifts": 140,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 4.5009870529174805,
+        "length": 22,
+        "nodes": 44702,
+        "harvestedLifts": 140,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 4.396355867385864,
+        "length": 22,
+        "nodes": 44702,
+        "harvestedLifts": 140,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 152,
+      "scramble": "R2 U' R2 B R' U2 L' U D' R U2 F2 L' R U' D2 F D' B2 L' B' F U",
+      "cubejs": {
+        "ms": 126.86439204216003,
+        "length": 20
+      },
+      "cove3Dual": {
+        "ms": 4.813462018966675,
+        "length": 23,
+        "nodes": 26704
+      },
+      "hbewFast": {
+        "ms": 3.011384963989258,
+        "length": 20,
+        "nodes": 16193,
+        "harvestedLifts": 29,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 4.125792026519775,
+        "length": 20,
+        "nodes": 27387,
+        "harvestedLifts": 152,
+        "zeroSlackHits": 2
+      },
+      "hbewExact": {
+        "ms": 6.042140007019043,
+        "length": 20,
+        "nodes": 46566,
+        "harvestedLifts": 237,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 153,
+      "scramble": "B R' D2 R2 F2 U' B' L2 R F' R2 L R2 D' B U2 F2 D2 L2 B2 L' U L R L2 D2 U2 B2 D",
+      "cubejs": {
+        "ms": 31.539922952651978,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 5.437582015991211,
+        "length": 23,
+        "nodes": 35752
+      },
+      "hbewFast": {
+        "ms": 0.3714261054992676,
+        "length": 20,
+        "nodes": 1547,
+        "harvestedLifts": 12,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 0.18480181694030762,
+        "length": 20,
+        "nodes": 1547,
+        "harvestedLifts": 12,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 6.456576824188232,
+        "length": 20,
+        "nodes": 42046,
+        "harvestedLifts": 132,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 154,
+      "scramble": "L R' B L' F2 L R F' U L D2 F2 D' B2 R' B L R2 L' B' U2 B F' B L D'",
+      "cubejs": {
+        "ms": 10.55689787864685,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.558837890625,
+        "length": 22,
+        "nodes": 2921
+      },
+      "hbewFast": {
+        "ms": 1.0829761028289795,
+        "length": 21,
+        "nodes": 6972,
+        "harvestedLifts": 22,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 5.709815979003906,
+        "length": 21,
+        "nodes": 44593,
+        "harvestedLifts": 232,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 6.49260687828064,
+        "length": 21,
+        "nodes": 51392,
+        "harvestedLifts": 404,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 155,
+      "scramble": "D R2 U' D2 L B2 D2 U D' B2 U2 R D' R2 F' R D L' B L2 D2 U2 B2 D2 U2 R' F2 B2 D2 U L F2 R' D' U' D' U2",
+      "cubejs": {
+        "ms": 87.54893088340759,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 1.8911590576171875,
+        "length": 23,
+        "nodes": 6536
+      },
+      "hbewFast": {
+        "ms": 10.73340106010437,
+        "length": 21,
+        "nodes": 74315,
+        "harvestedLifts": 219,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 7.191917896270752,
+        "length": 21,
+        "nodes": 71964,
+        "harvestedLifts": 219,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 5.574012994766235,
+        "length": 21,
+        "nodes": 52319,
+        "harvestedLifts": 220,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 156,
+      "scramble": "B F' R' L D2 L F D' U B U2 F' L' U' R U2 R B2 U L D' R' F U B' L' B R D F' U R2 F' B2 R D2 R D2 B D'",
+      "cubejs": {
+        "ms": 52.47773599624634,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 5.138376951217651,
+        "length": 22,
+        "nodes": 32592
+      },
+      "hbewFast": {
+        "ms": 2.67510986328125,
+        "length": 22,
+        "nodes": 17254,
+        "harvestedLifts": 46,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 8.748891115188599,
+        "length": 19,
+        "nodes": 60229,
+        "harvestedLifts": 434,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 7.566962957382202,
+        "length": 19,
+        "nodes": 62967,
+        "harvestedLifts": 590,
+        "zeroSlackHits": 3
+      }
+    },
+    {
+      "trial": 157,
+      "scramble": "D' U R U B' U L2 B D B' L2 D2 U L' F2 D B2 U' D U' B' L'",
+      "cubejs": {
+        "ms": 33.116405963897705,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 1.0180959701538086,
+        "length": 22,
+        "nodes": 4629
+      },
+      "hbewFast": {
+        "ms": 2.3866560459136963,
+        "length": 21,
+        "nodes": 15704,
+        "harvestedLifts": 56,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 7.934848070144653,
+        "length": 19,
+        "nodes": 63074,
+        "harvestedLifts": 341,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 8.96072506904602,
+        "length": 19,
+        "nodes": 71823,
+        "harvestedLifts": 621,
+        "zeroSlackHits": 3
+      }
+    },
+    {
+      "trial": 158,
+      "scramble": "U2 R2 B2 F2 B2 L F' B U' R' D' B U F B' L2 D F' L' F R' U' B2 L U2 D2 R' B2 D' L R F2 B R2 U2 L' D2 R' B R2",
+      "cubejs": {
+        "ms": 36.00538897514343,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 1.2139780521392822,
+        "length": 23,
+        "nodes": 4346
+      },
+      "hbewFast": {
+        "ms": 6.979285001754761,
+        "length": 20,
+        "nodes": 44164,
+        "harvestedLifts": 162,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 4.712440013885498,
+        "length": 20,
+        "nodes": 44164,
+        "harvestedLifts": 162,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 4.229304075241089,
+        "length": 20,
+        "nodes": 38236,
+        "harvestedLifts": 162,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 159,
+      "scramble": "B U2 L D R L' U F2 B2 R B2 U2 F U2 R' F U2 F U' B'",
+      "cubejs": {
+        "ms": 19.750096082687378,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 3.3808510303497314,
+        "length": 24,
+        "nodes": 22416
+      },
+      "hbewFast": {
+        "ms": 7.681624889373779,
+        "length": 22,
+        "nodes": 58229,
+        "harvestedLifts": 199,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 6.007120847702026,
+        "length": 22,
+        "nodes": 58229,
+        "harvestedLifts": 199,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 5.856106996536255,
+        "length": 22,
+        "nodes": 56567,
+        "harvestedLifts": 199,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 160,
+      "scramble": "D B D2 F' L2 F' B2 F' U2 R L R2 F2 L2 D2 B U' D2 R' F B F2 D' B L F D2 R' D2 F U B' U'",
+      "cubejs": {
+        "ms": 2.945333957672119,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.22908401489257812,
+        "length": 22,
+        "nodes": 1038
+      },
+      "hbewFast": {
+        "ms": 3.495872974395752,
+        "length": 20,
+        "nodes": 21019,
+        "harvestedLifts": 106,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 2.2182838916778564,
+        "length": 20,
+        "nodes": 21019,
+        "harvestedLifts": 106,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 5.095695972442627,
+        "length": 20,
+        "nodes": 39894,
+        "harvestedLifts": 196,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 161,
+      "scramble": "L D2 R D' L2 F' B' L' R' U F' U L2 R L2 R B D' F2 B L2 D F D2 R2 L2 R2 D' L B2 L F' B2 R' F'",
+      "cubejs": {
+        "ms": 43.006043910980225,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 3.8696179389953613,
+        "length": 23,
+        "nodes": 23653
+      },
+      "hbewFast": {
+        "ms": 8.186033010482788,
+        "length": 21,
+        "nodes": 59242,
+        "harvestedLifts": 202,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 5.67964506149292,
+        "length": 21,
+        "nodes": 59242,
+        "harvestedLifts": 202,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 5.6860151290893555,
+        "length": 21,
+        "nodes": 58669,
+        "harvestedLifts": 202,
+        "zeroSlackHits": 0
+      }
+    },
+    {
+      "trial": 162,
+      "scramble": "L' B R' D U R2 D U2 L' F' D2 B2 D F2 R U' R F' B2 L F' L2 U2 D' L' F' B R L2 U2 D' R'",
+      "cubejs": {
+        "ms": 30.7412109375,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 1.4214110374450684,
+        "length": 23,
+        "nodes": 8022
+      },
+      "hbewFast": {
+        "ms": 1.8740980625152588,
+        "length": 21,
+        "nodes": 13133,
+        "harvestedLifts": 58,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 7.3242199420928955,
+        "length": 21,
+        "nodes": 60367,
+        "harvestedLifts": 323,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 6.766881942749023,
+        "length": 21,
+        "nodes": 58865,
+        "harvestedLifts": 535,
+        "zeroSlackHits": 3
+      }
+    },
+    {
+      "trial": 163,
+      "scramble": "D2 B' D2 U' B D2 L B' R2 U R2 L2 B U' R2 B D' R' F R F2 L' B2 D2 B' F' B' F2 R B2 U' D2 R B' D' B'",
+      "cubejs": {
+        "ms": 10.05194091796875,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.32549500465393066,
+        "length": 21,
+        "nodes": 1299
+      },
+      "hbewFast": {
+        "ms": 5.533502817153931,
+        "length": 20,
+        "nodes": 51226,
+        "harvestedLifts": 112,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 6.262563943862915,
+        "length": 19,
+        "nodes": 62864,
+        "harvestedLifts": 250,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 7.182617902755737,
+        "length": 19,
+        "nodes": 55883,
+        "harvestedLifts": 289,
+        "zeroSlackHits": 3
+      }
+    },
+    {
+      "trial": 164,
+      "scramble": "B F' R2 L' R' F2 B R2 F L' D2 F2 D' L D2 F U' L2 U' L B' R2 U' F2 R2 D2",
+      "cubejs": {
+        "ms": 3.537443161010742,
+        "length": 20
+      },
+      "cove3Dual": {
+        "ms": 0.11965107917785645,
+        "length": 20,
+        "nodes": 402
+      },
+      "hbewFast": {
+        "ms": 0.09660196304321289,
+        "length": 20,
+        "nodes": 400,
+        "harvestedLifts": 1,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 0.08027100563049316,
+        "length": 20,
+        "nodes": 400,
+        "harvestedLifts": 1,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 4.820872068405151,
+        "length": 20,
+        "nodes": 35094,
+        "harvestedLifts": 37,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 165,
+      "scramble": "L R L R2 B' D2 L B R' U' B R L2 R' D B' R' B2 R' B D' L2 R2 F2 D L' R' F",
+      "cubejs": {
+        "ms": 11.249478101730347,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 1.327820062637329,
+        "length": 23,
+        "nodes": 9524
+      },
+      "hbewFast": {
+        "ms": 0.6865999698638916,
+        "length": 22,
+        "nodes": 4516,
+        "harvestedLifts": 10,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 5.100507020950317,
+        "length": 22,
+        "nodes": 40584,
+        "harvestedLifts": 183,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 6.125741958618164,
+        "length": 22,
+        "nodes": 56643,
+        "harvestedLifts": 274,
+        "zeroSlackHits": 0
+      }
+    },
+    {
+      "trial": 166,
+      "scramble": "U2 D U' R' U R' D U' R' U2 B F2 U2 B R2 D R U2 R F' R' U' L U'",
+      "cubejs": {
+        "ms": 4.100052118301392,
+        "length": 20
+      },
+      "cove3Dual": {
+        "ms": 0.1734619140625,
+        "length": 20,
+        "nodes": 839
+      },
+      "hbewFast": {
+        "ms": 1.2385480403900146,
+        "length": 20,
+        "nodes": 8707,
+        "harvestedLifts": 71,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 0.9578239917755127,
+        "length": 20,
+        "nodes": 8707,
+        "harvestedLifts": 71,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 8.81115198135376,
+        "length": 20,
+        "nodes": 72625,
+        "harvestedLifts": 358,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 167,
+      "scramble": "R F2 B' R' B' L D B D2 R' L' R D F D L B' F2 D2 L2 D L2 U2 R2 D'",
+      "cubejs": {
+        "ms": 25.992980003356934,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 2.1089508533477783,
+        "length": 23,
+        "nodes": 12848
+      },
+      "hbewFast": {
+        "ms": 5.661225080490112,
+        "length": 22,
+        "nodes": 61138,
+        "harvestedLifts": 22,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 9.331049919128418,
+        "length": 20,
+        "nodes": 90658,
+        "harvestedLifts": 233,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 4.505657196044922,
+        "length": 20,
+        "nodes": 42272,
+        "harvestedLifts": 243,
+        "zeroSlackHits": 3
+      }
+    },
+    {
+      "trial": 168,
+      "scramble": "U' L' B' D U' B2 D2 F U' L D' L2 D' R L R2 D2 R D' L2 R U L2 D' U2 R F' L' R D2",
+      "cubejs": {
+        "ms": 16.555227994918823,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.7875411510467529,
+        "length": 22,
+        "nodes": 4776
+      },
+      "hbewFast": {
+        "ms": 6.716990947723389,
+        "length": 22,
+        "nodes": 72680,
+        "harvestedLifts": 24,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 11.858857870101929,
+        "length": 21,
+        "nodes": 112088,
+        "harvestedLifts": 390,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 7.768765926361084,
+        "length": 21,
+        "nodes": 76698,
+        "harvestedLifts": 400,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 169,
+      "scramble": "L2 R B2 R2 F2 B' D2 R2 U' B2 L F B D F' D R D' F' B2 L R2 L2",
+      "cubejs": {
+        "ms": 212.0505871772766,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 1.9888899326324463,
+        "length": 21,
+        "nodes": 7993
+      },
+      "hbewFast": {
+        "ms": 0.4949769973754883,
+        "length": 20,
+        "nodes": 1810,
+        "harvestedLifts": 8,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 0.17743301391601562,
+        "length": 20,
+        "nodes": 1810,
+        "harvestedLifts": 8,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 2.5788989067077637,
+        "length": 19,
+        "nodes": 17412,
+        "harvestedLifts": 147,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 170,
+      "scramble": "F' L R U F L2 D' R B2 R' L D' U2 B2 L2 D U' R' L2 D2 B2 R' U",
+      "cubejs": {
+        "ms": 16.40443515777588,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 0.5924181938171387,
+        "length": 22,
+        "nodes": 2641
+      },
+      "hbewFast": {
+        "ms": 11.112616062164307,
+        "length": 20,
+        "nodes": 65463,
+        "harvestedLifts": 523,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 7.20347785949707,
+        "length": 20,
+        "nodes": 65463,
+        "harvestedLifts": 523,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 9.69701600074768,
+        "length": 20,
+        "nodes": 83641,
+        "harvestedLifts": 772,
+        "zeroSlackHits": 3
+      }
+    },
+    {
+      "trial": 171,
+      "scramble": "F' U2 L' F' D2 U' B' L R D B2 R' F U2 R' D2 B F R' L' F' R2 U D2 U B' R F2 U B' D R F B L D2 U2 L D'",
+      "cubejs": {
+        "ms": 11.453752040863037,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.2583439350128174,
+        "length": 21,
+        "nodes": 1054
+      },
+      "hbewFast": {
+        "ms": 1.131356954574585,
+        "length": 20,
+        "nodes": 7790,
+        "harvestedLifts": 54,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 0.7794711589813232,
+        "length": 20,
+        "nodes": 7790,
+        "harvestedLifts": 54,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 8.40889596939087,
+        "length": 20,
+        "nodes": 61660,
+        "harvestedLifts": 479,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 172,
+      "scramble": "R F U' F B' L2 R B' R2 F2 D' R' B D' U2 B U' B2 R B' U2 L' U2 F2",
+      "cubejs": {
+        "ms": 14.967793941497803,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 2.1283609867095947,
+        "length": 24,
+        "nodes": 12442
+      },
+      "hbewFast": {
+        "ms": 0.22432279586791992,
+        "length": 20,
+        "nodes": 987,
+        "harvestedLifts": 5,
+        "zeroSlackHits": 2
+      },
+      "hbewDefault": {
+        "ms": 0.15327191352844238,
+        "length": 20,
+        "nodes": 987,
+        "harvestedLifts": 5,
+        "zeroSlackHits": 2
+      },
+      "hbewExact": {
+        "ms": 3.6877260208129883,
+        "length": 20,
+        "nodes": 27629,
+        "harvestedLifts": 40,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 173,
+      "scramble": "R2 D U D' F2 U D F2 D' B2 R2 D R2 B D2 F' L R L' F B' L2 U L F' L U F U2 D2 F R B L",
+      "cubejs": {
+        "ms": 152.53671598434448,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.48619723320007324,
+        "length": 21,
+        "nodes": 820
+      },
+      "hbewFast": {
+        "ms": 15.457190990447998,
+        "length": 21,
+        "nodes": 86609,
+        "harvestedLifts": 621,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 9.283729076385498,
+        "length": 21,
+        "nodes": 86609,
+        "harvestedLifts": 621,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 9.348989963531494,
+        "length": 21,
+        "nodes": 88850,
+        "harvestedLifts": 638,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 174,
+      "scramble": "L2 B' L U B D U2 L B2 F2 D2 F L2 F L' D' B2 F2 D2 R F B2 L D L' U D'",
+      "cubejs": {
+        "ms": 10.459946870803833,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 0.12144184112548828,
+        "length": 21,
+        "nodes": 367
+      },
+      "hbewFast": {
+        "ms": 0.650378942489624,
+        "length": 21,
+        "nodes": 4098,
+        "harvestedLifts": 24,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 5.362639904022217,
+        "length": 21,
+        "nodes": 41339,
+        "harvestedLifts": 234,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 6.011129856109619,
+        "length": 21,
+        "nodes": 49749,
+        "harvestedLifts": 396,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 175,
+      "scramble": "F' R' L R2 L' R' L F' R F B2 D' R' U D B' U' R F R' B' U B L' R' D U' L F2 R' F R' F' R2 B R' U L R' D2",
+      "cubejs": {
+        "ms": 14.60197901725769,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.7277209758758545,
+        "length": 22,
+        "nodes": 4031
+      },
+      "hbewFast": {
+        "ms": 4.7262609004974365,
+        "length": 21,
+        "nodes": 30084,
+        "harvestedLifts": 160,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 3.232987880706787,
+        "length": 21,
+        "nodes": 30084,
+        "harvestedLifts": 160,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 3.0322349071502686,
+        "length": 21,
+        "nodes": 28809,
+        "harvestedLifts": 160,
+        "zeroSlackHits": 0
+      }
+    },
+    {
+      "trial": 176,
+      "scramble": "F2 U2 D2 F2 R2 B' R2 D2 U2 D2 B L' U2 R2 B' R2 D U' B2 R D2 U' B' L2 R' D2 F' L2 D U B L' R' B' R' F2 R2",
+      "cubejs": {
+        "ms": 52.660868883132935,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 6.851663112640381,
+        "length": 24,
+        "nodes": 42245
+      },
+      "hbewFast": {
+        "ms": 3.4061410427093506,
+        "length": 20,
+        "nodes": 37282,
+        "harvestedLifts": 20,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 2.831821918487549,
+        "length": 20,
+        "nodes": 37282,
+        "harvestedLifts": 20,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 8.430476188659668,
+        "length": 20,
+        "nodes": 65523,
+        "harvestedLifts": 456,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 177,
+      "scramble": "B' L' D L2 D2 B2 R' U' F U2 F' B2 L U2 L U B2 R' B' L F B' R2 F D R2 B2 L B D'",
+      "cubejs": {
+        "ms": 7.155887842178345,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.35404515266418457,
+        "length": 22,
+        "nodes": 1484
+      },
+      "hbewFast": {
+        "ms": 0.29172396659851074,
+        "length": 20,
+        "nodes": 1778,
+        "harvestedLifts": 16,
+        "zeroSlackHits": 2
+      },
+      "hbewDefault": {
+        "ms": 0.19985294342041016,
+        "length": 20,
+        "nodes": 1778,
+        "harvestedLifts": 16,
+        "zeroSlackHits": 2
+      },
+      "hbewExact": {
+        "ms": 7.158576965332031,
+        "length": 20,
+        "nodes": 45962,
+        "harvestedLifts": 120,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 178,
+      "scramble": "R' D F R2 U2 R2 L' D2 F L R' F' L F U D' R L' B U2 B' U2 F R' L2 U2 L2 R' U B' R D2 F2 U2 D U' L'",
+      "cubejs": {
+        "ms": 73.36261916160583,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 5.902608156204224,
+        "length": 24,
+        "nodes": 32442
+      },
+      "hbewFast": {
+        "ms": 8.987164974212646,
+        "length": 20,
+        "nodes": 52751,
+        "harvestedLifts": 259,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 5.716046094894409,
+        "length": 20,
+        "nodes": 52751,
+        "harvestedLifts": 259,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 9.825636863708496,
+        "length": 20,
+        "nodes": 81838,
+        "harvestedLifts": 500,
+        "zeroSlackHits": 4
+      }
+    },
+    {
+      "trial": 179,
+      "scramble": "U' D' L R' U F U2 F B2 L' B2 L D' U F' R2 U' F' U F D2 R' U' B' F R' F2 U F' B2 D' U D2 R2 B R",
+      "cubejs": {
+        "ms": 89.89838695526123,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 5.9374988079071045,
+        "length": 25,
+        "nodes": 27219
+      },
+      "hbewFast": {
+        "ms": 5.981920003890991,
+        "length": 22,
+        "nodes": 30846,
+        "harvestedLifts": 87,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 3.2740190029144287,
+        "length": 22,
+        "nodes": 30846,
+        "harvestedLifts": 87,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 3.208507776260376,
+        "length": 22,
+        "nodes": 30846,
+        "harvestedLifts": 87,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 180,
+      "scramble": "L2 B U L2 D' U F U D' R F R' L D2 F2 B' F' L U2 D' R2 L2 R'",
+      "cubejs": {
+        "ms": 102.57740688323975,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 6.346565008163452,
+        "length": 22,
+        "nodes": 37656
+      },
+      "hbewFast": {
+        "ms": 4.057241201400757,
+        "length": 21,
+        "nodes": 46326,
+        "harvestedLifts": 10,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 1.3529610633850098,
+        "length": 19,
+        "nodes": 6389,
+        "harvestedLifts": 32,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 0.5295882225036621,
+        "length": 19,
+        "nodes": 5003,
+        "harvestedLifts": 32,
+        "zeroSlackHits": 0
+      }
+    },
+    {
+      "trial": 181,
+      "scramble": "B' F2 D U B' U L' F' D' F2 R D U D U2 D' R' D U R'",
+      "cubejs": {
+        "ms": 214.39898300170898,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 11.757106065750122,
+        "length": 25,
+        "nodes": 79223
+      },
+      "hbewFast": {
+        "ms": 3.5778839588165283,
+        "length": 20,
+        "nodes": 25551,
+        "harvestedLifts": 178,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 6.994303941726685,
+        "length": 19,
+        "nodes": 53057,
+        "harvestedLifts": 549,
+        "zeroSlackHits": 2
+      },
+      "hbewExact": {
+        "ms": 12.155742168426514,
+        "length": 19,
+        "nodes": 108327,
+        "harvestedLifts": 1019,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 182,
+      "scramble": "L2 R' L2 R' F2 D B L' U2 L' D R2 U' F' U D2 U' F' L D' F D R' D R F R' B' F' R B R' D L2",
+      "cubejs": {
+        "ms": 19.033294916152954,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 1.4036309719085693,
+        "length": 23,
+        "nodes": 8023
+      },
+      "hbewFast": {
+        "ms": 5.910878896713257,
+        "length": 19,
+        "nodes": 45692,
+        "harvestedLifts": 190,
+        "zeroSlackHits": 2
+      },
+      "hbewDefault": {
+        "ms": 4.7526209354400635,
+        "length": 19,
+        "nodes": 45692,
+        "harvestedLifts": 190,
+        "zeroSlackHits": 2
+      },
+      "hbewExact": {
+        "ms": 5.049365997314453,
+        "length": 19,
+        "nodes": 48809,
+        "harvestedLifts": 190,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 183,
+      "scramble": "F' U D2 B' R2 D2 L' U' F U L2 U B R' U' R B R2 U2 D' U D' R2 B F L R2 D2 R B'",
+      "cubejs": {
+        "ms": 41.746755838394165,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 1.8369369506835938,
+        "length": 23,
+        "nodes": 8543
+      },
+      "hbewFast": {
+        "ms": 3.866028070449829,
+        "length": 21,
+        "nodes": 21362,
+        "harvestedLifts": 80,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 2.291584014892578,
+        "length": 21,
+        "nodes": 21362,
+        "harvestedLifts": 80,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 2.3118250370025635,
+        "length": 21,
+        "nodes": 21362,
+        "harvestedLifts": 80,
+        "zeroSlackHits": 0
+      }
+    },
+    {
+      "trial": 184,
+      "scramble": "B' R' U D U R' B R2 U2 F2 B2 L B F D L B L U R2 D2 F R F' D' L2 D2 F' R F B' R B' U' F L2 U",
+      "cubejs": {
+        "ms": 58.729599952697754,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 2.577359199523926,
+        "length": 23,
+        "nodes": 11731
+      },
+      "hbewFast": {
+        "ms": 7.5373029708862305,
+        "length": 20,
+        "nodes": 42134,
+        "harvestedLifts": 180,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 4.4156458377838135,
+        "length": 20,
+        "nodes": 42134,
+        "harvestedLifts": 180,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 4.296875,
+        "length": 20,
+        "nodes": 38741,
+        "harvestedLifts": 184,
+        "zeroSlackHits": 0
+      }
+    },
+    {
+      "trial": 185,
+      "scramble": "B F2 U' R F' R' U' F2 B F' D F2 D' R2 U R' F' U2 D U2 B' D2 U' B' R' B' D2 L2 F' D R F2 D R F2 U",
+      "cubejs": {
+        "ms": 54.151230812072754,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 1.5361430644989014,
+        "length": 24,
+        "nodes": 6586
+      },
+      "hbewFast": {
+        "ms": 9.45424199104309,
+        "length": 21,
+        "nodes": 58213,
+        "harvestedLifts": 225,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 5.7198450565338135,
+        "length": 21,
+        "nodes": 58213,
+        "harvestedLifts": 225,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 4.330943822860718,
+        "length": 21,
+        "nodes": 40669,
+        "harvestedLifts": 230,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 186,
+      "scramble": "U D B R2 B2 R2 B' R F2 D2 U' R D2 L2 F U' D R' F' B U' L B R2 B U' D' L' F U2 F U R2 U D2 F' U L B' L2",
+      "cubejs": {
+        "ms": 53.64263391494751,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 1.3769199848175049,
+        "length": 23,
+        "nodes": 5316
+      },
+      "hbewFast": {
+        "ms": 4.92319393157959,
+        "length": 21,
+        "nodes": 33814,
+        "harvestedLifts": 112,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 3.450932025909424,
+        "length": 21,
+        "nodes": 33814,
+        "harvestedLifts": 112,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 3.3045101165771484,
+        "length": 21,
+        "nodes": 29364,
+        "harvestedLifts": 132,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 187,
+      "scramble": "B L' B2 F R2 F2 U' B' D' U2 F D F' L' D R B2 R U B R' B2 F' R2 L'",
+      "cubejs": {
+        "ms": 129.29354786872864,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 2.1845428943634033,
+        "length": 23,
+        "nodes": 9135
+      },
+      "hbewFast": {
+        "ms": 9.682765007019043,
+        "length": 20,
+        "nodes": 53688,
+        "harvestedLifts": 196,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 5.3269288539886475,
+        "length": 20,
+        "nodes": 53688,
+        "harvestedLifts": 196,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 4.224542856216431,
+        "length": 20,
+        "nodes": 40988,
+        "harvestedLifts": 196,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 188,
+      "scramble": "U2 B U2 R2 L' F B2 U2 L2 B R U2 L' F2 U B F2 D' B D' R U L' R F' D F' L2 R' D2 B2 F' D' R' F' U'",
+      "cubejs": {
+        "ms": 7.084417104721069,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 2.9988350868225098,
+        "length": 24,
+        "nodes": 21821
+      },
+      "hbewFast": {
+        "ms": 2.6135001182556152,
+        "length": 20,
+        "nodes": 21819,
+        "harvestedLifts": 164,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 2.1108410358428955,
+        "length": 20,
+        "nodes": 21819,
+        "harvestedLifts": 164,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 6.127881050109863,
+        "length": 20,
+        "nodes": 43150,
+        "harvestedLifts": 231,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 189,
+      "scramble": "F2 L2 R' U2 L F2 U2 F' D' L' U' F2 R2 B' R2 D2 L2 B R2 F' R F' B L' R' U' R' U' L2 D L R' D L2 F L U' F B'",
+      "cubejs": {
+        "ms": 48.033499002456665,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 1.0966370105743408,
+        "length": 24,
+        "nodes": 3858
+      },
+      "hbewFast": {
+        "ms": 7.273768901824951,
+        "length": 22,
+        "nodes": 44260,
+        "harvestedLifts": 96,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 4.43373703956604,
+        "length": 22,
+        "nodes": 44260,
+        "harvestedLifts": 96,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 3.566443920135498,
+        "length": 22,
+        "nodes": 33720,
+        "harvestedLifts": 97,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 190,
+      "scramble": "D2 L2 D B U D' B2 R' L R' F2 B' F' D' U2 D B2 D2 U' D2 R D L2 D2 L2 R2 B' R' U F' R' B R2 L' B D' U'",
+      "cubejs": {
+        "ms": 21.196978092193604,
+        "length": 21
+      },
+      "cove3Dual": {
+        "ms": 3.6128740310668945,
+        "length": 23,
+        "nodes": 25665
+      },
+      "hbewFast": {
+        "ms": 1.5613229274749756,
+        "length": 21,
+        "nodes": 12553,
+        "harvestedLifts": 22,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 5.996570110321045,
+        "length": 21,
+        "nodes": 42944,
+        "harvestedLifts": 132,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 5.191247940063477,
+        "length": 21,
+        "nodes": 43222,
+        "harvestedLifts": 329,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 191,
+      "scramble": "D2 F2 D' F R U D' R2 F2 R D' R2 B' D2 B2 D2 L2 F2 L2 U2 R2 U F B' D2 U2 B2 D F' L R' F2 D F2",
+      "cubejs": {
+        "ms": 40.18527293205261,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 2.475266933441162,
+        "length": 22,
+        "nodes": 13348
+      },
+      "hbewFast": {
+        "ms": 3.6937460899353027,
+        "length": 21,
+        "nodes": 25914,
+        "harvestedLifts": 99,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 2.7286009788513184,
+        "length": 21,
+        "nodes": 25914,
+        "harvestedLifts": 99,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 3.155817985534668,
+        "length": 21,
+        "nodes": 28823,
+        "harvestedLifts": 117,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 192,
+      "scramble": "U R' F R2 D L' R2 B2 U2 L' B2 R U2 B R2 U D' L2 F' R' U2 L' D' U2 B' F' U F2 B2 F B R2 B F2 L U2 D F' L",
+      "cubejs": {
+        "ms": 11.771145820617676,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.5231277942657471,
+        "length": 22,
+        "nodes": 2324
+      },
+      "hbewFast": {
+        "ms": 5.9830100536346436,
+        "length": 21,
+        "nodes": 50157,
+        "harvestedLifts": 178,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 5.343940019607544,
+        "length": 21,
+        "nodes": 50157,
+        "harvestedLifts": 178,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 6.922863006591797,
+        "length": 21,
+        "nodes": 57232,
+        "harvestedLifts": 346,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 193,
+      "scramble": "F2 U2 L2 R F' L' B L2 R' U2 R U2 B L' U2 F2 D2 R2 F' L B2 F R' D B2 F' U' F",
+      "cubejs": {
+        "ms": 364.72387504577637,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 8.279613971710205,
+        "length": 25,
+        "nodes": 46252
+      },
+      "hbewFast": {
+        "ms": 3.7058558464050293,
+        "length": 21,
+        "nodes": 17264,
+        "harvestedLifts": 62,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 1.8119971752166748,
+        "length": 21,
+        "nodes": 17264,
+        "harvestedLifts": 62,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 1.8101768493652344,
+        "length": 21,
+        "nodes": 17264,
+        "harvestedLifts": 62,
+        "zeroSlackHits": 0
+      }
+    },
+    {
+      "trial": 194,
+      "scramble": "B F B' U' B2 R2 B' U2 B R F D L D R2 L' U2 D2 L B L R U D L' F' U2",
+      "cubejs": {
+        "ms": 14.594129085540771,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.6425697803497314,
+        "length": 22,
+        "nodes": 3718
+      },
+      "hbewFast": {
+        "ms": 5.526823043823242,
+        "length": 22,
+        "nodes": 54976,
+        "harvestedLifts": 38,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 11.421010971069336,
+        "length": 21,
+        "nodes": 97747,
+        "harvestedLifts": 413,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 8.382155895233154,
+        "length": 21,
+        "nodes": 81444,
+        "harvestedLifts": 483,
+        "zeroSlackHits": 1
+      }
+    },
+    {
+      "trial": 195,
+      "scramble": "D U2 R2 F2 L U' F' B2 R F' D' L2 F' R2 F2 D2 B' D' R2 B' D F2 R U F U' R' U2 L'",
+      "cubejs": {
+        "ms": 50.80677103996277,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 0.723121166229248,
+        "length": 23,
+        "nodes": 2279
+      },
+      "hbewFast": {
+        "ms": 2.1498122215270996,
+        "length": 20,
+        "nodes": 18701,
+        "harvestedLifts": 38,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 1.4266910552978516,
+        "length": 20,
+        "nodes": 18701,
+        "harvestedLifts": 38,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 10.040580034255981,
+        "length": 20,
+        "nodes": 67837,
+        "harvestedLifts": 228,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 196,
+      "scramble": "R' U F' U F R' L' R2 D2 B2 F' U2 D L2 F' R2 F2 D F L' U' D2 L D2 L2 B2 L B' R2",
+      "cubejs": {
+        "ms": 193.44477796554565,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 9.864557027816772,
+        "length": 25,
+        "nodes": 65680
+      },
+      "hbewFast": {
+        "ms": 7.18698787689209,
+        "length": 18,
+        "nodes": 41562,
+        "harvestedLifts": 247,
+        "zeroSlackHits": 2
+      },
+      "hbewDefault": {
+        "ms": 4.322005033493042,
+        "length": 18,
+        "nodes": 41562,
+        "harvestedLifts": 247,
+        "zeroSlackHits": 2
+      },
+      "hbewExact": {
+        "ms": 3.9507291316986084,
+        "length": 18,
+        "nodes": 36005,
+        "harvestedLifts": 247,
+        "zeroSlackHits": 2
+      }
+    },
+    {
+      "trial": 197,
+      "scramble": "R2 B2 F L' D' R' B R2 D2 U' F' R2 D2 B' R D2 B' R2 U L2 F",
+      "cubejs": {
+        "ms": 457.37483382225037,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 23.49839186668396,
+        "length": 23,
+        "nodes": 191699
+      },
+      "hbewFast": {
+        "ms": 4.083141088485718,
+        "length": 21,
+        "nodes": 44519,
+        "harvestedLifts": 18,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 3.5954341888427734,
+        "length": 20,
+        "nodes": 30454,
+        "harvestedLifts": 174,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 2.451266050338745,
+        "length": 20,
+        "nodes": 25033,
+        "harvestedLifts": 186,
+        "zeroSlackHits": 0
+      }
+    },
+    {
+      "trial": 198,
+      "scramble": "B F' L2 B2 R F2 R U' R2 U L2 U' F D2 B2 U D' U B2 D' L U' B U2",
+      "cubejs": {
+        "ms": 27.1547269821167,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 1.528743028640747,
+        "length": 23,
+        "nodes": 8697
+      },
+      "hbewFast": {
+        "ms": 2.4668471813201904,
+        "length": 21,
+        "nodes": 19261,
+        "harvestedLifts": 46,
+        "zeroSlackHits": 0
+      },
+      "hbewDefault": {
+        "ms": 11.39327096939087,
+        "length": 19,
+        "nodes": 87634,
+        "harvestedLifts": 342,
+        "zeroSlackHits": 0
+      },
+      "hbewExact": {
+        "ms": 10.379625082015991,
+        "length": 19,
+        "nodes": 89586,
+        "harvestedLifts": 633,
+        "zeroSlackHits": 3
+      }
+    },
+    {
+      "trial": 199,
+      "scramble": "U F2 U' L2 B2 L' U2 B2 L F' D' B D B R2 F B R' L2 U' L D B' R2 B2 F2 U'",
+      "cubejs": {
+        "ms": 81.37626910209656,
+        "length": 22
+      },
+      "cove3Dual": {
+        "ms": 2.3052449226379395,
+        "length": 23,
+        "nodes": 9007
+      },
+      "hbewFast": {
+        "ms": 2.6355888843536377,
+        "length": 21,
+        "nodes": 10644,
+        "harvestedLifts": 36,
+        "zeroSlackHits": 1
+      },
+      "hbewDefault": {
+        "ms": 8.152812004089355,
+        "length": 20,
+        "nodes": 49661,
+        "harvestedLifts": 250,
+        "zeroSlackHits": 1
+      },
+      "hbewExact": {
+        "ms": 6.630008935928345,
+        "length": 20,
+        "nodes": 53134,
+        "harvestedLifts": 405,
+        "zeroSlackHits": 2
+      }
+    }
+  ]
+}

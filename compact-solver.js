@@ -640,7 +640,657 @@
     if (rank(verified.cp) || verified.ep.some((p, i) => p !== i) || verified.co.some(Boolean) || verified.eo.some(Boolean)) throw new Error('Internal solution verification failed.');
     return { ...result, nodes, generatedNodes, skippedNodes, elapsedMs: now() - started, tableBytes: T.tableBytes, optimal: false };
   }
-  const api = { createModel, build, solve, rank, unrank, orientation, compileContours, compileCliqueSwar, compileCoboundaryH2, compileTables };
+  const readNib = (arr, idx) => (arr[idx >>> 1] >>> ((idx & 1) << 2)) & 15;
+  // Stage-3 Holonomy-Guided Bifurcated Eikonal Wavefront (HBEW) compiler.
+  // Builds ambient bundle transitions on Sym_8 and P(12,4), equatorial seam/funnel
+  // tables, K_2 coset-lift sister maps, and nibble-packed seam-conditioned
+  // two-regime Bellman phase-crossing potentials Psi_A(a, lastFace, r_1).
+  function compileHolonomy(T, report = () => {}, options = {}) {
+    const psiHorizon = options.psiHorizon ?? 2;
+    if (!Number.isInteger(psiHorizon) || psiHorizon < 1 || psiHorizon > 4) throw new Error('Invalid psiHorizon.');
+    const base = (T.co24 && T.h2Dict && T.expansion === 'dual') ? T : compileTables(T, report, { expansion: 'dual' });
+    if (base.holonomy && base.holonomy.psiHorizon === psiHorizon) return base;
+    report('Building ambient bundle transitions (Sym_8 & P(12,4))');
+    const moves = base.model.moves, phase2 = base.phase2;
+    const cpG = new Uint16Array(40320 * 18);
+    for (let c = 0; c < 40320; c++) {
+      const p = unrank(c, 8), cb = c * 18;
+      for (let m = 0; m < 18; m++) cpG[cb + m] = rank(moves[m].cp.map(i => p[i]));
+    }
+    const mInv = new Uint8Array(18);
+    for (let m = 0; m < 18; m++) {
+      const c1 = cpG[m];
+      let inv = -1;
+      for (let k = 0; k < 18; k++) if (cpG[c1 * 18 + k] === 0) { inv = k; break; }
+      if (inv < 0) throw new Error('Failed to invert ambient generator.');
+      mInv[m] = inv;
+    }
+    const invEp = moves.map(mv => {
+      const inv = new Uint8Array(12);
+      for (let slot = 0; slot < 12; slot++) inv[mv.ep[slot]] = slot;
+      return inv;
+    });
+    const tuple4ToIdx = new Int16Array(20736).fill(-1), idxToTuple4 = new Uint8Array(11880 * 4);
+    let tCount = 0;
+    for (let a = 0; a < 12; a++) for (let b = 0; b < 12; b++) if (b !== a)
+      for (let c = 0; c < 12; c++) if (c !== a && c !== b)
+        for (let d = 0; d < 12; d++) if (d !== a && d !== b && d !== c) {
+          tuple4ToIdx[((a * 12 + b) * 12 + c) * 12 + d] = tCount;
+          const o = tCount << 2;
+          idxToTuple4[o] = a; idxToTuple4[o + 1] = b; idxToTuple4[o + 2] = c; idxToTuple4[o + 3] = d;
+          tCount++;
+        }
+    const p12_4G = new Uint16Array(11880 * 18), esIdxToSp = new Int8Array(11880).fill(-1);
+    for (let idx = 0; idx < 11880; idx++) {
+      const o = idx << 2, a = idxToTuple4[o], b = idxToTuple4[o + 1], c = idxToTuple4[o + 2], d = idxToTuple4[o + 3], ib = idx * 18;
+      for (let m = 0; m < 18; m++) {
+        const inv = invEp[m];
+        p12_4G[ib + m] = tuple4ToIdx[((inv[a] * 12 + inv[b]) * 12 + inv[c]) * 12 + inv[d]];
+      }
+      if (a >= 8 && b >= 8 && c >= 8 && d >= 8) {
+        const arr = [0, 0, 0, 0];
+        arr[a - 8] = 0; arr[b - 8] = 1; arr[c - 8] = 2; arr[d - 8] = 3;
+        esIdxToSp[idx] = rank(arr);
+      }
+    }
+    const inP2 = new Uint8Array(18);
+    for (let j = 0; j < 10; j++) inP2[phase2[j]] = 1;
+    const nonHList = [];
+    for (let m = 0; m < 18; m++) if (!inP2[m]) nonHList.push(m);
+    if (nonHList.length !== 8) throw new Error('Expected 8 equatorial quarter-turn generators.');
+    const nonH = Uint8Array.from(nonHList);
+    const faceToJHalf = new Int8Array(6).fill(-1), fQuarterPos = new Int8Array(6).fill(-1), fQuarterNeg = new Int8Array(6).fill(-1);
+    const fPosBit = new Int32Array(6), fBothBits = new Int32Array(6), slEntryFace = new Int8Array(495).fill(-1);
+    let posQuarterSwarMask = 0, eqQuarterSwarMask = 0;
+    for (let f = 0; f < 6; f++) {
+      const qs = [];
+      for (let q = 0; q < 3; q++) if (!inP2[f * 3 + q]) qs.push(q);
+      if (qs.length === 2) {
+        const mPos = f * 3 + qs[0], mNeg = f * 3 + qs[1];
+        fQuarterPos[f] = mPos; fQuarterNeg[f] = mNeg;
+        fPosBit[f] = 1 << (f * 4 + qs[0]);
+        fBothBits[f] = (1 << (f * 4 + qs[0])) | (1 << (f * 4 + qs[1]));
+        posQuarterSwarMask |= fPosBit[f];
+        eqQuarterSwarMask |= fBothBits[f];
+        faceToJHalf[f] = phase2.findIndex(mi => Math.floor(mi / 3) === f);
+        const s1 = base.sl[base.sliceGoal * 18 + mPos];
+        if (base.sl[s1 * 18 + mPos] !== base.sliceGoal || base.sl[s1 * 18 + mNeg] !== base.sliceGoal) {
+          throw new Error('Equatorial UD-slice funnel invariant violated.');
+        }
+        slEntryFace[s1] = f;
+      }
+    }
+    const slDist2 = new Uint8Array(495), slDist2Mask = new Uint8Array(495);
+    for (let s = 0; s < 495; s++) {
+      let mask = 0;
+      for (let m = 0; m < 18; m++) {
+        if (slEntryFace[base.sl[s * 18 + m]] >= 0) {
+          slDist2[s] = 1;
+          const fm = Math.floor(m / 3);
+          mask |= 1;
+          for (let last = 0; last < 6; last++) if (allowed(fm, last)) mask |= 1 << (last + 1);
+        }
+      }
+      slDist2Mask[s] = mask;
+    }
+    const seamAllowed2 = new Uint16Array(7);
+    seamAllowed2[0] = 1023;
+    for (let f = 0; f < 6; f++) {
+      let mask = 0;
+      for (let j = 0; j < 10; j++) if (Math.floor(phase2[j] / 3) !== f) mask |= 1 << j;
+      seamAllowed2[f + 1] = mask;
+    }
+    const movesByFace2 = Array.from({ length: 6 }, () => []);
+    for (let j = 0; j < 10; j++) movesByFace2[Math.floor(phase2[j] / 3)].push(j);
+    function buildCanonicalPsi(trans18, size, goalIdx) {
+      const d2Canon = new Uint8Array(size * 6).fill(255);
+      const q = new Int32Array(size * 6);
+      let head = 0, tail = 0;
+      for (let f = 0; f < 6; f++) { d2Canon[goalIdx * 6 + f] = 0; q[tail++] = goalIdx * 6 + f; }
+      while (head < tail) {
+        const key = q[head++], v = Math.floor(key / 6), fv = key - v * 6, nd = d2Canon[key] + 1;
+        for (const j of movesByFace2[fv]) {
+          const u = trans18[v * 18 + mInv[phase2[j]]], ub = u * 6;
+          for (let last = 0; last < 6; last++) {
+            if (allowed(fv, last) && d2Canon[ub + last] === 255) {
+              d2Canon[ub + last] = nd;
+              q[tail++] = ub + last;
+            }
+          }
+        }
+      }
+      const raw = new Uint8Array((psiHorizon + 1) * size * 6).fill(255);
+      const fBest = new Uint8Array(6);
+      for (let u = 0; u < size; u++) {
+        if (d2Canon[u * 6] === 255 && d2Canon[u * 6 + 1] === 255) continue;
+        if (u === goalIdx) { for (let f = 0; f < 6; f++) raw[u * 6 + f] = 0; continue; }
+        fBest.fill(255);
+        for (let fv = 0; fv < 6; fv++) {
+          let b = 255;
+          for (const j of movesByFace2[fv]) {
+            const dNext = d2Canon[trans18[u * 18 + phase2[j]] * 6 + fv];
+            if (dNext < 255 && dNext + 1 < b) b = dNext + 1;
+          }
+          fBest[fv] = b;
+        }
+        for (let fEntry = 0; fEntry < 6; fEntry++) {
+          let b = 255;
+          for (let fv = 0; fv < 6; fv++) if (fv !== fEntry && fBest[fv] < b) b = fBest[fv];
+          raw[u * 6 + fEntry] = b;
+        }
+      }
+      for (let u = 0; u < size; u++) {
+        const ub = u * 18, outBase = size * 6 + u * 6;
+        for (let last = 0; last < 6; last++) {
+          let best = 255;
+          for (let k = 0; k < 8; k++) {
+            const m = nonH[k], fm = Math.floor(m / 3);
+            if (!allowed(fm, last)) continue;
+            const val = raw[trans18[ub + m] * 6 + fm];
+            if (val < best) best = val;
+          }
+          raw[outBase + last] = best;
+        }
+      }
+      const fMin = new Uint8Array(6);
+      for (let r = 2; r <= psiHorizon; r++) {
+        const prevOff = (r - 1) * size * 6, curOff = r * size * 6;
+        for (let u = 0; u < size; u++) {
+          const ub = u * 18, outBase = curOff + u * 6;
+          for (let fm = 0; fm < 6; fm++) {
+            const m0 = fm * 3;
+            let b = raw[prevOff + trans18[ub + m0] * 6 + fm];
+            const b1 = raw[prevOff + trans18[ub + m0 + 1] * 6 + fm]; if (b1 < b) b = b1;
+            const b2 = raw[prevOff + trans18[ub + m0 + 2] * 6 + fm]; if (b2 < b) b = b2;
+            fMin[fm] = b;
+          }
+          for (let last = 0; last < 6; last++) {
+            let best = 255;
+            for (let fm = 0; fm < 6; fm++) if (allowed(fm, last) && fMin[fm] < best) best = fMin[fm];
+            raw[outBase + last] = best;
+          }
+        }
+      }
+      const packed = new Uint8Array(raw.length >>> 1);
+      for (let i = 0; i < packed.length; i++) {
+        const lo = raw[i * 2] < 15 ? raw[i * 2] : 15;
+        const hi = raw[i * 2 + 1] < 15 ? raw[i * 2 + 1] : 15;
+        packed[i] = lo | (hi << 4);
+      }
+      return packed;
+    }
+    report('Compiling two-regime phase-crossing Bellman potentials');
+    const goalEU = tuple4ToIdx[((0 * 12 + 1) * 12 + 2) * 12 + 3];
+    const goalED = tuple4ToIdx[((4 * 12 + 5) * 12 + 6) * 12 + 7];
+    const goalES = tuple4ToIdx[((8 * 12 + 9) * 12 + 10) * 12 + 11];
+    const cPsiC = buildCanonicalPsi(cpG, 40320, 0);
+    const cPsiEU = buildCanonicalPsi(p12_4G, 11880, goalEU);
+    const cPsiED = buildCanonicalPsi(p12_4G, 11880, goalED);
+    const cPsiES = buildCanonicalPsi(p12_4G, 11880, goalES);
+    const holonomy = {
+      psiHorizon, cpG, p12_4G, tuple4ToIdx, idxToTuple4, esIdxToSp, mInv, nonH,
+      faceToJHalf, fQuarterPos, fQuarterNeg, fPosBit, fBothBits,
+      posQuarterSwarMask, eqQuarterSwarMask, slEntryFace, slDist2, slDist2Mask, seamAllowed2,
+      goalEU, goalED, goalES, cPsiC, cPsiEU, cPsiED, cPsiES,
+    };
+    let holonomyBytes = 0;
+    for (const key of Object.keys(holonomy)) {
+      const val = holonomy[key];
+      if (val && val.byteLength) holonomyBytes += val.byteLength;
+    }
+    return { ...base, holonomy, holonomyBytes, holonomyTotalBytes: base.tableBytes + holonomyBytes };
+  }
+  function solveHolonomy(T, stickers, options = {}) {
+    if (!T.holonomy) T = compileHolonomy(T);
+    const H = T.holonomy, start = T.model.decode(stickers), now = () => performance.now();
+    const started = now(), deadline = started + (options.timeoutMs ?? 30000), maxNodes = options.maxNodes ?? 20000000;
+    const report = options.report || (() => {});
+    if (now() >= deadline) throw new Error('Search time budget reached; no solution is being claimed.');
+    const maxD1Cap = options.maxD1Cap ?? 11;
+    const maxDeltaD1 = options.maxDeltaD1 ?? 2;
+    const targetBound = options.targetBound ?? 20;
+    const fallbackBound = options.fallbackBound ?? (targetBound > 0 ? 22 : 30);
+    const useFunnel = options.useFunnel !== false;
+    const useSisterPairing = useFunnel && options.useSisterPairing !== false;
+    const usePsi = useFunnel && options.usePsi !== false;
+    const useZeroSlackSieve = options.useZeroSlackSieve !== false;
+    const useStratified = options.useStratified !== false;
+    const collectSampleFibers = Boolean(options.collectSampleFibers);
+    const enterDepth = usePsi ? Math.min(2, H.psiHorizon) : 1;
+
+    const cpG = H.cpG, p12_4G = H.p12_4G, idxToTuple4 = H.idxToTuple4, esIdxToSp = H.esIdxToSp;
+    const slEntryFace = H.slEntryFace, slDist2 = H.slDist2, slDist2Mask = H.slDist2Mask, seamAllowed2 = H.seamAllowed2;
+    const faceToJHalf = H.faceToJHalf, fQuarterPos = H.fQuarterPos, fQuarterNeg = H.fQuarterNeg;
+    const fPosBit = H.fPosBit, fBothBits = H.fBothBits;
+    const cPsiC = H.cPsiC, cPsiEU = H.cPsiEU, cPsiED = H.cPsiED, cPsiES = H.cPsiES;
+    const allowed2 = T.allowed2, face2 = T.face2;
+
+    let nodes = 0, p1Nodes = 0, p2Nodes = 0, harvestedLifts = 0, sisterLifts = 0, psiPruned = 0, zeroSlackHits = 0;
+    let bestB = 31, bestResult = null, stoppedAtTarget = false;
+    const path1 = [], path2 = [], epScratch = new Uint8Array(8), sampleFibers = [];
+
+    function checkpoint() {
+      if (now() >= deadline) throw new Error('Search time budget reached; no solution is being claimed.');
+      if ((nodes & 65535) === 0) report({ nodes, bestBound: bestB < 31 ? bestB : null, elapsedMs: now() - started });
+    }
+    function stepP1() {
+      nodes++; p1Nodes++;
+      if (nodes > maxNodes) throw new Error('Search node budget reached; no solution is being claimed.');
+      if ((nodes & 2047) === 0) checkpoint();
+    }
+    function stepP2() {
+      nodes++; p2Nodes++;
+      if (nodes > maxNodes) throw new Error('Search node budget reached; no solution is being claimed.');
+      if ((nodes & 2047) === 0) checkpoint();
+    }
+    function dist1(A, a, s, arr) {
+      let d = 0;
+      while (a !== 0 || s !== T.sliceGoal) {
+        const w = read24(arr, a * 495 + s), mDown = w & (((w >>> 3) & 0x111111) * 7);
+        const pos = 31 - Math.clz32(mDown & -mDown), mi = pos - (pos >>> 2);
+        a = A[a * 18 + mi]; s = T.sl[s * 18 + mi]; d++;
+      }
+      return d;
+    }
+    function dist2(A, a, s, ids) {
+      let d = 0;
+      while (a !== 0 || s !== 0) {
+        const mDown = T.h2Dict[ids[a * 24 + s]] & 1023, j = 31 - Math.clz32(mDown & -mDown);
+        a = A[a * 10 + j]; s = T.sp[s * 10 + j]; d++;
+      }
+      return d;
+    }
+    function rankEp8(uIdx, dIdx) {
+      const uo = uIdx << 2, do_ = dIdx << 2;
+      epScratch[idxToTuple4[uo]] = 0; epScratch[idxToTuple4[uo + 1]] = 1;
+      epScratch[idxToTuple4[uo + 2]] = 2; epScratch[idxToTuple4[uo + 3]] = 3;
+      epScratch[idxToTuple4[do_]] = 4; epScratch[idxToTuple4[do_ + 1]] = 5;
+      epScratch[idxToTuple4[do_ + 2]] = 6; epScratch[idxToTuple4[do_ + 3]] = 7;
+      let r = 0, seen = 0;
+      for (let i = 7; i >= 0; i--) {
+        const pi = epScratch[i];
+        r += popcount(seen & ((1 << pi) - 1)) * factorial[7 - i];
+        seen |= 1 << pi;
+      }
+      return r;
+    }
+    function dfs2(c, e, s, left, dc, de, cw, ew, cand) {
+      stepP2();
+      const cb = c * 10, eb = e * 10, sb = s * 10, nl = left - 1;
+      if (nl === 0) {
+        while (cand) {
+          const bit = cand & -cand; cand &= cand - 1;
+          const j = 31 - Math.clz32(bit);
+          if (T.cp[cb + j] === 0 && T.ep[eb + j] === 0 && T.sp[sb + j] === 0) { path2.push(T.phase2[j]); return true; }
+        }
+        return false;
+      }
+      const dict = T.h2Dict, cpIds = T.cpSp, epIds = T.epSp;
+      while (cand) {
+        const bit = cand & -cand; cand &= cand - 1;
+        const j = 31 - Math.clz32(bit), f = face2[j], af = allowed2[f + 1];
+        const ns = T.sp[sb + j], nc = T.cp[cb + j], ncw = dict[cpIds[nc * 24 + ns]];
+        const ndc = dc - ((cw & bit) ? 1 : 0) + (((cw >>> 10) & bit) ? 0 : 1), sc = nl - ndc;
+        const mc1 = af & (sc >= 2 ? 1023 : sc === 1 ? ((ncw >>> 10) & 1023) : (ncw & 1023));
+        if (!mc1) continue;
+        const ne = T.ep[eb + j], new_ = dict[epIds[ne * 24 + ns]];
+        const nde = de - ((ew & bit) ? 1 : 0) + (((ew >>> 10) & bit) ? 0 : 1), se = nl - nde;
+        let ncand = mc1 & (se >= 2 ? 1023 : se === 1 ? ((new_ >>> 10) & 1023) : (new_ & 1023));
+        if (!ncand) continue;
+        if (nl >= 2) {
+          if (sc === 0) ncand &= (ncw >>> 20) & 1023;
+          if (se === 0) ncand &= (new_ >>> 20) & 1023;
+          if (!ncand) continue;
+        }
+        path2.push(T.phase2[j]);
+        if (dfs2(nc, ne, ns, nl, ndc, nde, ncw, new_, ncand)) return true;
+        path2.pop();
+      }
+      return false;
+    }
+    function runPhase2AtDepth(cp, ep, sp, dc0, de0, cw, ew, depth, lastFace) {
+      if (depth === 0) {
+        stepP2();
+        path2.length = 0;
+        return cp === 0 && ep === 0 && sp === 0;
+      }
+      const sc = depth - dc0, se = depth - de0;
+      const seamMask = lastFace < 0 ? 1023 : seamAllowed2[lastFace + 1];
+      let cand = seamMask
+        & (sc >= 2 ? 1023 : sc === 1 ? ((cw >>> 10) & 1023) : (cw & 1023))
+        & (se >= 2 ? 1023 : se === 1 ? ((ew >>> 10) & 1023) : (ew & 1023));
+      if (depth >= 2) {
+        if (sc === 0) cand &= (cw >>> 20) & 1023;
+        if (se === 0) cand &= (ew >>> 20) & 1023;
+      }
+      if (!cand) return false;
+      path2.length = 0;
+      return dfs2(cp, ep, sp, depth, dc0, de0, cw, ew, cand);
+    }
+
+    const co0 = orientation(start.co, 3), eo0 = orientation(start.eo, 2), sl0 = T.slice(start.ep);
+    const cp0 = rank(start.cp);
+    const pos = new Uint8Array(12);
+    for (let slot = 0; slot < 12; slot++) pos[start.ep[slot]] = slot;
+    const eu0 = H.tuple4ToIdx[((pos[0] * 12 + pos[1]) * 12 + pos[2]) * 12 + pos[3]];
+    const ed0 = H.tuple4ToIdx[((pos[4] * 12 + pos[5]) * 12 + pos[6]) * 12 + pos[7]];
+    const es0 = H.tuple4ToIdx[((pos[8] * 12 + pos[9]) * 12 + pos[10]) * 12 + pos[11]];
+
+    const cw0 = read24(T.co24, co0 * 495 + sl0), ew0 = read24(T.eo24, eo0 * 495 + sl0);
+    const dco0 = dist1(T.co, co0, sl0, T.co24), deo0 = dist1(T.eo, eo0, sl0, T.eo24);
+    const h1_0 = dco0 > deo0 ? dco0 : deo0;
+
+    const buckets = Array.from({ length: 32 }, () => Array.from({ length: 19 }, () => []));
+    let foundAnyInShell = false;
+
+    function recordSample(d1, h2, fEntry, solvedB) {
+      if (!collectSampleFibers) return;
+      if (solvedB > 0) {
+        sampleFibers.push({ d1, h2, fEntry, solvedB, winner: true });
+      } else if (sampleFibers.length < 18) {
+        sampleFibers.push({ d1, h2, fEntry, solvedB: 0, winner: false });
+      }
+    }
+    function processLift(d1, lastFace, p1Copy, cp, ep, sp, dc, de, cw, ew) {
+      harvestedLifts++;
+      const h2 = dc > de ? dc : de, b0 = d1 + h2;
+      if (b0 >= bestB) return;
+      recordSample(d1, h2, lastFace, 0);
+      if (useZeroSlackSieve) {
+        if (runPhase2AtDepth(cp, ep, sp, dc, de, cw, ew, h2, lastFace)) {
+          bestB = b0;
+          bestResult = { moves: p1Copy.concat(path2), split: d1, winnerH2: h2, winnerSlack: 0 };
+          zeroSlackHits++;
+          recordSample(d1, h2, lastFace, b0);
+          if (bestB <= targetBound) stoppedAtTarget = true;
+          return;
+        }
+        if (b0 + 1 < bestB && h2 + 1 <= 18) {
+          buckets[b0 + 1][useStratified ? 1 : 0].push({ p1: p1Copy, cp, ep, sp, dc, de, cw, ew, d1, h2, lastFace, depth2: h2 + 1 });
+        }
+      } else if (h2 <= 18) {
+        buckets[b0][0].push({ p1: p1Copy, cp, ep, sp, dc, de, cw, ew, d1, h2, lastFace, depth2: h2 });
+      }
+    }
+
+    function harvestUpper(co, eo, sl, left, d1, last, dc, de, cw, ew, cand) {
+      if (bestB <= targetBound) { stoppedAtTarget = true; return; }
+      if (bestB - 1 - d1 < 0) return;
+      if (left <= enterDepth) {
+        const curR2Max = bestB - 1 - d1;
+        let c = cp0;
+        for (let i = 0; i < path1.length; i++) c = cpG[c * 18 + path1[i]];
+        if (usePsi && last >= 0 && curR2Max < 15 && readNib(cPsiC, (left * 40320 + c) * 6 + last) > curR2Max) { psiPruned++; return; }
+        let u = -1, d = -1, s = -1;
+        if (!useSisterPairing || (usePsi && curR2Max <= 6)) {
+          u = eu0; d = ed0; s = es0;
+          for (let i = 0; i < path1.length; i++) {
+            const m = path1[i];
+            u = p12_4G[u * 18 + m]; d = p12_4G[d * 18 + m]; s = p12_4G[s * 18 + m];
+          }
+          if (usePsi && last >= 0 && curR2Max <= 6 && (
+            readNib(cPsiEU, (left * 11880 + u) * 6 + last) > curR2Max ||
+            readNib(cPsiED, (left * 11880 + d) * 6 + last) > curR2Max ||
+            readNib(cPsiES, (left * 11880 + s) * 6 + last) > curR2Max
+          )) { psiPruned++; return; }
+        }
+        harvestLower(co, eo, sl, c, u, d, s, left, d1, last, dc, de, cw, ew, cand);
+        return;
+      }
+      stepP1();
+      const nl = left - 1, co24 = T.co24, eo24 = T.eo24;
+      while (cand) {
+        if (bestB <= targetBound) { stoppedAtTarget = true; return; }
+        if (bestB - 1 - d1 < 0) return;
+        const bit = cand & -cand; cand &= cand - 1;
+        const posBit = 31 - Math.clz32(bit), f = posBit >>> 2, q = posBit & 3, mi = posBit - f, shift = f * 4, af = allowed1Swar[f + 1];
+        const nsl = T.sl[sl * 18 + mi];
+        if (useFunnel && nl === 2 && !(slDist2Mask[nsl] & (1 << (f + 1)))) continue;
+        if (useFunnel && nl === 1 && slEntryFace[nsl] < 0) continue;
+        const cnib = (cw >>> shift) & 15, ndc = dc + 1 - ((cnib >>> 3) & 1) - ((cnib >>> q) & 1);
+        const nco = T.co[co * 18 + mi], ncw = read24(co24, nco * 495 + nsl);
+        let mc = af & swarMask(ncw, nl - ndc);
+        if (nl === 1 && useFunnel) {
+          const ef = slEntryFace[nsl];
+          mc &= useSisterPairing ? fPosBit[ef] : fBothBits[ef];
+        }
+        if (!mc) continue;
+        const enib = (ew >>> shift) & 15, nde = de + 1 - ((enib >>> 3) & 1) - ((enib >>> q) & 1);
+        const neo = T.eo[eo * 18 + mi], new_ = read24(eo24, neo * 495 + nsl);
+        const ncand = mc & swarMask(new_, nl - nde);
+        if (!ncand) continue;
+        path1.push(mi);
+        harvestUpper(nco, neo, nsl, nl, d1, f, ndc, nde, ncw, new_, ncand);
+        path1.pop();
+      }
+    }
+
+    function harvestLower(co, eo, sl, cp, eu, ed, es, left, d1, last, dc, de, cw, ew, cand) {
+      if (bestB <= targetBound) { stoppedAtTarget = true; return; }
+      if (bestB - 1 - d1 < 0) return;
+      stepP1();
+      const nl = left - 1;
+      if (nl === 0) {
+        if (useSisterPairing) {
+          const f = slEntryFace[sl];
+          if (f < 0 || !(cand & fPosBit[f])) return;
+          const miPos = fQuarterPos[f], miNeg = fQuarterNeg[f];
+          if (T.co[co * 18 + miPos] !== 0 || T.eo[eo * 18 + miPos] !== 0) return;
+          foundAnyInShell = true;
+          const curR2Max = bestB - 1 - d1;
+          if (curR2Max < 0) return;
+
+          const cpP = cpG[cp * 18 + miPos], jHalf = faceToJHalf[f], bitHalf = 1 << jHalf, cpM = T.cp[cpP * 10 + jHalf];
+          const pOkC = !usePsi || curR2Max >= 15 || readNib(cPsiC, cpP * 6 + f) <= curR2Max;
+          const mOkC = !usePsi || curR2Max >= 15 || readNib(cPsiC, cpM * 6 + f) <= curR2Max;
+          if (!pOkC && !mOkC) { psiPruned += 2; return; }
+
+          let u = eu, d = ed, s = es;
+          if (u < 0) {
+            u = eu0; d = ed0; s = es0;
+            for (let i = 0; i < path1.length; i++) {
+              const m = path1[i];
+              u = p12_4G[u * 18 + m]; d = p12_4G[d * 18 + m]; s = p12_4G[s * 18 + m];
+            }
+          }
+          const esP = p12_4G[s * 18 + miPos], spP = esIdxToSp[esP];
+          const dcP = dist2(T.cp, cpP, spP, T.cpSp);
+          const cwP = T.h2Dict[T.cpSp[cpP * 24 + spP]];
+          const dcM = dcP - ((cwP & bitHalf) ? 1 : 0) + (((cwP >>> 10) & bitHalf) ? 0 : 1);
+          if ((!pOkC || dcP > curR2Max) && (!mOkC || dcM > curR2Max)) { psiPruned += 2; return; }
+
+          const euP = p12_4G[u * 18 + miPos], edP = p12_4G[d * 18 + miPos];
+          const epP = rankEp8(euP, edP);
+          const deP = dist2(T.ep, epP, spP, T.epSp);
+          const ewP = T.h2Dict[T.epSp[epP * 24 + spP]];
+          const deM = deP - ((ewP & bitHalf) ? 1 : 0) + (((ewP >>> 10) & bitHalf) ? 0 : 1);
+          sisterLifts++;
+
+          const limP = bestB - 1 - d1;
+          if (pOkC && dcP <= limP && deP <= limP) {
+            if (!usePsi || limP > 6 || (
+              readNib(cPsiEU, euP * 6 + f) <= limP &&
+              readNib(cPsiED, edP * 6 + f) <= limP &&
+              readNib(cPsiES, esP * 6 + f) <= limP
+            )) {
+              processLift(d1, f, path1.concat(miPos), cpP, epP, spP, dcP, deP, cwP, ewP);
+            } else psiPruned++;
+          } else if (!pOkC) psiPruned++;
+
+          const limM = bestB - 1 - d1;
+          if (mOkC && dcM <= limM && deM <= limM) {
+            if (usePsi && limM < 15 && readNib(cPsiC, cpM * 6 + f) > limM) { psiPruned++; return; }
+            if (usePsi && limM <= 6 && (
+              readNib(cPsiEU, p12_4G[u * 18 + miNeg] * 6 + f) > limM ||
+              readNib(cPsiED, p12_4G[d * 18 + miNeg] * 6 + f) > limM ||
+              readNib(cPsiES, p12_4G[s * 18 + miNeg] * 6 + f) > limM
+            )) { psiPruned++; return; }
+            const epM = T.ep[epP * 10 + jHalf], spM = T.sp[spP * 10 + jHalf];
+            const cwM = T.h2Dict[T.cpSp[cpM * 24 + spM]], ewM = T.h2Dict[T.epSp[epM * 24 + spM]];
+            processLift(d1, f, path1.concat(miNeg), cpM, epM, spM, dcM, deM, cwM, ewM);
+          } else if (!mOkC) psiPruned++;
+          return;
+        }
+        while (cand) {
+          if (bestB <= targetBound) { stoppedAtTarget = true; return; }
+          const bit = cand & -cand; cand &= cand - 1;
+          const posBit = 31 - Math.clz32(bit), f = posBit >>> 2, mi = posBit - f;
+          if (T.co[co * 18 + mi] !== 0 || T.eo[eo * 18 + mi] !== 0 || T.sl[sl * 18 + mi] !== T.sliceGoal) continue;
+          foundAnyInShell = true;
+          const lim = bestB - 1 - d1;
+          if (lim < 0) return;
+          const cp1 = cpG[cp * 18 + mi], eu1 = p12_4G[eu * 18 + mi], ed1 = p12_4G[ed * 18 + mi], es1 = p12_4G[es * 18 + mi];
+          if (usePsi && lim < 15 && (
+            readNib(cPsiC, cp1 * 6 + f) > lim ||
+            (lim <= 6 && (
+              readNib(cPsiEU, eu1 * 6 + f) > lim ||
+              readNib(cPsiED, ed1 * 6 + f) > lim ||
+              readNib(cPsiES, es1 * 6 + f) > lim
+            ))
+          )) { psiPruned++; continue; }
+          const sp1 = esIdxToSp[es1], dc1 = dist2(T.cp, cp1, sp1, T.cpSp);
+          if (dc1 > lim) continue;
+          const ep1 = rankEp8(eu1, ed1), de1 = dist2(T.ep, ep1, sp1, T.epSp);
+          if (de1 > lim) continue;
+          const cw1 = T.h2Dict[T.cpSp[cp1 * 24 + sp1]], ew1 = T.h2Dict[T.epSp[ep1 * 24 + sp1]];
+          processLift(d1, f, path1.concat(mi), cp1, ep1, sp1, dc1, de1, cw1, ew1);
+        }
+        return;
+      }
+
+      const co24 = T.co24, eo24 = T.eo24, cOff = nl * 40320, eOff = nl * 11880;
+      while (cand) {
+        if (bestB <= targetBound) { stoppedAtTarget = true; return; }
+        const curR2Max = bestB - 1 - d1;
+        if (curR2Max < 0) return;
+        const bit = cand & -cand; cand &= cand - 1;
+        const posBit = 31 - Math.clz32(bit), f = posBit >>> 2, q = posBit & 3, mi = posBit - f, shift = f * 4, af = allowed1Swar[f + 1];
+        const nsl = T.sl[sl * 18 + mi];
+        if (useFunnel && nl === 2 && !(slDist2Mask[nsl] & (1 << (f + 1)))) continue;
+        const ef = (useFunnel && nl === 1) ? slEntryFace[nsl] : -1;
+        if (useFunnel && nl === 1 && ef < 0) continue;
+        const cnib = (cw >>> shift) & 15, ndc = dc + 1 - ((cnib >>> 3) & 1) - ((cnib >>> q) & 1);
+        const nco = T.co[co * 18 + mi], ncw = read24(co24, nco * 495 + nsl);
+        let mc = af & swarMask(ncw, nl - ndc);
+        if (useFunnel && nl === 1) mc &= useSisterPairing ? fPosBit[ef] : fBothBits[ef];
+        if (!mc) continue;
+        const enib = (ew >>> shift) & 15, nde = de + 1 - ((enib >>> 3) & 1) - ((enib >>> q) & 1);
+        const neo = T.eo[eo * 18 + mi], new_ = read24(eo24, neo * 495 + nsl);
+        const ncand = mc & swarMask(new_, nl - nde);
+        if (!ncand) continue;
+
+        const ncp = cpG[cp * 18 + mi];
+        if (usePsi && curR2Max < 15 && readNib(cPsiC, (cOff + ncp) * 6 + f) > curR2Max) { psiPruned++; continue; }
+        let neu = -1, ned = -1, nes = -1;
+        if (eu >= 0) {
+          neu = p12_4G[eu * 18 + mi]; ned = p12_4G[ed * 18 + mi]; nes = p12_4G[es * 18 + mi];
+          if (usePsi && curR2Max <= 6 && (
+            readNib(cPsiEU, (eOff + neu) * 6 + f) > curR2Max ||
+            readNib(cPsiED, (eOff + ned) * 6 + f) > curR2Max ||
+            readNib(cPsiES, (eOff + nes) * 6 + f) > curR2Max
+          )) { psiPruned++; continue; }
+        }
+
+        path1.push(mi);
+        harvestLower(nco, neo, nsl, ncp, neu, ned, nes, nl, d1, f, ndc, nde, ncw, new_, ncand);
+        path1.pop();
+      }
+    }
+
+    function drainBucketsUpTo(limitB, limitSlack) {
+      const maxSlk = useStratified ? limitSlack : 0;
+      for (let B = 0; B <= limitB && B < bestB; B++) {
+        if (bestB <= targetBound) { stoppedAtTarget = true; return; }
+        for (let slk = 0; slk <= maxSlk && B < bestB; slk++) {
+          const b = buckets[B][slk];
+          while (b.length > 0 && B < bestB) {
+            if (bestB <= targetBound) { stoppedAtTarget = true; return; }
+            const item = b.pop();
+            if (runPhase2AtDepth(item.cp, item.ep, item.sp, item.dc, item.de, item.cw, item.ew, item.depth2, item.lastFace)) {
+              bestB = B;
+              bestResult = { moves: item.p1.concat(path2), split: item.d1, winnerH2: item.h2, winnerSlack: item.depth2 - item.h2 };
+              recordSample(item.d1, item.h2, item.lastFace, B);
+              if (bestB <= targetBound) stoppedAtTarget = true;
+              break;
+            }
+            if (B + 1 < bestB && item.depth2 + 1 <= 18) {
+              item.depth2++;
+              buckets[B + 1][useStratified ? slk + 1 : 0].push(item);
+            }
+          }
+        }
+      }
+    }
+
+    let firstValidD1 = -1, searchedMaxD1 = 0, effectiveCap = maxD1Cap, effectiveDelta = maxDeltaD1;
+    if (h1_0 === 0 && co0 === 0 && eo0 === 0 && sl0 === T.sliceGoal) {
+      firstValidD1 = 0;
+      const sp0 = esIdxToSp[es0], ep0 = rankEp8(eu0, ed0);
+      const dc0_2 = dist2(T.cp, cp0, sp0, T.cpSp), de0_2 = dist2(T.ep, ep0, sp0, T.epSp);
+      const cw0_2 = T.h2Dict[T.cpSp[cp0 * 24 + sp0]], ew0_2 = T.h2Dict[T.epSp[ep0 * 24 + sp0]];
+      processLift(0, -1, [], cp0, ep0, sp0, dc0_2, de0_2, cw0_2, ew0_2);
+    }
+
+    for (let d1 = Math.max(1, h1_0); d1 <= 12; d1++) {
+      if (bestB <= targetBound) { stoppedAtTarget = true; break; }
+      if (firstValidD1 >= 0) {
+        if (useStratified && targetBound > 0) drainBucketsUpTo(bestB - 1, 2);
+        if (bestB <= targetBound) { stoppedAtTarget = true; break; }
+        let maxShell = Math.max(firstValidD1, Math.min(effectiveCap, firstValidD1 + effectiveDelta));
+        if (d1 > maxShell && d1 === maxShell + 1 && d1 <= 12 && d1 < bestB && fallbackBound < 30) {
+          drainBucketsUpTo(Math.min(bestB - 1, fallbackBound), 18);
+          if (bestB <= targetBound) { stoppedAtTarget = true; break; }
+          if (bestB > fallbackBound) {
+            effectiveCap = 12;
+            effectiveDelta = maxDeltaD1 + 1;
+            maxShell = Math.max(firstValidD1, Math.min(effectiveCap, firstValidD1 + effectiveDelta));
+          }
+        }
+        if (d1 > maxShell || d1 >= bestB) break;
+      }
+      report({ phase1Depth: d1, nodes, bestBound: bestB < 31 ? bestB : null, elapsedMs: now() - started });
+      searchedMaxD1 = d1;
+      if (useFunnel && d1 === 2 && !(slDist2Mask[sl0] & 1)) continue;
+      foundAnyInShell = false;
+      path1.length = 0;
+      let cand0 = swarMask(cw0, d1 - dco0) & swarMask(ew0, d1 - deo0);
+      if (d1 === 1 && useFunnel) cand0 &= useSisterPairing ? H.posQuarterSwarMask : H.eqQuarterSwarMask;
+      if (!cand0) continue;
+      harvestUpper(co0, eo0, sl0, d1, d1, -1, dco0, deo0, cw0, ew0, cand0);
+      if (firstValidD1 < 0 && (foundAnyInShell || bestResult)) firstValidD1 = d1;
+    }
+
+    if (!stoppedAtTarget) drainBucketsUpTo(bestB - 1, 18);
+    if (!bestResult) throw new Error('Bounded search exhausted its candidates; no solution is being claimed.');
+    let verified = start;
+    for (const mi of bestResult.moves) verified = T.model.turn(verified, mi);
+    if (rank(verified.cp) || verified.ep.some((p, i) => p !== i) || verified.co.some(Boolean) || verified.eo.some(Boolean)) {
+      throw new Error('Internal solution verification failed.');
+    }
+    return {
+      moves: bestResult.moves,
+      split: bestResult.split,
+      winnerH2: bestResult.winnerH2,
+      winnerSlack: bestResult.winnerSlack,
+      nodes,
+      p1Nodes,
+      p2Nodes,
+      harvestedLifts,
+      sisterLifts,
+      psiPruned,
+      zeroSlackHits,
+      firstValidD1,
+      searchedMaxD1,
+      elapsedMs: now() - started,
+      tableBytes: T.tableBytes,
+      holonomyBytes: T.holonomyBytes,
+      holonomyTotalBytes: T.holonomyTotalBytes,
+      optimalInShells: !stoppedAtTarget,
+      optimal: bestResult.moves.length === 0,
+      ...(collectSampleFibers ? { sampleFibers } : {}),
+    };
+  }
+  const api = { createModel, build, solve, rank, unrank, orientation, compileContours, compileCliqueSwar, compileCoboundaryH2, compileTables, compileHolonomy, solveHolonomy };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.CompactSolver = api;
 })(globalThis);

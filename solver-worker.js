@@ -1,6 +1,6 @@
 'use strict';
-importScripts('compact-solver.js?v=dual-v2');
-let tables, compareSuite;
+importScripts('compact-solver.js?v=hbew-v3');
+let tables, holoTables, compareSuite;
 onmessage = ({ data }) => {
   try {
     if (data.action === 'compare') {
@@ -45,6 +45,83 @@ onmessage = ({ data }) => {
       postMessage({ type: 'comparison', stages });
       return;
     }
+
+    if (data.action === 'compareSolvers') {
+      if (!tables || tables.expansion === 'scalar') {
+        postMessage({ type: 'progress', stage: 'Building Dual-Horizon tables…' });
+        const raw = tables || CompactSolver.build(data.puzzle, () => {}, { expansion: 'scalar' });
+        tables = CompactSolver.compileTables(raw, () => {}, { expansion: 'dual' });
+        postMessage({ type: 'compiled', tableBytes: tables.tableBytes, signatures: tables.h2Dict ? tables.h2Dict.length : 0 });
+      }
+      if (!holoTables) {
+        holoTables = CompactSolver.compileHolonomy(tables, stage => postMessage({ type: 'progress', stage }));
+        postMessage({
+          type: 'holonomyCompiled',
+          tableBytes: holoTables.tableBytes,
+          holonomyBytes: holoTables.holonomyBytes,
+          holonomyTotalBytes: holoTables.holonomyTotalBytes,
+        });
+      }
+      const specs = [
+        ['COVE-3 Dual-Horizon', () => CompactSolver.solve(tables, data.state, { timeoutMs: data.timeoutMs }), false],
+        ['HBEW Fast (δ=1)', () => CompactSolver.solveHolonomy(holoTables, data.state, { timeoutMs: data.timeoutMs, maxDeltaD1: 1, targetBound: 20 }), true],
+        ['HBEW Default (δ=2, ≤20)', () => CompactSolver.solveHolonomy(holoTables, data.state, { timeoutMs: data.timeoutMs, maxDeltaD1: 2, targetBound: 20, collectSampleFibers: true }), true],
+        ['HBEW Exact Bounded-Shell', () => CompactSolver.solveHolonomy(holoTables, data.state, { timeoutMs: data.timeoutMs, maxDeltaD1: 2, targetBound: 0 }), true],
+      ];
+      const solvers = specs.map(([label, fn, isHolo]) => {
+        const times = [];
+        let last;
+        for (let r = 0; r < 3; r++) {
+          const t0 = performance.now();
+          last = fn();
+          times.push(performance.now() - t0);
+        }
+        times.sort((a, b) => a - b);
+        return {
+          label,
+          isHolonomy: isHolo,
+          ms: times[1],
+          moves: last.moves,
+          split: last.split,
+          nodes: isHolo ? last.nodes : last.generatedNodes,
+          p1Nodes: last.p1Nodes || 0,
+          p2Nodes: last.p2Nodes || 0,
+          harvestedLifts: isHolo ? last.harvestedLifts : undefined,
+          sisterLifts: last.sisterLifts || 0,
+          psiPruned: last.psiPruned || 0,
+          zeroSlackHits: last.zeroSlackHits || 0,
+          searchedMaxD1: last.searchedMaxD1 ?? last.split,
+          optimalInShells: Boolean(last.optimalInShells),
+          sampleFibers: last.sampleFibers || null,
+        };
+      });
+      postMessage({ type: 'solverComparison', solvers });
+      return;
+    }
+
+    if (data.action === 'holonomy') {
+      if (!tables) tables = CompactSolver.build(data.puzzle, stage => postMessage({ type: 'progress', stage }), { expansion: 'dual' });
+      else if (tables.expansion === 'scalar') {
+        tables = CompactSolver.compileTables(tables, stage => postMessage({ type: 'progress', stage }), { expansion: 'dual' });
+      }
+      if (!holoTables) {
+        holoTables = CompactSolver.compileHolonomy(tables, stage => postMessage({ type: 'progress', stage }));
+        postMessage({
+          type: 'holonomyCompiled',
+          tableBytes: holoTables.tableBytes,
+          holonomyBytes: holoTables.holonomyBytes,
+          holonomyTotalBytes: holoTables.holonomyTotalBytes,
+        });
+      }
+      const result = CompactSolver.solveHolonomy(holoTables, data.state, {
+        timeoutMs: data.timeoutMs,
+        collectSampleFibers: true,
+        report: progress => postMessage({ type: 'progress', ...progress }),
+      });
+      postMessage({ type: 'result', result });
+      return;
+    }
+
     // Return the first result without waiting for dual-horizon compilation. After
     // posting it, compile inside this worker for subsequent interactive solves.
     if (!tables) tables = CompactSolver.build(data.puzzle, stage => postMessage({ type: 'progress', stage }), { expansion: 'scalar' });

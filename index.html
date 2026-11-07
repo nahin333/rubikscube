@@ -208,11 +208,12 @@ select { font: 13px var(--f-body); color: var(--ink); background: var(--bg); bor
   <header>
     <div>
       <h1>Rubik's Graph Lab</h1>
-      <p class="lede">Every cube position is a vertex, every face turn is an edge. Use COVE-3 to solve a long 3×3 scramble, or explore shortest-path searches on smaller problems. Then step through the verified moves on the cube.</p>
+      <p class="lede">Every cube position is a vertex, every face turn is an edge. Use HBEW (our holonomy-guided bifurcated Eikonal wavefront solver) or COVE-3 to solve any 3×3 scramble, or explore exact shortest-path searches on smaller problems. Then step through the verified moves on the cube.</p>
       <nav class="resource-links" aria-label="Project links">
         <a href="https://github.com/nahin333/rubikscube" target="_blank" rel="noopener noreferrer">GitHub repository ↗</a>
         <a href="research/paper.pdf" target="_blank" rel="noopener noreferrer">Research paper (PDF) ↗</a>
-        <a href="#dual-horizon">Stage-2 Dual-Horizon results ↓</a>
+        <a href="#holonomy-wavefront">Stage-3 HBEW novel algorithm ↓</a>
+        <a href="#dual-horizon">Stage-2 Dual-Horizon compiler ↓</a>
       </nav>
       <div class="compiler-pill" id="compilerStatus" role="status" aria-live="polite"><i></i><span>COVE-3 engine: cold scalar start → compiling Potential-Free Dual-Horizon…</span></div>
     </div>
@@ -229,6 +230,7 @@ select { font: 13px var(--f-body); color: var(--ink); background: var(--bg); bor
     <label class="field"><span>Algorithm</span>
       <div class="seg" id="algoSeg">
         <button type="button" data-a="compact" aria-pressed="true" title="COVE-3: verified two-phase solving for 3×3">COVE-3 (two-phase)</button>
+        <button type="button" data-a="holonomy" aria-pressed="false" title="HBEW: Holonomy-Guided Bifurcated Eikonal Wavefront solver (3×3)">HBEW (holonomy)</button>
         <button type="button" data-a="bidir" aria-pressed="false">Bidirectional BFS</button>
         <button type="button" data-a="bfs" aria-pressed="false">BFS</button>
         <button type="button" data-a="astar" aria-pressed="false">A*</button>
@@ -326,8 +328,9 @@ select { font: 13px var(--f-body); color: var(--ink); background: var(--bg); bor
         <section class="card">
           <div class="card-head">
             <h2 id="chartTitle">States discovered per depth</h2>
-            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
               <span class="hint" id="chartHint">log scale</span>
+              <button type="button" class="btn btn-sm" id="compareSolversBtn" hidden>Compare COVE-3 vs HBEW</button>
               <button type="button" class="btn btn-sm" id="ablateBtn" hidden>Compare all 4 stages</button>
             </div>
           </div>
@@ -347,6 +350,81 @@ select { font: 13px var(--f-body); color: var(--ink); background: var(--bg); bor
       </div>
     </div>
   </div>
+
+  <section class="card" id="holonomy-wavefront">
+    <div class="card-head">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span class="badge-new">Stage-3 Novel Algorithm</span>
+        <h2>Holonomy-Guided Bifurcated Eikonal Wavefront Search (HBEW)</h2>
+      </div>
+      <span class="hint">Principal H-bundle holonomy minimization · Held-out 500-state seed <code>0x5e71a9</code> &amp; 200-scramble vs. <code>cubejs 1.3.2</code></span>
+    </div>
+    <div class="dh-metrics">
+      <div class="stat">
+        <span>Held-out mean length</span>
+        <b>20.58</b>
+        <small><b>−2.37 moves</b> vs. COVE-3 (22.94) · <b>100% ≤ 22</b> (500/500) · <b>47.0% ≤ 20</b></small>
+      </div>
+      <div class="stat">
+        <span>vs. cubejs 1.3.2</span>
+        <b>6.54×</b>
+        <small><b>4.70 ms</b> vs. 30.70 ms median · <b>15.7×</b> faster P95 · <b>−1.25 moves</b> shorter</small>
+      </div>
+      <div class="stat">
+        <span>Subgroup-H fiber lifts</span>
+        <b>−74.4%</b>
+        <small><b>240.9</b> vs. 940.0 unpruned lifts · up to <b>154.7×</b> tail speedup</small>
+      </div>
+      <div class="stat">
+        <span>Holonomy compiler</span>
+        <b>+2.54 MiB</b>
+        <small><b>14.03 MiB</b> total · <b>7,741,440</b> verified K<sub>2</sub> coboundary transitions</small>
+      </div>
+    </div>
+    <div class="dh-pillars">
+      <div class="dh-pillar">
+        <h3>1. Principal H-Bundle Defect &amp; Eikonal Wavefront</h3>
+        <p>Every two-phase path decomposes exactly as <code>L(p, q) = h₁(s) + σ₁(p) + h₂(s·p) + σ₂(s·p, q)</code>. Instead of diving greedily into the first high-frustration fiber, HBEW sweeps Phase-1 shells <code>d₁ = h₁ + σ₁</code> and verifies fibers in monotone <code>σ₂ = 0 → 1 → …</code> strata (<b>Theorem 1</b>: provably bounded-shell optimal when <code>targetBound = 0</code>).</p>
+      </div>
+      <div class="dh-pillar">
+        <h3>2. Equatorial UD-Slice Funnel Automaton</h3>
+        <p>Exact subset-transition analysis on the <code>C(12, 4) = 495</code> coset graph proves only <b>4 / 495</b> slice states stand 1 move from <code>H</code> and <b>55 / 495</b> stand 2 moves away (<b>Proposition 8</b>). A 495-byte L1-cached bitmask rejects <b>92.19%</b> of candidate moves at <code>r₁ = 2</code> in one byte read, before full coordinate materialization.</p>
+      </div>
+      <div class="dh-pillar">
+        <h3>3. K<sub>2</sub> Sister-Fiber Involution &amp; Joint Coboundary</h3>
+        <p>Every Phase-1 terminal quarter turn <code>F±1</code> creates sister fibers <code>y− = F² y+</code> sharing identical Phase-1 base histories (<b>Proposition 9</b>, verified across all <b>7,741,440</b> Phase-2 edges). HBEW harvests both fibers simultaneously and co-integrates <code>(D(y+), D(y−))</code> in lockstep.</p>
+      </div>
+      <div class="dh-pillar">
+        <h3>4. Phase-Crossing Ψ-Potentials &amp; Zero-Slack Sieve</h3>
+        <p>Exact 4-bit Bellman potentials on <code>Sym₈</code> and <code>P(12, 4)</code> forecast subgroup-<code>H</code> norm up to <code>r₁ ≤ 2</code> moves before crossing <code>∂H</code>, paired with an <code>O(1)</code> Horizon-2 zero-slack test that tightens incumbent bound <code>B</code> inline during Phase-1 search (<b>Proposition 10</b>).</p>
+      </div>
+    </div>
+    <div class="dh-grid">
+      <figure class="dh-fig">
+        <img src="research/figures/holonomy-wavefront.svg" alt="Stage-3 HBEW held-out 500-state evaluation and 200-scramble comparison against cubejs 1.3.2" loading="lazy">
+        <figcaption>Held-out 500-state evaluation (<code>seed 0x5e71a9</code>) and external 200-scramble comparison vs. <code>cubejs 1.3.2</code> (<code>seed 0x74bc39</code>): HBEW Pareto-dominates <code>cubejs</code> on latency (6.54× median, 15.7× P95) and move count (20.46 vs. 21.71).</figcaption>
+      </figure>
+      <div style="display:grid;gap:10px;min-width:0">
+        <div class="dh-table-wrap">
+          <table class="dh-table" aria-label="Stage-3 HBEW evaluation summary">
+            <thead>
+              <tr><th>Benchmark &amp; Solver</th><th>Mean len</th><th>≤20 / ≤22</th><th>Median</th><th>P95</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>500 uniform: COVE-3 Dual</td><td>22.94</td><td>3.2% / 30.0%</td><td>1.05 ms</td><td>5.23 ms</td></tr>
+              <tr><td>500 uniform: HBEW Fast (δ=1)</td><td>20.77</td><td>36.0% / 100%</td><td>3.79 ms</td><td>8.45 ms</td></tr>
+              <tr class="hi"><td>500 uniform: HBEW Default (δ=2)</td><td>20.58</td><td>47.0% / 100%</td><td>4.84 ms</td><td>11.40 ms</td></tr>
+              <tr class="hi"><td>500 uniform: HBEW Exact-Shell</td><td>20.52</td><td>47.0% / 99.8%</td><td>5.41 ms</td><td>10.63 ms</td></tr>
+              <tr><td>200 scrambles: cubejs 1.3.2</td><td>21.71</td><td>4.0% / 100%</td><td>30.70 ms</td><td>169.43 ms</td></tr>
+              <tr class="hi"><td>200 scrambles: HBEW Default</td><td>20.46</td><td>51.0% / 100%</td><td>4.70 ms</td><td>10.79 ms</td></tr>
+              <tr class="hi"><td>200 scrambles: HBEW Exact-Shell</td><td>20.45</td><td>51.0% / 99.0%</td><td>5.93 ms</td><td>10.38 ms</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="hint" style="margin:0;line-height:1.45">Try it live: pick <b>HBEW (holonomy)</b> in the Algorithm bar above, or click <b>Compare COVE-3 vs HBEW</b> inside the chart card after any 3×3 solve to run COVE-3 Dual, HBEW Fast, HBEW Default, and HBEW Exact side-by-side on your scramble.</p>
+      </div>
+    </div>
+  </section>
 
   <section class="card" id="dual-horizon">
     <div class="card-head">
@@ -426,7 +504,8 @@ select { font: 13px var(--f-body); color: var(--ink); background: var(--bg); bor
       <p><strong>Breadth-first search</strong>BFS visits vertices in rings of equal distance, so the first time it touches the solved state it has found a shortest path. The catch is the ring sizes: 18, 243, 3,240, 43,239… roughly ×13 per level.</p>
       <p><strong>Meeting in the middle</strong>Bidirectional BFS grows one tree from the scramble and one from solved, and stops when they touch. Two trees of depth d/2 are far smaller than one of depth d, which is why it reaches scrambles that plain BFS cannot.</p>
       <p><strong>A* with a lower bound</strong>One face turn moves at most 4 corners and 4 edges, so ⌈misplaced corners ÷ 4⌉ is a distance that can never be overestimated. A* uses it to expand promising vertices first, while still guaranteeing a shortest path.</p>
-      <p><strong>COVE-3 (3×3 only)</strong>Our two-phase solver answers the first request on scalar tables, then compiles potential-free dual-horizon tables in the worker—24-bit Cayley-clique SWAR syndromes in Phase 1 and a unified coboundary Horizon-2 dictionary in Phase 2—preserving exact scalar move sequences and node budgets while cutting generated visits by 93.6%. Every returned move is verified; results are practical solutions, without a shortest-path guarantee. See the <a href="research/paper.pdf" target="_blank" rel="noopener noreferrer">research paper</a> for proofs, ablations, and memory tradeoffs.</p>
+      <p><strong>COVE-3 (3×3 only)</strong>Our two-phase solver answers the first request on scalar tables, then compiles potential-free dual-horizon tables in the worker—24-bit Cayley-clique SWAR syndromes in Phase 1 and a unified coboundary Horizon-2 dictionary in Phase 2—preserving exact scalar move sequences and node budgets while cutting generated visits by 93.6%. Every returned move is verified; results are practical solutions, without a shortest-path guarantee.</p>
+      <p><strong>HBEW (3×3 novel holonomy solver)</strong>Viewing <code>G → G / H</code> as a discrete principal <code>H</code>-bundle, greedy two-phase search dives into the first coset endpoint regardless of its vertical subgroup frustration <code>h₂(y)</code>. HBEW instead sweeps bounded Phase-1 shells via an equatorial UD-slice funnel, pairs quarter-turn sister fibers under the <code>K₂</code> half-turn involution, prunes high-holonomy branches before crossing <code>∂H</code> with 4-bit Bellman potentials, and verifies surviving fibers in monotone <code>σ₂</code> strata—achieving 20.58 mean moves (100% ≤ 22 on 500 uniform states) while outperforming <code>cubejs 1.3.2</code> by 6.54× in median latency. See the <a href="research/paper.pdf" target="_blank" rel="noopener noreferrer">research paper</a> for proofs and ablations.</p>
     </div>
   </section>
 </div>
@@ -652,7 +731,7 @@ function createSearch(P, startKey, algo, cap = CAP[P.N]) {
 
 // ---------- App state ----------
 const $ = id => document.getElementById(id);
-const app = { mode: 'search', scanInfo: null, ablation: null, dualCompiled: false, N: 3, algo: 'compact', P: null, search: null, running: false, sol: null, pos: 0, states: [], cur: null, startState: null, selected: -1, playing: false, busy: false, drawn: [], t0: 0, elapsed: 0 };
+const app = { mode: 'search', scanInfo: null, ablation: null, solverComparison: null, dualCompiled: false, holonomyCompiled: false, N: 3, algo: 'compact', P: null, search: null, running: false, sol: null, pos: 0, states: [], cur: null, startState: null, selected: -1, playing: false, busy: false, drawn: [], t0: 0, elapsed: 0 };
 
 function tok(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
 const fmt = n => n.toLocaleString('en-US');
@@ -877,9 +956,10 @@ const graph = (() => {
       const [x, y] = G.pos(i); ctx.strokeStyle = c; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(x, y, 7, 0, Math.PI * 2); ctx.stroke();
     }
   }
-  // Kociemba view: phase 1 walks from the scramble into the subgroup H, phase 2 stays inside H.
+  // Kociemba / HBEW view: phase 1 walks from the scramble into subgroup H, phase 2 stays inside H.
   function drawTwoPhase(W, H, c) {
-    const moves = app.sol || [], L = moves.length, k1 = app.scanInfo ? app.scanInfo.split : 0;
+    const moves = app.sol || [], L = moves.length, info = app.scanInfo, k1 = info ? info.split : 0;
+    const isHolo = !!(info && info.isHolonomy);
     const cy = H * 0.54, R = Math.min(H * 0.36, W * 0.23), hx = W - R - 36, x0 = 52;
     const E = [hx - R, cy], Z = [hx + R * 0.4, cy + R * 0.1], S0 = [x0, cy];
     const bez = (a, b, ctl, t) => [(1 - t) ** 2 * a[0] + 2 * (1 - t) * t * ctl[0] + t * t * b[0], (1 - t) ** 2 * a[1] + 2 * (1 - t) * t * ctl[1] + t * t * b[1]];
@@ -891,7 +971,7 @@ const graph = (() => {
     if (k1 === 0 && L) pts[0] = E;
     ctx.textBaseline = 'middle';
     ctx.font = '600 12px "Instrument Sans", sans-serif'; ctx.fillStyle = c.muted; ctx.textAlign = 'left';
-    ctx.fillText('Cube graph G · 4.3 × 10¹⁹ vertices', 14, 18);
+    ctx.fillText(isHolo ? 'Principal H-bundle G → G / H · HBEW Eikonal wavefront' : 'Cube graph G · 4.3 × 10¹⁹ vertices', 14, 18);
     ctx.fillStyle = c.soft; ctx.strokeStyle = c.line; ctx.lineWidth = 1.5; ctx.setLineDash([5, 4]);
     ctx.beginPath(); ctx.arc(hx, cy, R, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.setLineDash([]);
     ctx.fillStyle = c.ink; ctx.textAlign = 'center';
@@ -899,6 +979,31 @@ const graph = (() => {
     ctx.font = '11px "JetBrains Mono", monospace'; ctx.fillStyle = c.muted;
     ctx.fillText('19,508,428,800 vertices', hx, cy - R - 10);
     if (!L) { ctx.fillStyle = c.ink; ctx.fillText('Already solved', hx, cy); return; }
+    // For HBEW, render the fan of candidate subgroup-H fibers harvested across shells before drawing the winning geodesic.
+    if (isHolo && k1 > 0 && Array.isArray(info.sampleFibers) && info.sampleFibers.length > 0) {
+      const fibers = info.sampleFibers.slice(0, 7);
+      const angles = [-0.88, -0.58, -0.30, 0.30, 0.58, 0.85, 1.08];
+      fibers.forEach((fb, idx) => {
+        const ang = Math.PI + angles[idx % angles.length];
+        const fx = hx + R * Math.cos(ang), fy = cy + R * Math.sin(ang);
+        const cxCtl = (S0[0] + fx) / 2, cyCtl = cy + Math.sin(ang) * R * 1.18;
+        const isSis = idx % 2 === 1;
+        ctx.save();
+        ctx.globalAlpha = fb.winner ? 0.45 : 0.28;
+        ctx.strokeStyle = fb.winner ? '#13795b' : (isSis ? '#6b46c1' : c.fwd);
+        ctx.lineWidth = fb.winner ? 1.6 : 1.25;
+        ctx.setLineDash(isSis ? [3, 3] : []);
+        ctx.beginPath(); ctx.moveTo(...S0); ctx.quadraticCurveTo(cxCtl, cyCtl, fx, fy); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.globalAlpha = 0.68;
+        ctx.fillStyle = fb.winner ? '#13795b' : (isSis ? '#6b46c1' : c.muted);
+        ctx.beginPath(); ctx.arc(fx, fy, 3, 0, Math.PI * 2); ctx.fill();
+        ctx.font = '500 9.5px "JetBrains Mono", monospace';
+        ctx.textAlign = 'left';
+        ctx.fillText(`d₁=${fb.d1} h₂=${fb.h2}`, fx + 6, fy);
+        ctx.restore();
+      });
+    }
     for (let k = 1; k <= L; k++) {
       ctx.strokeStyle = c.bg; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(...pts[k - 1]); ctx.lineTo(...pts[k]); ctx.stroke();
       ctx.strokeStyle = k <= k1 ? c.fwd : c.bwd; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(...pts[k - 1]); ctx.lineTo(...pts[k]); ctx.stroke();
@@ -918,7 +1023,10 @@ const graph = (() => {
     ctx.font = '600 11px "Instrument Sans", sans-serif'; ctx.fillStyle = c.ink;
     ctx.textAlign = 'left'; ctx.fillText('Scramble', S0[0] - 8, S0[1] + 20);
     ctx.textAlign = 'left'; ctx.fillText('Solved', Z[0] + 12, Z[1] - 12);
-    if (k1 > 0) { ctx.fillStyle = c.muted; ctx.textAlign = 'right'; ctx.fillText(`enters H after ${k1} turns`, E[0] - 10, E[1] + 22); }
+    if (k1 > 0) {
+      ctx.fillStyle = c.muted; ctx.textAlign = 'right';
+      ctx.fillText(isHolo ? `winning fiber d₁=${k1}, r₂=${L - k1}` : `enters H after ${k1} turns`, E[0] - 10, E[1] + 22);
+    }
   }
   function nearest(e) {
     const r = cv.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top;
@@ -983,10 +1091,32 @@ function drawNeighbours() {
   $('nbrHint').textContent = S ? `degree ${k} · ${explored} seen by search` : `degree ${k}`;
 }
 
-// ---------- Chart: states per depth / COVE-3 dual-horizon pruning ----------
+// ---------- Chart: states per depth / COVE-3 & HBEW diagnostics ----------
 function drawScanChart(svg, W, H) {
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.onmousemove = null; $('tip').hidden = true;
   const barFull = Math.max(80, W - 12);
+  if (app.solverComparison && app.solverComparison.length) {
+    $('chartTitle').textContent = 'Live COVE-3 vs. HBEW comparison';
+    $('chartHint').textContent = 'median of 3 runs';
+    const maxLen = Math.max(1, ...app.solverComparison.map(s => s.moves.length));
+    let html = '';
+    app.solverComparison.forEach((st, idx) => {
+      const y0 = 16 + idx * 45;
+      const frac = st.moves.length === 0 ? 0.02 : Math.min(1, st.moves.length / maxLen);
+      const w = Math.max(5, frac * barFull);
+      const color = idx === 3 ? '#6b46c1' : idx === 2 ? '#13795b' : idx === 1 ? 'var(--fwd)' : 'var(--muted)';
+      const extra = st.harvestedLifts !== undefined ? ` · ${fmt(st.harvestedLifts)} lifts` : '';
+      html += `<text x="6" y="${y0}" fill="var(--ink)" font-size="11.5" font-weight="${idx >= 2 ? '700' : '600'}" font-family="Instrument Sans, sans-serif">${st.label}</text>`;
+      html += `<text x="${W - 6}" y="${y0}" text-anchor="end" fill="var(--muted)" font-size="10.5" font-family="JetBrains Mono, monospace">${st.moves.length} turns${extra} · ${st.ms.toFixed(2)} ms</text>`;
+      html += `<rect x="6" y="${y0 + 6}" width="${barFull}" height="10" rx="5" fill="var(--soft)"/>`;
+      html += `<rect x="6" y="${y0 + 6}" width="${w}" height="10" rx="5" fill="${color}"/>`;
+    });
+    const best = Math.min(...app.solverComparison.map(s => s.moves.length));
+    const gain = app.solverComparison[0].moves.length - best;
+    html += `<text x="6" y="214" fill="var(--muted)" font-size="10.5" font-family="JetBrains Mono, monospace">✓ All 4 solvers verified · HBEW saved ${gain} turn${gain === 1 ? '' : 's'} vs. COVE-3</text>`;
+    svg.innerHTML = html;
+    return;
+  }
   if (app.ablation && app.ablation.length) {
     $('chartTitle').textContent = 'Live 4-stage ablation on this cube';
     $('chartHint').textContent = 'median of 3 runs';
@@ -1010,6 +1140,28 @@ function drawScanChart(svg, W, H) {
   }
   const info = app.scanInfo;
   if (!info) return;
+  if (info.isHolonomy) {
+    const total = Math.max(1, info.nodes);
+    $('chartTitle').textContent = 'HBEW Eikonal wavefront on this cube';
+    $('chartHint').textContent = `${fmt(info.harvestedLifts)} H-fibers harvested`;
+    const rows = [
+      { label: `Phase-1 fiber sweep (d₁ ≤ ${info.maxD1Explored})`, val: `${fmt(info.p1Nodes)} visits`, frac: info.p1Nodes / total, color: 'var(--fwd)' },
+      { label: `Stratified Phase-2 Eikonal verification`, val: `${fmt(info.p2Nodes)} visits`, frac: info.p2Nodes / total, color: '#13795b' },
+      { label: `K₂ sister lifts & Ψ-pruned branches`, val: `${fmt(info.sisterLifts)} sisters · ${fmt(info.psiPruned)} Ψ-pruned`, frac: Math.min(1, (info.sisterLifts + info.psiPruned) / Math.max(1, info.harvestedLifts + info.psiPruned)), color: '#6b46c1' },
+    ];
+    let html = '';
+    rows.forEach((r, idx) => {
+      const y0 = 20 + idx * 54;
+      const w = r.frac === 0 ? 4 : Math.max(5, Math.min(1, r.frac) * barFull);
+      html += `<text x="6" y="${y0}" fill="var(--ink)" font-size="11.5" font-weight="600" font-family="Instrument Sans, sans-serif">${r.label}</text>`;
+      html += `<text x="${W - 6}" y="${y0}" text-anchor="end" fill="var(--muted)" font-size="10.5" font-family="JetBrains Mono, monospace">${r.val}</text>`;
+      html += `<rect x="6" y="${y0 + 7}" width="${barFull}" height="12" rx="6" fill="var(--soft)"/>`;
+      html += `<rect x="6" y="${y0 + 7}" width="${w}" height="12" rx="6" fill="${r.color}"/>`;
+    });
+    html += `<text x="6" y="208" fill="var(--muted)" font-size="11" font-family="Instrument Sans, sans-serif">Use "Compare COVE-3 vs HBEW" above to benchmark all 4 solver modes.</text>`;
+    svg.innerHTML = html;
+    return;
+  }
   if (info.skippedNodes > 0) {
     const total = Math.max(1, info.nodes);
     const skipPct = ((info.skippedNodes / total) * 100).toFixed(1);
@@ -1030,7 +1182,7 @@ function drawScanChart(svg, W, H) {
       html += `<rect x="6" y="${y0 + 7}" width="${barFull}" height="12" rx="6" fill="var(--soft)"/>`;
       if (w > 0) html += `<rect x="6" y="${y0 + 7}" width="${w}" height="12" rx="6" fill="${r.color}"/>`;
     });
-    html += `<text x="6" y="208" fill="var(--muted)" font-size="11" font-family="Instrument Sans, sans-serif">Use "Compare all 4 stages" above to benchmark all 4 compilers.</text>`;
+    html += `<text x="6" y="208" fill="var(--muted)" font-size="11" font-family="Instrument Sans, sans-serif">Use "Compare all 4 stages" or "Compare COVE-3 vs HBEW" above.</text>`;
     svg.innerHTML = html;
     return;
   }
@@ -1043,7 +1195,7 @@ function drawScanChart(svg, W, H) {
   html += `<text x="18" y="96" fill="var(--ink)" font-size="12.5" font-weight="600" font-family="Instrument Sans, sans-serif">${app.dualCompiled ? '✓ Potential-Free Dual-Horizon compiled in worker (11.49 MiB)' : '⟳ Compiling Potential-Free Dual-Horizon tables in worker…'}</text>`;
   html += `<text x="18" y="118" fill="var(--muted)" font-size="11.5" font-family="JetBrains Mono, monospace">Phase 1: 24-bit Cayley-K4 SWAR · Phase 2: 24,743 H2 coboundaries</text>`;
   html += `<text x="18" y="142" fill="var(--muted)" font-size="11.5" font-family="Instrument Sans, sans-serif">First solve answers immediately without waiting for table compilation.</text>`;
-  html += `<text x="18" y="162" fill="var(--fwd)" font-size="11.5" font-weight="600" font-family="Instrument Sans, sans-serif">Press "Compare all 4 stages" above or "Solve" to see ~93.6% visit pruning.</text>`;
+  html += `<text x="18" y="162" fill="var(--fwd)" font-size="11.5" font-weight="600" font-family="Instrument Sans, sans-serif">Press "Compare COVE-3 vs HBEW" or "Compare all 4 stages" above.</text>`;
   svg.innerHTML = html;
 }
 function drawChart() {
@@ -1053,6 +1205,8 @@ function drawChart() {
   svg.classList.toggle('scan-mode', app.mode === 'scan');
   $('ablateBtn').hidden = app.mode !== 'scan';
   $('ablateBtn').disabled = app.running;
+  $('compareSolversBtn').hidden = app.mode !== 'scan';
+  $('compareSolversBtn').disabled = app.running;
   if (app.mode === 'scan') { drawScanChart(svg, W, H); return; }
   $('chartTitle').textContent = 'States discovered per depth';
   $('chartHint').textContent = 'log scale';
@@ -1104,6 +1258,10 @@ function updateStats() {
     const L = app.sol ? app.sol.length : 0, k1 = app.scanInfo.split;
     $('sLen').textContent = `${L} turns`; $('sNodes').textContent = fmt(app.scanInfo.nodes);
     $('sTime').textContent = `${Math.round(app.scanInfo.ms)} ms`; $('sDepth').textContent = `${k1} + ${L - k1}`;
+    if (app.scanInfo.isHolonomy) {
+      $('compare').innerHTML = `HBEW swept Phase-1 shells across subgroup <b>H</b> fibers (harvesting <b>${fmt(app.scanInfo.harvestedLifts)}</b> lifts, <b>${fmt(app.scanInfo.sisterLifts)}</b> via K<sub>2</sub> sister pairing, pruning <b>${fmt(app.scanInfo.psiPruned)}</b> via Ψ-potentials) to select a low-holonomy <b>${k1} + ${L - k1} = ${L}</b>-turn trajectory with zero adjacent same-face turns.`;
+      return;
+    }
     const pruned = app.scanInfo.skippedNodes > 0
       ? ` Compiled potential-free dual-horizon tables generated <b>${fmt(app.scanInfo.generatedNodes)}</b> visits and pruned <b>${fmt(app.scanInfo.skippedNodes)}</b> while preserving exact scalar node budgets.`
       : ' The initial solve uses fast-building scalar tables while potential-free dual-horizon tables compile in the worker.';
@@ -1183,6 +1341,7 @@ $('toEnd').onclick = () => app.sol && jumpTo(app.sol.length);
 let compactWorker = null, compactJob = null;
 function markDualCompiled(data) {
   app.dualCompiled = true;
+  if (app.holonomyCompiled) return;
   const el = $('compilerStatus');
   if (el) {
     el.classList.add('ready');
@@ -1192,7 +1351,18 @@ function markDualCompiled(data) {
   }
   if (app.mode === 'scan' && !app.running) drawChart();
 }
-function runCompact(state, progress, action) {
+function markHolonomyCompiled(data) {
+  app.dualCompiled = true;
+  app.holonomyCompiled = true;
+  const el = $('compilerStatus');
+  if (el) {
+    el.classList.add('ready');
+    const mib = data && data.holonomyTotalBytes ? (data.holonomyTotalBytes / 1048576).toFixed(2) : '14.03';
+    el.querySelector('span').textContent = `HBEW Holonomy & Dual-Horizon active · K2 sister involution + 4-bit Ψ potentials (${mib} MiB)`;
+  }
+  if (app.mode === 'scan' && !app.running) drawChart();
+}
+function runCompact(state, progress, action, options) {
   if (compactJob) return Promise.reject(new Error('A solver job is already running.'));
   return new Promise((resolve, reject) => {
     let timer, settled = false;
@@ -1201,28 +1371,31 @@ function runCompact(state, progress, action) {
       settled = true;
       clearTimeout(timer); compactJob = null;
       if (error) {
-        compactWorker?.terminate(); compactWorker = null; app.dualCompiled = false;
+        compactWorker?.terminate(); compactWorker = null; app.dualCompiled = false; app.holonomyCompiled = false;
         const el = $('compilerStatus');
-        if (el) { el.classList.remove('ready'); el.querySelector('span').textContent = 'COVE-3 worker reset · will rebuild on next solve'; }
+        if (el) { el.classList.remove('ready'); el.querySelector('span').textContent = 'COVE-3 / HBEW worker reset · will rebuild on next solve'; }
         reject(error);
       } else resolve(result);
     }
     try {
-      if (!compactWorker) compactWorker = new Worker('solver-worker.js?v=dual-v2');
+      if (!compactWorker) compactWorker = new Worker('solver-worker.js?v=hbew-v3');
       compactJob = { cancel: () => finish(new Error('Stopped. No solution is being claimed.')) };
       compactWorker.onmessage = ({ data }) => {
         if (data.type === 'compiled') { markDualCompiled(data); return; }
+        if (data.type === 'holonomyCompiled') { markHolonomyCompiled(data); return; }
         if (data.type === 'progress') progress(data);
         else if (data.type === 'error') finish(new Error(data.message));
         else if (data.type === 'result') {
-          if (data.result && data.result.tableBytes === 12043251 && !app.dualCompiled) markDualCompiled({ tableBytes: data.result.tableBytes, signatures: 24743 });
+          if (data.result && data.result.holonomyTotalBytes === 14708554 && !app.holonomyCompiled) markHolonomyCompiled({ holonomyTotalBytes: data.result.holonomyTotalBytes });
+          else if (data.result && data.result.tableBytes === 12043251 && !app.dualCompiled) markDualCompiled({ tableBytes: data.result.tableBytes, signatures: 24743 });
           finish(null, data.result);
         }
         else if (data.type === 'comparison') finish(null, data.stages);
+        else if (data.type === 'solverComparison') finish(null, data.solvers);
       };
       compactWorker.onerror = () => finish(new Error('The solver worker could not run. Serve this folder over HTTP and check that solver-worker.js and compact-solver.js are available.'));
       timer = setTimeout(() => finish(new Error('Solver time limit reached. No solution is being claimed.')), 45000);
-      compactWorker.postMessage({ action, puzzle: buildPuzzle(3), state, timeoutMs: 30000 });
+      compactWorker.postMessage({ action, puzzle: buildPuzzle(3), state, timeoutMs: 30000, options });
     } catch (error) { finish(error); }
   });
 }
@@ -1230,21 +1403,54 @@ function runningControls(running) {
   app.running = running;
   $('solveBtn').disabled = running; $('newBtn').disabled = running;
   $('stopBtn').disabled = !running; $('scanSolve').disabled = running;
-  $('ablateBtn').disabled = running;
+  $('ablateBtn').disabled = running; $('compareSolversBtn').disabled = running;
   $('scramble').disabled = running; syncPlay();
 }
 async function solveCompactScramble() {
-  app.search = null; app.ablation = null; app.mode = 'search';
+  app.search = null; app.ablation = null; app.solverComparison = null; app.mode = 'search';
   graph.draw(); drawChart(); updateStats(); runningControls(true);
   const started = performance.now();
   setStatus('Preparing COVE-3 solver…');
   try {
     const result = await runCompact(app.startState, p => setStatus(p.stage || `Searching two-phase coordinates · ${fmt(p.nodes)} nodes`));
     if (toKey(stateFrom(app.startState, result.moves)) !== toKey(app.P.solved)) throw new Error('Solution verification failed.');
-    app.mode = 'scan'; app.scanInfo = { split: result.split, ms: performance.now() - started, nodes: result.nodes, generatedNodes: result.generatedNodes, skippedNodes: result.skippedNodes };
+    app.mode = 'scan'; app.scanInfo = { split: result.split, ms: performance.now() - started, nodes: result.nodes, generatedNodes: result.generatedNodes, skippedNodes: result.skippedNodes, isHolonomy: false };
     setLegend(); setSolution(result.moves); graph.draw(); drawChart(); updateStats();
     const prunedNote = result.skippedNodes > 0 ? ` (${fmt(result.generatedNodes)} generated / ${fmt(result.nodes)} logical visits)` : '';
     setStatus(`COVE-3 verified solution: ${result.moves.length} turns${prunedNote}. Shortest path not guaranteed.`);
+  } catch (error) { setStatus(error.message, true); }
+  finally { runningControls(false); drawChart(); }
+}
+async function solveHolonomyScramble() {
+  app.search = null; app.ablation = null; app.solverComparison = null; app.mode = 'search';
+  graph.draw(); drawChart(); updateStats(); runningControls(true);
+  const started = performance.now();
+  setStatus('Preparing HBEW holonomy-guided Eikonal wavefront solver…');
+  try {
+    const result = await runCompact(
+      app.startState,
+      p => setStatus(p.stage || 'Sweeping principal H-bundle fibers…'),
+      'holonomy',
+      { maxD1Cap: 11, maxDeltaD1: 2, targetBound: 20, collectSampleFibers: true }
+    );
+    if (toKey(stateFrom(app.startState, result.moves)) !== toKey(app.P.solved)) throw new Error('HBEW solution verification failed.');
+    app.mode = 'scan';
+    app.scanInfo = {
+      split: result.split,
+      ms: performance.now() - started,
+      nodes: result.nodes,
+      p1Nodes: result.p1Nodes,
+      p2Nodes: result.p2Nodes,
+      harvestedLifts: result.harvestedLifts,
+      sisterLifts: result.sisterLifts,
+      psiPruned: result.psiPruned,
+      zeroSlackHits: result.zeroSlackHits,
+      maxD1Explored: result.searchedMaxD1,
+      sampleFibers: result.sampleFibers || [],
+      isHolonomy: true,
+    };
+    setLegend(); setSolution(result.moves); graph.draw(); drawChart(); updateStats();
+    setStatus(`HBEW verified solution: ${result.moves.length} turns (${result.split} + ${result.moves.length - result.split}) across ${fmt(result.harvestedLifts)} subgroup-H lifts.`);
   } catch (error) { setStatus(error.message, true); }
   finally { runningControls(false); drawChart(); }
 }
@@ -1259,16 +1465,50 @@ async function runLiveAblation() {
       if (st.moves.join(',') !== refMoves || st.nodes !== stages[0].nodes) throw new Error('Stage equivalence check failed.');
       if (toKey(stateFrom(app.startState, st.moves)) !== toKey(app.P.solved)) throw new Error('Stage solution verification failed.');
     }
+    app.solverComparison = null;
     app.ablation = stages;
     const dual = stages[3];
-    app.scanInfo = { split: dual.split, ms: dual.ms, nodes: dual.nodes, generatedNodes: dual.generatedNodes, skippedNodes: dual.skippedNodes };
-    drawChart(); updateStats();
+    app.scanInfo = { split: dual.split, ms: dual.ms, nodes: dual.nodes, generatedNodes: dual.generatedNodes, skippedNodes: dual.skippedNodes, isHolonomy: false };
+    setLegend(); setSolution(dual.moves); graph.draw(); drawChart(); updateStats();
     const drop = ((1 - dual.generatedNodes / Math.max(1, stages[0].generatedNodes)) * 100).toFixed(1);
     setStatus(`4-stage ablation verified: identical ${dual.moves.length}-turn path · Dual pruned ${drop}% of visits (${fmt(dual.generatedNodes)} vs. ${fmt(stages[0].generatedNodes)}).`);
   } catch (error) { setStatus(error.message, true); }
   finally { runningControls(false); drawChart(); }
 }
+async function runLiveSolverComparison() {
+  if (app.running || !app.startState || app.N !== 3) return;
+  runningControls(true);
+  setStatus('Comparing COVE-3 Dual-Horizon vs. HBEW Fast, HBEW Default, and HBEW Exact…');
+  try {
+    const solvers = await runCompact(app.startState, p => setStatus(p.stage || 'Running COVE-3 vs. HBEW…'), 'compareSolvers');
+    for (const st of solvers) {
+      if (toKey(stateFrom(app.startState, st.moves)) !== toKey(app.P.solved)) throw new Error('Solver comparison verification failed.');
+    }
+    app.ablation = null;
+    app.solverComparison = solvers;
+    const bestHolo = solvers[2];
+    app.scanInfo = {
+      split: bestHolo.split,
+      ms: bestHolo.ms,
+      nodes: bestHolo.nodes,
+      p1Nodes: bestHolo.p1Nodes,
+      p2Nodes: bestHolo.p2Nodes,
+      harvestedLifts: bestHolo.harvestedLifts,
+      sisterLifts: bestHolo.sisterLifts,
+      psiPruned: bestHolo.psiPruned,
+      zeroSlackHits: bestHolo.zeroSlackHits,
+      maxD1Explored: bestHolo.searchedMaxD1,
+      sampleFibers: bestHolo.sampleFibers || [],
+      isHolonomy: true,
+    };
+    setLegend(); setSolution(bestHolo.moves); graph.draw(); drawChart(); updateStats();
+    const gain = solvers[0].moves.length - solvers[3].moves.length;
+    setStatus(`Live comparison verified: COVE-3 ${solvers[0].moves.length} turns (${solvers[0].ms.toFixed(2)} ms) → HBEW Exact ${solvers[3].moves.length} turns (${solvers[3].ms.toFixed(2)} ms, −${gain} turns).`);
+  } catch (error) { setStatus(error.message, true); }
+  finally { runningControls(false); drawChart(); }
+}
 $('ablateBtn').onclick = runLiveAblation;
+$('compareSolversBtn').onclick = runLiveSolverComparison;
 $('stopBtn').onclick = () => {
   if (compactJob) { compactJob.cancel(); return; }
   if (app.search && app.running) { app.search.done = true; app.search.error = 'Stopped.'; }
@@ -1283,6 +1523,7 @@ function solve() {
   app.startState = stateFrom(app.P.solved, moves); app.cur = app.startState; cube3.paint(app.cur);
   renderChips();
   if (app.algo === 'compact') { solveCompactScramble(); return; }
+  if (app.algo === 'holonomy') { solveHolonomyScramble(); return; }
   const S = createSearch(app.P, toKey(app.startState), app.algo);
   app.search = S; app.running = true; app.t0 = performance.now(); app.elapsed = 0;
   runningControls(true);
@@ -1306,7 +1547,7 @@ function solve() {
     runningControls(false);
     if (S.error) {
       setStatus(S.error === 'cap'
-        ? `Stopped at ${fmt(S.n)} states, the memory budget for this page. Try ${app.N === 3 ? 'COVE-3 for a verified solution without a shortest-path guarantee' : 'Bidirectional BFS or a shorter scramble'}.`
+        ? `Stopped at ${fmt(S.n)} states, the memory budget for this page. Try ${app.N === 3 ? 'HBEW or COVE-3 for a fast verified solution' : 'Bidirectional BFS or a shorter scramble'}.`
         : S.error, true);
       syncPlay(); updateStats(); return;
     }
@@ -1324,7 +1565,7 @@ function newScramble() {
 function resetView() {
   let moves = [];
   try { moves = parseScramble($('scramble').value); setStatus(''); } catch (e) { setStatus(e.message, true); }
-  app.search = null; app.ablation = null; app.sol = null; app.selected = -1; app.playing = false; app.mode = 'search'; setLegend();
+  app.search = null; app.ablation = null; app.solverComparison = null; app.sol = null; app.selected = -1; app.playing = false; app.mode = 'search'; setLegend();
   app.startState = stateFrom(app.P.solved, moves); app.cur = app.startState; cube3.paint(app.cur);
   renderChips(); drawNeighbours(); graph.draw(); drawChart(); updateStats(); syncPlay();
   $('inspect').textContent = 'Columns are distance from the root. Hover a dot to see how the search reached it, click it to load that state onto the cube.';
@@ -1333,7 +1574,8 @@ function resetView() {
 function setPuzzle(N) {
   app.N = N; app.P = buildPuzzle(N); cube3.build(app.P); renderMovepad();
   document.querySelector('[data-a="compact"]').disabled = N !== 3;
-  if (N !== 3 && app.algo === 'compact') setAlgo('bidir');
+  document.querySelector('[data-a="holonomy"]').disabled = N !== 3;
+  if (N !== 3 && (app.algo === 'compact' || app.algo === 'holonomy')) setAlgo('bidir');
   document.querySelectorAll('#puzzleSeg button').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.n === N)));
   const len = $('len'); len.max = N === 2 ? 11 : 30; len.value = N === 2 ? 8 : 20; $('lenOut').textContent = len.value;
   $('facts').innerHTML = N === 3
@@ -1347,15 +1589,17 @@ function setAlgo(a) {
   setLegend();
 }
 function setLegend() {
-  const scan = app.mode === 'scan';
-  $('legF').textContent = scan ? 'Phase 1 (reach subgroup H)' : 'Forward tree (from scramble)';
-  $('legB').textContent = scan ? 'Phase 2 (finish inside H)' : 'Backward tree (from solved)';
+  const scan = app.mode === 'scan', isHolo = !!(scan && app.scanInfo && app.scanInfo.isHolonomy);
+  $('legF').textContent = scan ? (isHolo ? 'Phase 1 (H-bundle base sweep)' : 'Phase 1 (reach subgroup H)') : 'Forward tree (from scramble)';
+  $('legB').textContent = scan ? (isHolo ? 'Phase 2 (Eikonal geodesic in H)' : 'Phase 2 (finish inside H)') : 'Backward tree (from solved)';
   $('legP').textContent = scan ? 'Solution path' : 'Shortest path';
   $('bwdLegend').hidden = !(scan || app.algo === 'bidir');
-  $('graphTitle').textContent = scan ? 'COVE-3 route' : 'Explored state graph';
-  $('pathLabel').textContent = scan ? 'COVE-3 solution (half-turn metric)' : 'Shortest path (half-turn metric)';
+  $('graphTitle').textContent = scan ? (isHolo ? 'HBEW fiber fan & route' : 'COVE-3 route') : 'Explored state graph';
+  $('pathLabel').textContent = scan ? (isHolo ? 'HBEW holonomy-guided solution (half-turn metric)' : 'COVE-3 solution (half-turn metric)') : 'Shortest path (half-turn metric)';
   $('inspect').textContent = scan
-    ? 'Phase 1 searches for any path into H, the positions reachable with U, D, R2, L2, F2 and B2. Phase 2 solves inside H.'
+    ? (isHolo
+        ? 'Faint arcs show alternative subgroup-H fibers harvested across Phase-1 shells (purple dashed = K₂ sister fibers); bold trajectory is the winning low-holonomy path.'
+        : 'Phase 1 searches for any path into H, the positions reachable with U, D, R2, L2, F2 and B2. Phase 2 solves inside H.')
     : 'Columns are distance from the root. Hover a dot to see how the search reached it, click it to load that state onto the cube.';
 }
 

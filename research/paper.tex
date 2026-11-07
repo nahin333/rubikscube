@@ -23,49 +23,55 @@
 \renewcommand{\dbltopfraction}{0.95}
 \renewcommand{\textfraction}{0.05}
 \renewcommand{\floatpagefraction}{0.8}
-\title{COVE-3: Potential-Free Coboundary and Clique-Syndrome Compilation\\
-for Budget-Preserving Interactive Cube Search}
+\title{COVE-3 and HBEW: Potential-Free Coboundary Compilation and\\
+Holonomy-Guided Bifurcated Eikonal Wavefront Search for the Rubik's Cube}
 \author{Rubik's Graph Lab}
 \begin{document}
 \maketitle
 \begin{abstract}
 
-Heuristic search frequently generates successors that are immediately
-pruned by distance bounds or starve one ply later under canonical move
-restrictions. We study these overheads in COVE-3, a compact two-phase
-Rubik's Cube solver, across two cumulative compilation stages that
-preserve exact scalar move sequences and logical node budgets. First,
-1-step contour compilation encodes paired phase-2 distances and operator
-masks into 16-bit dictionary indices (\(40,609\) signatures across
-\(1,935,360\) entries), cutting median solve latency from \(6.19\) ms to
-\(2.20\) ms on \(500\) states while avoiding \(79.33\%\) of recursive
-calls; two follow-up variants---exact-cost failure replay and
-deferred-charge chain traversal---preserve the count contract but fail
-to improve latency, showing that random table reads and two-step dead
-ends dominate runtime. Second, we diagnose why 1-step contours stall:
-\(53.81\%\) of surviving phase-2 calls are dead-on-arrival Horizon-2
-ghosts, while phase-1 branching (\(b_1=18\)) overflows 32-bit words and
-16-bit dictionaries (\(>620,000\) signatures). We overcome both barriers
-via \textbf{potential-free dual-horizon compilation}, storing zero
-scalar distance bits in either phase. In phase 1, we prove that each
-outer face's coset forms a \(K_4\) clique in every abstract Cayley
-graph, collapsing three-move contours into 4-bit clique syndromes (24
-bits per state) decoded across all 18 moves by constant-time SWAR and
-integrated via a linear coboundary law. In phase 2, omitting scalar
-potentials quotients level sets and frees 10 bits for unary canonical
-Horizon-2 survival masks inside a single unified dictionary of
-\(24,743\) signatures---\(39.07\%\) fewer entries and \(62,440\) fewer
-persistent bytes than 1-step COVE-3---recovering root distances by
-steepest-descent 1-form walks. A three-tier batched accounting rule
-charges Horizon-1, Horizon-2, and unary-starved Horizon-3 subtrees in
-\(O(1)\) via a 1-KiB lookup table, and a communication-complexity
-reduction proves Horizon 2 maximal for factored unary accounting. On a
-fresh held-out 500-state corpus, potential-free dual-horizon compilation
-cuts generated visits by a further \(68.47\%\) beyond COVE-3
-(\(93.62\%\) versus scalar), lowers median latency on \(499/500\) states
-(\(2.57\) ms \(\to\) \(1.84\) ms in three-way evaluation; \(1.43\) ms
-pairwise), and outperforms even a 32-bit distance-storing variant while
-saving \(2.00\) MiB.
+Practical Rubik's Cube search faces two coupled bottlenecks: scalar
+two-phase DFS wastes over \(90\%\) of its work on immediately pruned or
+two-step-dead branches, while greedy first-completion Phase-1 search
+plunges into high-frustration subgroup-\(H\) endpoints averaging
+\(\approx 23\) moves. We address both problems across three cumulative
+stages. First, in \textbf{COVE-3}, 1-step contour dictionaries
+(\(40,609\) Phase-2 signatures) cut median latency from \(6.19\) ms to
+\(2.20\) ms while preserving exact scalar move sequences and logical
+node budgets; two count-preserving extensions (failure replay and chain
+traversal) yield negative latency results that isolate random table
+reads and Horizon-2 dead ends (\(53.81\%\) of surviving Phase-2 visits)
+as the true bottlenecks. Second, \textbf{potential-free dual-horizon
+compilation} eliminates stored scalar distances from both phases: 4-bit
+Cayley-\(K_4\) clique syndromes (\(24\) bits/state) decode all 18
+Phase-1 moves via branchless SWAR, while level-set quotienting fits
+unary canonical Horizon-2 survival masks into a unified \(24,743\)-entry
+Phase-2 dictionary (\(62,440\) B smaller than 1-step COVE-3) paired with
+\(O(1)\) three-tier ghost accounting proved maximal for factored unary
+tables. On 500 held-out states (\texttt{seed\ 0xd48a63}), dual-horizon
+compilation cuts generated visits by \(93.62\%\) (\(1.84\) ms 3-way;
+\(1.43\) ms pairwise) at 100\% identical outputs. Third, moving beyond
+fixed-trajectory compilation, we introduce \textbf{Holonomy-Guided
+Bifurcated Eikonal Wavefront Search (HBEW)} (\(+2.54\) MiB), a novel
+solving algorithm viewing \(\pi: G \to G/H\) as a discrete principal
+\(H\)-bundle with exact path-length defect
+\(L(p,q)=h_1(s)+\sigma_1(p)+h_2(s\cdot p)+\sigma_2(s\cdot p,q)\). After
+showing that pure subgroup metric-distortion shortcuts
+(\(\mathcal W_5 \subset H\)) fail generically (\(0/60\) improved), we
+prove four synergistic mechanisms: an equatorial UD-slice funnel
+(\(4/495\) distance-1 and \(55/495\) distance-2 cosets; Proposition 8),
+a \(K_2\) quarter-turn sister-fiber involution co-integrating paired
+lifts \(y_- = y_+ F^2\) (\(7,741,440\) verified transitions; Proposition
+9), 4-bit phase-crossing Bellman potentials with inline zero-slack
+sieving (Proposition 10), and \(\sigma_2\)-stratified Eikonal wavefront
+verification (Theorem 1). On a fresh 500-state held-out corpus
+(\texttt{seed\ 0x5e71a9}), HBEW lowers mean length from \(22.94\) to
+\(20.58\) moves (\(20.52\) exact-shell; \(500/500 \le 22\),
+\(47.0\% \le 20\)) in \(4.84\) ms median while pruning \(74.4\%\) of
+harvested subgroup lifts; on 200 shared scrambles
+(\texttt{seed\ 0x74bc39}), HBEW strictly Pareto-dominates
+\texttt{cubejs\ 1.3.2} (\(6.54\times\) faster median, \(15.7\times\)
+faster P95, and \(1.25\) fewer moves: \(20.46\) vs.~\(21.71\)).
 
 \end{abstract}
 
@@ -127,10 +133,19 @@ structural bottlenecks:
   disjointness.
 \end{enumerate}
 
-In this work, we resolve both bottlenecks simultaneously through
+In this work, we first resolve both compilation bottlenecks through
 \textbf{potential-free coboundary and Cayley-clique dual-horizon
-compilation}, eliminating stored scalar distances from both phases
-altogether.
+compilation} (Stages 1--2), and then address the fundamental
+solution-quality ceiling of greedy two-phase search itself
+(\texttt{22.94} mean moves, \texttt{max\ 25–26}) by proposing a new
+solving algorithm: \textbf{Holonomy-Guided Bifurcated Eikonal Wavefront
+Search (HBEW, Stage 3)}. Viewing \(\pi: G \to G/H\) as a discrete
+principal \(H\)-bundle reveals that Phase 1 walks on \(G/H\) blind to
+vertical subgroup frustration \(h_2(y) \in H\), while
+continued-shrinking IDA* (\texttt{cubejs} \cite{cubejs}) wastes tens to
+hundreds of milliseconds searching deep Phase-2 trees on
+high-frustration fibers before encountering low-holonomy fibers later in
+the shell.
 
 \hypertarget{contributions}{%
 \subsection{Contributions}\label{contributions}}
@@ -179,14 +194,31 @@ altogether.
   2 is the unique maximal lookahead depth for factored unary exact
   accounting (Proposition 7).
 \item
-  \textbf{Exhaustive verification and held-out cache-aware evaluation.}
-  Across all \(57,087,450\) abstract transitions, \(1,935,360\) 1-form
-  walks, \(439\) fixtures, \(139\) budget boundaries, a constructive
-  multi-tier witness, and a fresh held-out 500-state evaluation
-  (\texttt{seed\ 0xd48a63}), potential-free dual-horizon compilation
-  preserves 100\% identical outputs while cutting generated visits by
-  \(68.47\%\) beyond COVE-3 (\(93.62\%\) vs.~scalar) and improving
-  latency on \(499/500\) states.
+  \textbf{Exhaustive Stage-2 verification and held-out cache-aware
+  evaluation.} Across all \(57,087,450\) abstract transitions,
+  \(1,935,360\) 1-form walks, \(439\) fixtures, \(139\) budget
+  boundaries, a constructive multi-tier witness, and a fresh held-out
+  500-state evaluation (\texttt{seed\ 0xd48a63}), potential-free
+  dual-horizon compilation preserves 100\% identical outputs while
+  cutting generated visits by \(68.47\%\) beyond COVE-3 (\(93.62\%\)
+  vs.~scalar) and improving latency on \(499/500\) states.
+\item
+  \textbf{Stage-3 Holonomy-Guided Bifurcated Eikonal Wavefront Search
+  (HBEW).} Formulating two-phase search on the principal \(H\)-bundle
+  \(G \to G/H\), we document a negative result on pure subgroup
+  metric-distortion ``wormholes'' (\(\mathcal W_5 \subset H\)) and prove
+  four coupled mechanisms (Algorithm 3): the \(\binom{12}{4}\)
+  equatorial UD-slice funnel (\(4/495\) dist-1, \(55/495\) dist-2;
+  Proposition 8), \(K_2\) quarter-turn sister-fiber involution and joint
+  coboundary (\(7,741,440\) verified edges; Proposition 9), 4-bit
+  phase-crossing Bellman potentials with inline zero-slack sieving
+  (Proposition 10), and \(\sigma_2\)-stratified Eikonal wavefront
+  verification with provable bounded-shell optimality (Theorem 1). On a
+  fresh 500-state held-out corpus (\texttt{seed\ 0x5e71a9}), HBEW
+  achieves \(20.58\) mean moves (\(100\% \le 22\)) in \(4.84\) ms median
+  and strictly Pareto-dominates \texttt{cubejs\ 1.3.2} (\(6.54\times\)
+  faster median, \(15.7\times\) faster P95, \(20.46\) vs.~\(21.71\)
+  moves).
 \end{enumerate}
 
 \hypertarget{proposed-technical-novelty}{%
@@ -195,18 +227,23 @@ altogether.
 Two-phase solving \cite{kociemba_coordinates}, pattern databases
 \cite{korf1997}, selective successor generation \cite{felner2012},
 \cite{goldenberg2014}, relative/modular PDB compression
-\cite{kociemba_pruning}, \cite{sturtevant2017}, \cite{breyer2010}, and
-transposition caching \cite{akagi2010} are established prior art. Within
-reviewed literature, our proposed technical novelty lies in the
-synthesis of: (i) potential-free coboundary quotienting with
-steepest-descent 1-form root recovery to embed canonical Horizon-2
-operator masks in fewer dictionary entries than 1-step OSFs; (ii) 4-bit
-Cayley-\(K_4\) clique syndromes with parallel SWAR decoding and linear
-coboundary integration; (iii) multi-tier batched scalar-budget
-accounting across Horizons 1--3; and (iv) the communication-complexity
-barrier characterizing the exact lookahead limit of factored unary
-tables. Worldwide priority across all unpublished solvers or non-indexed
-venues is not claimed; scope and overlap are documented in the
+\cite{kociemba_pruning}, \cite{sturtevant2017}, \cite{breyer2010},
+transposition caching \cite{akagi2010}, and continuous Eikonal fast
+marching \cite{sethian1996} are established prior art. Within reviewed
+literature, our proposed technical novelty comprises two distinct
+layers: (a) on the \textbf{compiler layer (COVE-3)}, potential-free
+coboundary quotienting with 1-form steepest-descent root recovery for
+sub-1-step-sized Horizon-2 dictionaries, 24-bit Cayley-\(K_4\) clique
+syndromes, three-tier scalar budget accounting, and the Horizon-2
+communication-complexity barrier; and (b) on the
+\textbf{solver-algorithm layer (HBEW)}, coupling equatorial UD-slice
+funneling, \(K_2\) sister-fiber bifurcation \(y_- = y_+ F^2\),
+phase-crossing Bellman holonomy potentials \(\Psi_r\), inline zero-slack
+Horizon-2 sieving, and \(\sigma_2\)-stratified Eikonal wavefront
+verification over a single coordinate axis without inverse-cube or
+multi-axis probing. Worldwide priority across all unpublished solvers or
+non-indexed venues is not claimed; scope and overlap are documented in
+the
 \href{https://github.com/nahin333/rubikscube/blob/main/research/NOVELTY.md}{dated
 novelty review}.
 
@@ -271,6 +308,27 @@ search. Akagi et al.~analyze IDA* transposition-table correctness
 \cite{akagi2010}, and Lammich and Neumann formalize DFS refinement
 \cite{lammich2015}, grounding our follow-up negative-result variants in
 Sections 4.6--4.7.
+
+\hypertarget{multi-solution-two-phase-search-and-eikonal-wavefronts}{%
+\subsection{Multi-solution two-phase search and Eikonal wavefronts}\label{multi-solution-two-phase-search-and-eikonal-wavefronts}}
+
+Standard multi-solution Kociemba solvers (\texttt{cubejs} \cite{cubejs})
+shorten solutions by running chronological Phase-1 IDA* across
+increasing depths \(d_1\) and invoking full Phase-2 IDA* up to
+\(B - d_1 - 1\) at every \(H\)-entry, shrinking \(B\) upon each
+completion. Because Phase 1 has zero visibility into vertical subgroup
+distance \(h_2(y)\), early high-frustration fibers trigger deep
+\(\sigma_2 > 0\) Phase-2 searches before zero-slack fibers later in the
+same shell are even reached. Engineering-oriented solvers
+(\texttt{min2phase}) mitigate tail spikes externally via 3-axis
+\(\times\) inverse-cube probing, pre-moves, and \(D_{4h}\) symmetry
+reductions. By contrast, HBEW operates on a \textbf{single coordinate
+axis without inverse probing, pre-moves, or symmetry tables}: it
+forecasts \(h_2\) above \(\partial H\) via Bellman potentials, harvests
+\(K_2\)-paired sister fibers, and propagates a discrete minimum-arrival
+wavefront across \((b_0, \sigma_2)\) strata---an algebraic counterpart
+on coset bundles to monotone Eikonal fast-marching wavefronts on
+continuous domains \cite{sethian1996}.
 
 \hypertarget{problem-formulation}{%
 \section{Problem Formulation}\label{problem-formulation}}
@@ -436,7 +494,7 @@ Let \(b_1\le 18\), \(b_2=10\), \(d_1\le 12\), \(d_2\le 18\), and let
 survivors) denote surviving branches at node \(v\).
 
 \begin{table*}[t]
-\caption{Complexity relative to the frozen scalar baseline across 1-step contour and potential-free dual-horizon compilation. Worst-case search remains exponential in depth.}
+\caption{Complexity relative to the frozen scalar baseline across 1-step contour, potential-free dual-horizon, and HBEW holonomy search. Worst-case search remains exponential in depth.}
 \centering\small
 \begin{tabularx}{\textwidth}{@{}p{0.23\textwidth}LLp{0.28\textwidth}@{}}
 \toprule
@@ -800,48 +858,370 @@ Horizon-2 survivors resolves \(\text{nh1} = U \cap V\) explicitly in
 \(O(1)\) bitwise operations while short-circuiting \(y_2\) whenever
 \(U = \emptyset\). ∎
 
+\hypertarget{principal-h-bundle-defect-decomposition-and-ud-slice-funnel}{%
+\subsection{Principal H-bundle defect decomposition and UD-slice funnel}\label{principal-h-bundle-defect-decomposition-and-ud-slice-funnel}}
+
+Stages 1 and 2 accelerate COVE-3 down to \(\approx 1.4\)--\(1.8\) ms
+while deliberately preserving its greedy first-completion trajectory
+(\texttt{22.94} mean moves). Before redesigning the search algorithm
+itself, we tested whether subgroup paths \(q \in H\) could be shortened
+directly via \textbf{metric-distortion ``Cayley wormholes''}---short
+ambient words \(w \in G\) returning to \(H\) whose \(G\)-cost beats
+their \(H\)-distance (\(|w|_G < d_H(e, w)\)). Exhaustive enumeration up
+to ambient length \(5\) uncovered \(128\) words
+\(\mathcal W_5 \subset H\) of \(G\)-length \(5\) and \(H\)-distance
+\(7\) (\(\Delta h_2 = -2\), such as \(F R^2 F'\)-conjugated slice
+commutators). Yet across \(60\) uniform Phase-1 endpoints,
+\(\mathcal W_5\) macro-steps improved \textbf{\(0 / 60\)} solutions:
+their branching factor \(128^{1/5} \approx 2.64\) is far below canonical
+Phase-2 branching (\(\approx 6.59\)), making post-hoc shortcutting
+exponentially unlikely to align with arbitrary \((c,e,q) \in H\).
+
+Instead, view the quotient projection \(\pi: G \to G/H\)
+(\(|G/H| = 2,217,093,120\)) as a discrete \textbf{principal
+\(H\)-bundle} with structure group \(H\) (\(|H| = 19,508,428,800\)). Any
+two-phase trajectory \((p, q)\) from \(s \in G\)
+(\(s \cdot p = y \in H\), \(y \cdot q = e\)) has exact length
+
+\[
+L(p, q) = \underbrace{h_1(s) + \sigma_1(p)}_{d_1 = |p|} + \underbrace{h_2(y) + \sigma_2(y, q)}_{d_2 = |q|},
+\tag{12}
+\]
+
+where \(\sigma_1(p) = |p| - h_1(s) \ge 0\) is the \textbf{horizontal
+base slack}, \(h_2(y)\) is the \textbf{vertical subgroup holonomy} at
+fiber \(y = s \cdot p \in H\), and
+\(\sigma_2(y, q) = |q| - h_2(y) \ge 0\) is the \textbf{vertical subgroup
+slack}. Minimizing \(L(p,q)\) across bounded shells \(d_1 \le D_1\) is
+equivalent to minimizing total bundle defect
+\(\Delta(p,q) = \sigma_1(p) + h_2(s \cdot p) + \sigma_2(s \cdot p, q)\).
+
+Near \(\partial H\), the \(\binom{12}{4} = 495\) UD-slice coordinate
+imposes a severe combinatorial bottleneck:
+
+\textbf{Proposition 8 --- Equatorial UD-slice funnel into \(H\).} Let
+\(\mathcal S = \binom{\{0,\dots,11\}}{4}\) (\(|\mathcal S| = 495\)) be
+the UD-slice coset graph with solved equatorial slice
+\(s_\star = \{8,9,10,11\}\).
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Every Phase-1 trajectory entering \(H\) from \(G \setminus H\)
+  (\texttt{d1\ \textgreater{}=\ 1}) terminates with an
+  \textbf{equatorial quarter-turn} \(F^{\pm 1}\) for some
+  \(F \in \mathcal E = \{R, F, L, B\}\). Neither \(U, D\) turns nor
+  half-turns \(F^2\) can transition \(G \setminus H \to H\).
+\item
+  Exactly \textbf{\(4\) out of \(495\)} slice states stand at distance
+  \(1\) from \(s_\star\), and at most \textbf{\(55\) out of \(495\)}
+  stand at distance \(2\). Precomputing a 495-byte 8-bit mask
+  \texttt{slDist2Mask} rejects \(92.19\%\) of state-move pairs at
+  remaining Phase-1 depth \(r_1 = 2\) in a single L1-cached byte lookup.
+\end{enumerate}
+
+\emph{Proof.} (1) Every generator of
+\(H = \langle U, D, R^2, L^2, F^2, B^2 \rangle\) is invertible inside
+\(H\); if \(x \cdot h \in H\) with \(h \in H\), then
+\(x = (x \cdot h) h^{-1} \in H\), contradicting \(x \notin H\). The
+remaining \(18 - 10 = 8\) generators of \(G\) are precisely
+\(\{F, F' : F \in \mathcal E\}\). (2) An equatorial face
+\(F \in \mathcal E\) contains \(2\) equatorial slice slots and \(2\) U/D
+slots; a quarter-turn \(F^{\pm 1}\) swaps those \(2\) equatorial slots
+with \(2\) U/D slots while fixing the other \(2\) equatorial slots.
+Since \(F\) and \(F'\) move the \textbf{same} unordered 4-subset of edge
+slots around a 4-cycle, \(F(s_\star) = F'(s_\star)\) as unordered
+4-subsets, yielding exactly \(|\mathcal E| = 4\) distance-1 slice states
+(each holding \(2\) slice edges in \(E\)-layer and \(2\) on face \(F\)).
+From each of the \(4\) distance-1 states, applying the \(18\) outer
+turns reaches \(55\) distinct distance-2 subsets, verified exhaustively
+across all \(495 \times 18 = 8,910\) transitions (\texttt{702\ /\ 8,910}
+surviving pairs, pruning \(8,208 / 8,910 = 92.19\%\)). ∎
+
+\hypertarget{k2-quarter-turn-sister-fiber-involution-and-joint-coboundary}{%
+\subsection{K2 quarter-turn sister-fiber involution and joint coboundary}\label{k2-quarter-turn-sister-fiber-involution-and-joint-coboundary}}
+
+Proposition 8 implies that every pre-entry state \(x \in G \setminus H\)
+at remaining depth \(r_1 = 1\) enters \(H\) via some equatorial face
+\(F \in \mathcal E\). What happens to the opposite quarter-turn on that
+same face?
+
+\textbf{Proposition 9 --- \(K_2\) sister-fiber involution and joint
+Phase-2 coboundary.} Let \(x \in G \setminus H\) be any state such that
+\(y_+ = x \cdot F \in H\) for an equatorial quarter-turn
+\(F \in \{R, F, L, B\}\). Define \(y_- = x \cdot F'\).
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \emph{(Identical quotient projection)} \(y_- \in H\), and \((F, F')\)
+  induce \textbf{identical} transitions on all three Phase-1 coordinates
+  (\texttt{co}, \texttt{eo}, \texttt{sl}). Thus \(y_+\) and \(y_-\)
+  arise as twin lifts of the exact same Phase-1 prefix up to \(x\).
+\item
+  \emph{(\(K_2\) involution in \(H\))} Inside the subgroup \(H\),
+  \(y_- = y_+ \cdot F^2\) and \(y_+ = y_- \cdot F^2\), where
+  \(F^2 \in H\) is a single unit-cost Phase-2 generator. Consequently,
+  \(|h_2(y_+) - h_2(y_-)| \le 1\), and
+  \((D_{\mathcal A}(y_+), D_{\mathcal A}(y_-))\) is recovered from
+  \textbf{one} steepest-descent root walk on \(y_+\) plus a single
+  \(O(1)\) coboundary step along \(F^2\): \[
+  \begin{aligned}
+  D_{\mathcal A}(y_-) &= D_{\mathcal A}(y_+) - [j_{F^2} \in M_-(a_+)]\\
+  &\quad + [j_{F^2} \notin M_0(a_+)].
+  \end{aligned}
+  \tag{13}
+  \]
+\item
+  \emph{(Seam-admissible sister pruning)} Under non-redundant face
+  concatenation (\texttt{face(q\_1)\ !=\ F}), the minimum total move
+  length from \(y_+\) (or \(y_-\)) satisfies
+  \(\ell(y_\pm) \ge d_1 + \tilde D_C(y_\pm, F)\), where
+  \(\tilde D_C(y, F) = D_C(y) + [A_F^{(2)} \cap M_-(c, s_p) = \emptyset] + [A_F^{(2)} \cap M_0(c, s_p) = \emptyset, M_-(c, s_p) \ne \emptyset]\)
+  for \(y \ne e\) (and \(0\) at \(y=e\)), allowing individual rejection
+  without invalidating the sister lift when \(y_- = e, y_+ = F^2\).
+\end{enumerate}
+
+\emph{Proof.} (1) \(F' = F \cdot F^2\), so
+\(y_- = x F' = (x F) F^2 = y_+ F^2\). Because \(y_+ \in H\) and
+\(F^2 \in H\), group closure gives \(y_- \in H\), where
+\((\text{co}, \text{eo}, \text{sl})\) takes the unique solved coset
+value \((0, 0, s_\star)\) on both \(y_+\) and \(y_-\). (Even at
+arbitrary \((c_1, e_1, s_1)\), \(F^2 \in H\) acts trivially on \(G/H\),
+so \(\pi(xF) = \pi(xF')\) globally across all \(18,920\) coordinate-face
+pairs.) (2) Since \((F^2)^2 = I\), right-multiplication by \(F^2\) is a
+fixed-point-free involution pairing every Phase-2 coordinate state
+\((c_+, q_+)\) and \((e_+, q_+)\) into a \(K_2\) edge of \(H\);
+Proposition 5(2) yields Eq. (13) in \(O(1)\), verified exhaustively
+across all \(1,935,360 \times 4 = 7,741,440\) sister transitions. (3) If
+\(y_\pm \ne e\), any Phase-2 completion after terminal Phase-1 face
+\(F\) must begin with some \(j \in A_F^{(2)}\); if no
+\(j \in A_F^{(2)}\) decreases \(D_C\), Phase 2 requires at least
+\(D_C + 1\) moves (and \(D_C + 2\) if every \(j \in A_F^{(2)}\)
+increases \(D_C\)). Applying the test separately to \(y_+\) and \(y_-\)
+preserves soundness when \(y_- = e\) (\(0\) moves) and \(y_+ = F^2\)
+(\(\tilde D_C(F^2, F) \ge 3\) under forbidden same-face \(F^2\)). ∎
+
+\hypertarget{phase-crossing-bellman-potentials-and-inline-zero-slack-sieve}{%
+\subsection{Phase-crossing Bellman potentials and inline zero-slack sieve}\label{phase-crossing-bellman-potentials-and-inline-zero-slack-sieve}}
+
+Can Phase 1 foresee high subgroup holonomy \(h_2(y)\) \textbf{before}
+crossing into \(H\)? Although Phase-2 slice permutation
+\(q \in \operatorname{Sym}_4\) is undefined outside \(H\) (equatorial
+edges leave the middle layer), ambient outer turns act globally on
+corner permutation \(c \in \operatorname{Sym}_8\) (\(40,320\) states)
+and on the ordered 4-tuples of U-edges, D-edges, and E-slice edges in
+\(P(12, 4) = 12 \cdot 11 \cdot 10 \cdot 9 = 11,880\).
+
+\textbf{Proposition 10 --- Admissible phase-crossing Bellman potentials
+and zero-slack holonomy sieve.}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  For corners \(c \in \operatorname{Sym}_8\), define
+  \(\Psi_0^C(c) = \min_{q \in \operatorname{Sym}_4} D_C(c, q)\), and for
+  \(r \in \{1, 2\}\) define recursively over equatorial quarter-turns
+  \(E_1 = \{F, F' : F \in \mathcal E\}\) and all 18 turns \(G_1\): \[
+  \begin{aligned}
+  \Psi_1^C(c) &= \min_{m \in E_1} \Psi_0^C(\delta_C(c, m)),\\
+  \Psi_2^C(c) &= \min_{m \in G_1} \Psi_1^C(\delta_C(c, m)).
+  \end{aligned}
+  \tag{14}
+  \] Define \(\Psi_r^{\rm EU}, \Psi_r^{\rm ED}, \Psi_r^{\rm ES}\) on
+  \(P(12,4)\) analogously from exact \(H\)-distances of U-edges,
+  D-edges, and E-slice edges (\(\infty\) outside \(H\) at \(r=0\)). Then
+  for \textbf{every} ambient state \(x \in G \setminus H\) and
+  \textbf{every} completion \(w = m_1 \dots m_r\) (\(r \in \{1,2\}\))
+  with \(x \cdot w = y \in H\): \[
+  \begin{aligned}
+  \Psi_r(x) := \max\bigl\{&\Psi_r^C(x), \Psi_r^{\rm EU}(x),\\
+  &\Psi_r^{\rm ED}(x), \Psi_r^{\rm ES}(x)\bigr\} \le h_2(y).
+  \end{aligned}
+  \tag{15}
+  \] Hence any branch at Phase-1 depth \(g_1\) with remaining depth
+  \(r \in \{1,2\}\) satisfying \(g_1 + r + \Psi_r(x) \ge B\) cannot
+  improve incumbent bound \(B\) and is pruned \textbf{with zero loss of
+  bounded-shell optimality}.
+\item
+  \emph{(Inline zero-slack holonomy sieve)} Whenever a harvested fiber
+  \(y \in H\) at depth \(d_1\) satisfies \(b_0 = d_1 + h_2(y) < B\),
+  running Phase-2 coboundary Horizon-2 verification strictly at
+  \(\sigma_2 = 0\) (depth \(r_2 = h_2(y)\), branching restricted purely
+  to \(M_-^{(2)}\)) immediately lowers \(B \leftarrow b_0\) whenever
+  \(y\) is slack-free inside \(H\).
+\end{enumerate}
+
+\emph{Proof.} (1) By Proposition 8(1), any length-\(r\) completion \(w\)
+from \(x \notin H\) into \(H\) has \(m_r \in E_1\). At
+\(y = x \cdot w \in H\) with slice coordinate \(q_y\),
+\(\Psi_0^C(c_y) = \min_q D_C(c_y, q) \le D_C(c_y, q_y) \le h_2(y)\),
+while \(D_E(e_y, q_y)\) dominates the separate U-edge, D-edge, and
+E-slice distances inside \(H\) because \((e_y, q_y)\) fixes all 12 edge
+positions in \(H\). Backward induction over \(m_r \in E_1\) and
+\(m_1 \in G_1\) yields
+\(\Psi_r^{\mathcal A}(x) \le \Psi_0^{\mathcal A}(y) \le h_2(y)\) for
+each component, so their maximum satisfies Eq. (15). Clamping values to
+\(\min(15, \cdot)\) packs each table into 4-bit nibbles (\(1,367,280\)
+entries = \(683,640\) B total, verified across all transitions). (2) At
+\(\sigma_2 = 0\), every move in a valid completion of length \(h_2(y)\)
+must decrease every coordinate attaining \(h_2(y)\); if such a path
+exists, \(b_0 = d_1 + h_2(y) < B\) is a verified solution in \(G\),
+tightening \(B\) for all subsequent Phase-1 branches. ∎
+
+\hypertarget{defect-stratified-eikonal-wavefront-and-bounded-shell-optimality}{%
+\subsection{Defect-stratified Eikonal wavefront and bounded-shell optimality}\label{defect-stratified-eikonal-wavefront-and-bounded-shell-optimality}}
+
+Combining Propositions 8--10 yields \textbf{Algorithm 3 (HBEW)}. Rather
+than running deep \(\sigma_2 > 0\) Phase-2 searches as soon as an
+arbitrary fiber \(y\) is encountered, HBEW places surviving fibers into
+two-dimensional buckets \(Q[b_0][d_1]\) indexed by zero-slack arrival
+bound \(b_0 = d_1 + h_2(y)\), then sweeps candidate total lengths
+\(b = 1, 2, \dots\) in strictly monotone waves
+(\texttt{sigma2\ =\ b\ -\ b0} across all \(b_0 \le b\)).
+
+\begin{figure}[t]
+\hrule\vspace{5pt}
+\textbf{Algorithm 3.} Holonomy-Guided Bifurcated Eikonal Wavefront Search (HBEW)
+\vspace{4pt}
+\begin{Verbatim}[fontsize=\footnotesize,breaklines=true,breakanywhere=true]
+Input: holonomy-compiled tables (T, H), legal state s, cap D1, window delta, target tau
+if s in H: return exact Phase-2 coboundary IDA* from s (split = 0)
+B = 31; Q[0..31][0..12] = empty; compute root h1(s) via 1-form walks
+for shell d1 = h1(s) to min(D1, h1(s) + delta):
+  if d1 >= B or B <= tau: break
+  DFS Phase 1 with 24-bit SWAR masks & hoisted child pruning:
+    at r1 = 2: mask moves by slDist2Mask[sl]; check g1 + 2 + Psi2(x) < B
+    at r1 = 1: restrict to positive equatorial turns F in {R,F,L,B}
+      check g1 + 1 + Psi1(x) < B; lift K2 sister pair (y+, y-) in H
+      recover (dc+, de+) once; compute (dc-, de-) in O(1) via Eq. (13)
+      for each sister y in {y+, y-} passing seam bound < B:
+        b0 = d1 + h2(y)
+        if zero-slack Horizon-2 probe(y, h2(y)) succeeds:
+          B = b0; record best path; if B <= tau: stop shell
+        else: push y into bucket Q[b0][d1]
+if B > tau:
+  for candidate total length b = h1(s) to B - 1:
+    for b0 = 0 to b, and d1 = 1 to 12:
+      for each fiber y in Q[b0][d1]: // exact stratum sigma2 = b - b0 >= 1
+        if Phase-2 coboundary H2 search(y, b - d1) succeeds:
+          B = b; record best path; if B <= tau: return best path
+          goto next_done
+next_done: return verified best path
+\end{Verbatim}
+\vspace{3pt}\hrule
+\end{figure}
+
+\textbf{Theorem 1 --- Soundness and exact bounded-shell optimality of
+HBEW.} Let
+\(\mathcal T_H^{\le \bar D}(s) = \{(p, q) : |p| \le \bar D,\ s \cdot p \in H,\ (s \cdot p) \cdot q = e,\ \text{face}(p_{\text{last}}) \ne \text{face}(q_1)\}\)
+be the space of all non-redundant two-phase solutions within effective
+shell cap \(\bar D = \min(D_1, h_1(s)+\delta)\).
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \emph{(Soundness)} Every trajectory returned by Algorithm 3 is a
+  verified legal factorization of \(s^{-1}\) in \(G\) with zero adjacent
+  same-face turns.
+\item
+  \emph{(Exact bounded-shell optimality at \(\tau = 0\))} When
+  \(\tau = 0\) and no node/time cap intervenes, Algorithm 3 returns a
+  trajectory attaining the \textbf{exact global minimum}
+  \(\min_{(p,q) \in \mathcal T_H^{\le \bar D}(s)} (|p| + |q|)\),
+  invariant to toggling any subset of its four pruning pillars (UD-slice
+  funnel, \(K_2\) sister pairing, \(\Psi\)-potentials, and zero-slack /
+  \(\sigma_2\) stratification).
+\end{enumerate}
+
+\emph{Proof.} (1) Phase-2 entry enforces
+\texttt{seamAllowed2{[}lastFace{]}} (\texttt{face(q\_1)\ !=\ lastFace}),
+canonical Phase-1/Phase-2 masks forbid consecutive same-face moves
+inside each phase, and cubie + 54-sticker replay verifies
+\((s \cdot p) \cdot q = e\). (2) Let
+\((p^\star, q^\star) \in \mathcal T_H^{\le \bar D}(s)\) achieve minimal
+total length \(L^\star = d_1^\star + d_2^\star\) with
+\(y^\star = s \cdot p^\star \in H\). If \(d_1^\star = 0\) (\(s \in H\)),
+Phase-2 IDA* from \(s\) increases \(r_2 = h_2(s), h_2(s)+1, \dots\) and
+finds \(L^\star\) directly. If \(d_1^\star \ge 1\), assume without loss
+of generality that \(p^\star\) first enters \(H\) at step \(d_1^\star\)
+(otherwise split at its first \(H\)-hit, preserving \(L^\star\) and
+reducing \(|p^\star| \le \bar D\)). By Proposition 8, \(p^\star\) passes
+through a valid distance-2 slice at \(r_1=2\) and ends with \(F\) or
+\(F'\) (\(F \in \mathcal E\)) at \(r_1=1\); Proposition 9 visits both
+\(y_+ = x F\) and \(y_- = x F'\) while preserving seam admissibility;
+and Proposition 10 ensures \(\Psi_r(x) \le h_2(y^\star) \le d_2^\star\),
+so \(g_1 + r + \Psi_r(x) \le d_1^\star + d_2^\star = L^\star\). Because
+no valid solution can set \(B < L^\star\), \(p^\star\) is never pruned
+(\(L^\star < B\) holds strictly until a length-\(L^\star\) solution is
+recorded). If \(d_2^\star = h_2(y^\star)\) (\(\sigma_2 = 0\)), the
+inline zero-slack probe finds a length-\(L^\star\) completion
+immediately (\texttt{B\ =\ L*}); if \(d_2^\star > h_2(y^\star)\)
+(\(\sigma_2 \ge 1\)), \(y^\star\) enters
+\(Q[d_1^\star + h_2(y^\star)][d_1^\star]\), and the outer wavefront loop
+tests \(b = h_1(s), \dots, L^\star\) in strictly increasing order,
+finding a solution of length \(L^\star\) at or before
+\((b = L^\star, y^\star)\) and terminating immediately when
+\(\tau = 0\). ∎
+
 \hypertarget{experimental-setup}{%
 \section{Experimental Setup}\label{experimental-setup}}
 
 \hypertarget{configurations-and-ablation-ladder}{%
 \subsection{Configurations and ablation ladder}\label{configurations-and-ablation-ladder}}
 
-Across the complete study, we evaluate:
+Across the three-stage study, we evaluate:
 
 \begin{itemize}
 \tightlist
 \item
-  \textbf{Original scalar (\texttt{e7023a8d}, \(5.55\) MiB):} frozen
-  pre-change baseline loaded in the same V8 realm.
+  \textbf{Stage-1 \& Stage-2 compiler ladder (exact-output preserving):}
+  \textbf{Original scalar} (\texttt{e7023a8d}, \(5.55\) MiB),
+  \textbf{Stage-1 dictionary + scalar} and \textbf{Compiled COVE-3}
+  (\texttt{f26aa421}, \(7.55\) MiB), \textbf{Coboundary H2-only}
+  (\texttt{h2only}, \(7.49\) MiB), \textbf{Potential-free Dual-Horizon}
+  (\texttt{dual}, \(11.49\) MiB --- shipped COVE-3 default), and
+  \textbf{32-bit Dual-Horizon} (\texttt{dual32}, \(13.48\) MiB).
 \item
-  \textbf{Stage-1 dictionary + scalar (\(7.55\) MiB) \& Compiled COVE-3
-  (\texttt{f26aa421}, \(7.55\) MiB):} 1-step phase-2 contour dictionary
-  without and with selective generation (\texttt{seed\ 0x913b5e}).
-\item
-  \textbf{Coboundary H2-only (\texttt{h2only}, \(7.49\) MiB):} scalar
-  Phase 1 + unified potential-free Phase-2 Horizon-2 dictionary
-  (\(24,743\) shared entries; \(62,440\) bytes \textbf{smaller} than
-  Stage-1 COVE-3).
-\item
-  \textbf{Potential-free Dual-Horizon (\texttt{dual}, \(11.49\) MiB ---
-  shipped default):} 24-bit potential-free Phase-1 Cayley-\(K_4\)
-  syndromes + unified potential-free Phase-2 Horizon-2 dictionary (zero
-  stored scalar distances in either phase).
-\item
-  \textbf{32-bit Dual-Horizon (\texttt{dual32}, \(13.48\) MiB):}
-  cache-footprint control storing 8-bit Phase-1 distances alongside
-  24-bit syndromes (\texttt{Uint32Array}), performing the exact same
-  \(8,388,304\) generated visits as \texttt{dual}.
+  \textbf{Stage-3 HBEW solver modes (\texttt{14.03} MiB total =
+  \texttt{11.49} MiB \texttt{dual} + \texttt{2.54} MiB holonomy
+  tables):}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \textbf{HBEW Fast (\texttt{hbewFast}):} \(D_1 = 11\), \(\delta = 1\)
+    (two Phase-1 shells \(h_1(s), h_1(s)+1\)), \(\tau = 20\).
+  \item
+    \textbf{HBEW Default (\texttt{hbewDefault} --- shipped HBEW
+    default):} \(D_1 = 11\), \(\delta = 2\) (three Phase-1 shells),
+    \(\tau = 20\) (with automatic fallback to \(D_1 = 12\) if
+    \(B > 22\)).
+  \item
+    \textbf{HBEW Exact Bounded-Shell (\texttt{hbewExact}):}
+    \(D_1 = 11\), \(\delta = 2\), \(\tau = 0\) (provably optimal over
+    \(\mathcal T_H^{\le \bar D}(s)\) by Theorem 1), plus \textbf{five
+    paired component ablations} (\texttt{unprunedMultiShell},
+    \texttt{noSisterPairing}, \texttt{noPsiPotentials},
+    \texttt{noZeroSlackSieve}, \texttt{noStratifiedWavefront}).
+  \end{itemize}
 \end{itemize}
 
-\hypertarget{held-out-corpus-and-cache-aware-measurement-protocol}{%
-\subsection{Held-out corpus and cache-aware measurement protocol}\label{held-out-corpus-and-cache-aware-measurement-protocol}}
+\hypertarget{held-out-corpora-and-cache-aware-measurement-protocol}{%
+\subsection{Held-out corpora and cache-aware measurement protocol}\label{held-out-corpora-and-cache-aware-measurement-protocol}}
 
-Stage-1 contour compilation was evaluated on 500 pseudorandom legal
-states (\texttt{seed\ 0x913b5e}), and algorithm prototyping for Stage 2
-inspected that same seed. To prevent corpus-reuse bias, our Stage-2
-evaluation uses a \textbf{fresh, untouched 500-state seed
-(\texttt{0xd48a63})} fixed after implementation completion.
+Each stage uses a strictly separate held-out evaluation seed never
+inspected during that stage's design: Stage 1 used
+\texttt{seed\ 0x913b5e} (500 uniform states), Stage 2 used untouched
+\texttt{seed\ 0xd48a63} (500 uniform states), and Stage 3 uses a
+\textbf{brand-new untouched 500-state uniform corpus
+(\texttt{seed\ 0x5e71a9})}, alongside the 200-scramble external
+comparator fixture (\texttt{seed\ 0x74bc39}, 3 interleaved repeats per
+solver against \texttt{cubejs\ 1.3.2} \cite{cubejs}).
 
 All runs execute single-threaded on Node 18.19.1 (Linux x64, AMD EPYC
 9254 with 32 MiB L3 cache per CCD), warming up on 30 archived
@@ -897,9 +1277,12 @@ generation---not dictionary indirection---drives the speedup.
 \subsection{Persistent storage across representations}\label{persistent-storage-across-representations}}
 
 Let \(M_T = 1,783,560\), \(D_1 = 2,096,325\), \(D_2 = 1,935,360\),
-\(U = 40,609\), \(U_{\rm H2} = 24,743\), and \(M_{\rm LUT} = 1,024\)
-bytes. Exact typed-array byte counts across all implemented and
-calculated representations are:
+\(U = 40,609\), \(U_{\rm H2} = 24,743\), \(M_{\rm LUT} = 1,024\), and
+\(M_{\rm holo\_extra} = 2,665,303\) bytes (\(495\) B UD-slice dist-2
+funnel + \(1,297,528\) B ambient \(P(12,4)\) \& \(K_2\) sister maps +
+\(1,367,280 \div 2 = 683,640\) B 4-bit \(\Psi\)-potentials + \(683,640\)
+B canonical entry/sister index tables). Exact typed-array byte counts
+across all implemented and calculated representations are:
 
 \[
 \begin{aligned}
@@ -910,13 +1293,14 @@ M_{\rm contour} &= M_T + D_1 + 2D_2 + 4U = 7,913,041\ \text{B},\\
 M_{\rm dual} &= M_T + 3D_1 + 2D_2 + 4U_{\rm H2} + M_{\rm LUT}\\
 &= 12,043,251\ \text{B},\\
 M_{\rm dual32} &= M_T + 4D_1 + 2D_2 + 4U_{\rm H2} + M_{\rm LUT}\\
-&= 14,139,576\ \text{B}.
+&= 14,139,576\ \text{B},\\
+M_{\rm holo} &= M_{\rm dual} + M_{\rm holo\_extra} = 14,708,554\ \text{B}.
 \end{aligned}
-\tag{12}
+\tag{16}
 \]
 
 \begin{table}[H]
-\caption{Persistent numeric storage across scalar, coboundary H2-only, 1-step contour, and potential-free/32-bit dual-horizon representations.}
+\caption{Persistent numeric storage across scalar, coboundary H2-only, 1-step contour, potential-free/32-bit dual-horizon, and HBEW holonomy representations.}
 \centering\small
 \begin{tabularx}{\columnwidth}{@{}Lrr@{}}
 \toprule
@@ -925,8 +1309,9 @@ Representation & Bytes & MiB \\
 Scalar byte distances (\texttt{scalar}) & 5,815,245 & 5.55 \\
 Potential-free Coboundary H2-only (\texttt{h2only}) & 7,850,601 & \textbf{7.49} \\
 Stage-1 dictionary contours (\texttt{contour}) & 7,913,041 & 7.55 \\
-Potential-free Dual-Horizon (\texttt{dual}, shipped) & 12,043,251 & 11.49 \\
+Potential-free Dual-Horizon (\texttt{dual}, shipped COVE-3) & 12,043,251 & 11.49 \\
 32-bit Clique-SWAR + Coboundary H2 (\texttt{dual32}) & 14,139,576 & 13.48 \\
+HBEW Holonomy + Dual-Horizon (\texttt{holonomy}, shipped HBEW) & 14,708,554 & 14.03 \\
 Naive 64-bit flat dual-horizon, calculated & 34,037,040 & 32.46 \\
 \bottomrule
 \end{tabularx}
@@ -934,18 +1319,16 @@ Naive 64-bit flat dual-horizon, calculated & 34,037,040 & 32.46 \\
 
 Crucially, \texttt{h2only} (\(7.49\) MiB) uses \textbf{\(62,440\) fewer
 bytes} than Stage-1 COVE-3 (\(7.55\) MiB) despite adding 2-step
-lookahead masks and its 1-KiB LUT, because potential-free coboundary
-quotienting collapses \(40,609\) two-table signatures into \(24,743\)
-unified entries. Standalone table construction takes \(450.7\) ms for
-scalar tables plus \(478.8\) ms for \texttt{dual} compilation (\(929.5\)
-ms total vs.~\(1,271.1\) ms for \texttt{cubejs.initSolver()}), hidden
-behind the worker's immediate scalar first response.
+lookahead masks and its 1-KiB LUT, while full HBEW (\texttt{14.03} MiB)
+adds only \(+2.54\) MiB (\(+219.1\) ms compile time, \(1,143.5\) ms cold
+build vs.~\(1,247.3\) ms for \texttt{cubejs.initSolver()}), keeping the
+entire solver well inside a single 32 MiB L3 cache slice.
 
 \hypertarget{external-cubejs-comparison}{%
 \subsection{External cubejs comparison}\label{external-cubejs-comparison}}
 
 \begin{table*}[t]
-\caption{Separate cubejs 1.3.2 comparison on 200 shared scrambles. One timing per state; solution-length targets differ.}
+\caption{Archived Stage-2 cubejs 1.3.2 comparison on 200 shared scrambles. One timing per state; solution-length targets differ.}
 \centering\small
 \begin{tabularx}{\textwidth}{@{}Lrrr@{}}
 \toprule
@@ -978,21 +1361,20 @@ matched-output attribution relies exclusively on Sections 6.1 and 6.6.
 \hypertarget{correctness-and-exhaustive-certificate-verification}{%
 \subsection{Correctness and exhaustive certificate verification}\label{correctness-and-exhaustive-certificate-verification}}
 
-Table 5 summarizes our multi-layer verification suite. Beyond randomized
-search tests, \texttt{tests/dual-horizon.cjs} exhaustively checks every
-single directed edge of all four compiled abstractions (\(37,733,850\)
-Phase-1 transitions and \(19,353,600\) Phase-2 transitions), confirming
-that the \(K_4\) clique law, SWAR bit-unpacking, coboundary recurrences,
-unary Horizon-2 survival masks, and \(1,935,360\) steepest-descent root
-walks agree identically with raw BFS distance tables. Separately,
-\(439\) state fixtures and \(139\) global node-cap boundaries verify
-exact trace and progress-checkpoint equivalence across all compiled
-modes, while Playwright end-to-end tests verify cold scalar worker
-response (\texttt{5,815,245} B) followed by live background upgrade to
-potential-free dual-horizon tables (\texttt{12,043,251} B).
+Table 5 summarizes our multi-layer verification suite across all three
+stages. Beyond \texttt{tests/dual-horizon.cjs} (\(57,087,450\)
+transitions and \(1,935,360\) 1-form walks),
+\texttt{tests/holonomy-solver.cjs} exhaustively verifies Proposition 8
+(\(4/495\) distance-1 and \(55/495\) distance-2 slice states),
+Proposition 9 (\(18,920\) Phase-1 quotient lift equivalences and all
+\(7,741,440\) Phase-2 \(K_2\) sister coboundary transitions),
+Proposition 10 (\(1,367,280\) nibble-packed Bellman potential entries
+and all step inequalities), and Theorem 1 (\(25\) scrambles \(\times\)
+\(6\) ablation modes returning 100\% identical optimal bounded-shell
+lengths while cutting lifts from \(30,586\) to \(8,197\)).
 
 \begin{table*}[t]
-\caption{Verification evidence across Stage-1 contour, follow-up, and potential-free dual-horizon suites. Counts concern distinct checks and are not pooled.}
+\caption{Verification evidence across Stage-1 contour, Stage-2 dual-horizon, and Stage-3 HBEW holonomy suites. Counts concern distinct checks and are not pooled.}
 \centering\small
 \begin{tabularx}{\textwidth}{@{}p{0.24\textwidth}Lp{0.22\textwidth}@{}}
 \toprule
@@ -1002,13 +1384,15 @@ Phase-1 Cayley-\(K_4\) \& SWAR certificates & All 37,733,850 transitions (\textt
 syndromes \& Eq. (7) & Exhaustively verified \\
 Phase-2 coboundary \& 1-form walks & All 19,353,600 transitions (\texttt{cpSp}, \texttt{epSp}) + all
 1,935,360 root walks & Exhaustively verified \\
-Multi-mode trace equivalence & 439 solved, 1-turn, 2-turn, and uniform fixtures × 4 compiled modes & Identical moves, splits, counts \\
-Dense count-budget cap boundaries & 139 global caps (including 2048/65536/250000 thresholds) × 3 modes & Identical outcomes \& progress \\
-Multi-tier \& uncharged witnesses & \texttt{budget-witness.json} (cap 16,317) +
-\texttt{horizon2-witness.json} (cap 118,075) & Constructively verified \\
-Held-out \& Stage-1 benchmarks & 500 states (\texttt{0xd48a63}) + 500 states (\texttt{0x913b5e}), 5
-repeats, 54-sticker replay & 100\% identical outputs \\
-Practical, exact-search \& browser E2E & 219 scrambles, 2013 BFS/A* checks, Chromium desktop/mobile/worker/photo & All passed \\
+UD-slice funnel \& \(K_2\) sister involution & 4/495 \& 55/495 slice funnel; 18,920 coset lifts; all 7,741,440 sister
+edges & Exhaustively verified \\
+Phase-crossing Bellman \(\Psi\)-potentials & All 1,367,280 4-bit entries (\texttt{cPsiC}, \texttt{EU}, \texttt{ED},
+\texttt{ES}) \& step inequalities & Exhaustively verified \\
+Bounded-shell optimality \& trace tests & 25 \(\times\) 6 HBEW exact modes + 439 \(\times\) 4 COVE-3 modes + 139
+budget caps & 100\% exact agreement \\
+Held-out benchmarks \& witnesses & Three 500-state corpora (\texttt{0x913b5e}, \texttt{0xd48a63},
+\texttt{0x5e71a9}) + 2 witnesses & Verified by 54-sticker replay \\
+Practical, exact-search \& browser E2E & 219 + 303 scrambles, 2013 BFS/A* checks, Chromium COVE-3 \& HBEW E2E & All passed \\
 \bottomrule
 \end{tabularx}
 \end{table*}
@@ -1125,52 +1509,172 @@ subgroup endpoint, causing the naive unit-charge solver to return a
 solution}. Exact multi-tier accounting is therefore essential even for
 default unconstrained output equivalence.
 
+\hypertarget{stage-3-hbew-held-out-evaluation-and-component-ablations}{%
+\subsection{Stage-3 HBEW held-out evaluation and component ablations}\label{stage-3-hbew-held-out-evaluation-and-component-ablations}}
+
+Table 8 and Figure 6 report our Stage-3 evaluation on the fresh held-out
+500-state uniform corpus (\texttt{seed\ 0x5e71a9}, five interleaved
+repetitions for primary modes, three paired interleaved repetitions per
+ablation,
+\href{https://github.com/nahin333/rubikscube/blob/main/research/results/holonomy-ablation.json}{holonomy-ablation.json}).
+
+\begin{table*}[t]
+\caption{Stage-3 held-out 500-state evaluation (seed 0x5e71a9, five repetitions) and five-mode component ablations of Holonomy-Guided Bifurcated Eikonal Wavefront Search (HBEW).}
+\centering\small
+\begin{tabularx}{\textwidth}{@{}Lrrrrr@{}}
+\toprule
+Mode / Ablation & Mean moves & \(\le 20\) / \(\le 22\) & Lifts / state & Median (ms) & P95 / Mean (ms) \\
+\midrule
+\texttt{cove3Dual} (\(11.49\) MiB) & 22.944 & 3.2\% / 30.0\% & 1.0 & \textbf{1.053} & \textbf{5.23} / \textbf{1.75} \\
+\texttt{hbewFast} (\(\delta=1, \tau=20\)) & 20.774 & 36.0\% / \textbf{100\%} & 147.3 & 3.786 & 8.45 / 3.98 \\
+\texttt{hbewDefault} (\(\delta=2, \tau=20\)) & 20.576 & \textbf{47.0\%} / \textbf{100\%} & 240.9 & 4.840 & 11.40 / 5.15 \\
+\texttt{hbewExact} (\(\delta=2, \tau=0\)) & \textbf{20.524} & \textbf{47.0\%} / 99.8\% & 349.3 & 5.413 & 10.63 / 5.92 \\
+Ablation: \texttt{unprunedMultiShell} & 20.522 & --- & 940.0 & 5.215 & 11.68 / 6.02 \\
+Ablation: \texttt{noSisterPairing} & 20.578 & --- & 240.8 & 5.144 & 11.61 / 5.36 \\
+Ablation: \texttt{noPsiPotentials} & 20.576 & --- & 240.9 & 5.142 & 11.45 / 5.34 \\
+Ablation: \texttt{noZeroSlackSieve} & 20.560 & --- & 281.5 & 5.042 & 10.91 / 5.34 \\
+Ablation: \texttt{noStratifiedWavefront} & 20.554 & --- & 337.9 & 5.133 & 10.62 / 5.52 \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+\begin{figure*}[t]
+\centering\includegraphics[width=\textwidth]{figures/holonomy-wavefront.pdf}
+\caption{Stage-3 Holonomy-Guided Bifurcated Eikonal Wavefront Search (HBEW) evaluation. (a) Held-out 500-state solution-length distributions (seed 0x5e71a9): HBEW lowers mean length from 22.94 to 20.58 moves with 500/500 states at or below 22 moves. (b) External 200-scramble latency CDFs against cubejs 1.3.2 (seed 0x74bc39): HBEW Default runs 6.54x faster at the median (15.7x at P95) while averaging 1.25 fewer moves. (c) Mean harvested subgroup-H lifts and solve latency across component ablations.}
+\label{fig:holonomy-wavefront}
+\end{figure*}
+
+Three findings characterize HBEW's behavior:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Over 2.37-move reduction and 100\% \(\le 22\) guarantee on
+  held-out uniform states.} Relative to \texttt{cove3Dual} (\(22.944\)
+  mean moves, max \(25\)), \texttt{hbewDefault} lowers mean solution
+  length by \textbf{\(2.368\) moves} (\(95\%\) CI \([2.262, 2.474]\),
+  strictly shorter on \textbf{\(465/500\)} states, tied on \(35\),
+  \textbf{longer on \(0\)}), placing \textbf{\(500/500\) (\(100\%\)) of
+  states at \(\le 22\) moves} (\(85.8\% \le 21\), \(47.0\% \le 20\)) in
+  \(4.840\) ms median. \texttt{hbewFast} (\(\delta=1\)) already achieves
+  \(20.774\) moves (\(100\% \le 22\), \(444/500\) shorter than
+  \texttt{cove3Dual}) in \(3.786\) ms, while \texttt{hbewExact}
+  (\(\tau=0\)) reaches \(20.524\) moves (\(469/500\) shorter, min
+  \(15\)) in \(5.413\) ms.
+\item
+  \textbf{74.4\% lift reduction and 154.7\(\times\) worst-case tail
+  suppression.} Compared against \texttt{unprunedMultiShell}, full HBEW
+  cuts harvested subgroup-\(H\) lifts by \textbf{\(74.4\%\)}
+  (\(940.0 \to 240.9\) lifts/state), reduces Phase-1 visits by
+  \(22.1\%\) (\(41,305 \to 32,181\)), lowers mean solve latency by
+  \(11.1\%\) (\(6.02 \to 5.35\) ms paired), and achieves up to a
+  \textbf{\(154.7\times\) speedup} on pathological tail states.
+\item
+  \textbf{Complementary median versus tail roles of individual pillars.}
+  Disabling \(K_2\) sister pairing slows median runtime
+  (\texttt{256/500} faster with sister pairing, paired ratio
+  \(1.023\times\)) and disabling \(\Psi\)-potentials slows \(254/500\)
+  states (\(109.4\) branches pruned per state). Conversely,
+  \(\sigma_2\)-stratification (\(337.9 \to 240.9\) lifts, mean
+  \(5.52 \to 5.31\) ms, up to \textbf{\(46.9\times\)} tail speedup) and
+  inline zero-slack sieving (\(281.5 \to 240.9\) lifts, mean
+  \(5.34 \to 5.31\) ms, up to \textbf{\(5.99\times\)} tail speedup) pay
+  a tiny \(\approx 0.025\) ms median bookkeeping overhead on easy states
+  to prevent deep high-slack Phase-2 stalls on hard states.
+\end{enumerate}
+
+\hypertarget{stage-3-pareto-dominance-over-cubejs-1.3.2}{%
+\subsection{Stage-3 Pareto dominance over cubejs 1.3.2}\label{stage-3-pareto-dominance-over-cubejs-1.3.2}}
+
+In Stage 2 (Table 4), COVE-3 could not claim a quality-matched speedup
+over \texttt{cubejs\ 1.3.2} \cite{cubejs} because COVE-3 averaged
+\(22.77\) moves versus \texttt{cubejs}'s \(21.71\). Table 9 evaluates
+HBEW head-to-head against \texttt{cubejs\ 1.3.2} on the exact same
+200-scramble corpus (\texttt{seed\ 0x74bc39}, 3 interleaved repetitions
+per solver,
+\href{https://github.com/nahin333/rubikscube/blob/main/research/results/cubejs-holonomy.json}{cubejs-holonomy.json}).
+
+\begin{table*}[t]
+\caption{Stage-3 head-to-head comparison against cubejs 1.3.2 and COVE-3 Dual-Horizon on 200 shared scrambles (seed 0x74bc39, three interleaved repetitions per solver).}
+\centering\small
+\begin{tabularx}{\textwidth}{@{}Lrrrrr@{}}
+\toprule
+Solver & Cold init (ms) & Mean / med / max moves & \(\le 20\) & Median (ms) & P95 / Max (ms) \\
+\midrule
+\texttt{cubejs\ 1.3.2} \cite{cubejs} & 1,247.3 & 21.71 / 22 / 22 & 4.0\% & 30.698 & 169.43 / 1,039.4 \\
+\texttt{cove3Dual} (\(11.49\) MiB) & \textbf{941.8} & 22.77 / 23 / 26 & 4.5\% & \textbf{1.606} & \textbf{8.62} / 23.5 \\
+\texttt{hbewFast} (\(\delta=1\), \(14.03\) MiB) & 1,162.1 & 20.68 / 21 / \textbf{22} & 41.0\% & 4.398 & 12.11 / 41.8 \\
+\texttt{hbewDefault} (\(\delta=2\), \(14.03\) MiB) & 1,162.1 & 20.46 / \textbf{20} / \textbf{22} & \textbf{51.0\%} & 4.697 & 10.79 / 35.5 \\
+\texttt{hbewExact} (\(\tau=0\), \(14.03\) MiB) & 1,162.1 & \textbf{20.45} / \textbf{20} / 23 & \textbf{51.0\%} & 5.933 & 10.38 / \textbf{13.5} \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+\texttt{hbewDefault} \textbf{strictly Pareto-dominates
+\texttt{cubejs\ 1.3.2} across every single metric}: faster cold table
+initialization (\(1,162.1\) vs.~\(1,247.3\) ms), \textbf{\(6.54\times\)
+faster median solve latency} (\(4.70\) vs.~\(30.70\) ms; faster on
+\textbf{\(192/200\)} scrambles), \textbf{\(15.71\times\) faster P95
+latency} (\(10.79\) vs.~\(169.43\) ms), \textbf{\(29.3\times\) lower
+worst-case spike} (\(35.5\) vs.~\(1,039.4\) ms; \(76.7\times\) lower for
+\texttt{hbewExact} at \(13.5\) ms), and \textbf{\(1.25\) fewer moves}
+(\(20.46\) vs.~\(21.71\) mean; median \textbf{\(20\) vs.~\(22\)};
+\textbf{\(51.0\%\) vs.~\(4.0\%\)} at \(\le 20\) moves; strictly shorter
+on \(156/200\) scrambles, tied on \(43\), longer on \(1\)). Even
+\texttt{hbewFast} beats \texttt{cubejs} on \textbf{\(195/200\)}
+latencies (\(6.98\times\) median) with \textbf{\(0/200\)} longer
+solutions (\(133\) shorter, \(67\) tied).
+
 \hypertarget{limitations}{%
 \section{Limitations}\label{limitations}}
 
-\textbf{Novelty and worst-case bounds.} Two-phase search, PDBs,
-selective generation, relative PDB compression, and bit-parallel masks
-have rich prior literature. While our potential-free coboundary
-Horizon-2 dictionary, Cayley-\(K_4\) SWAR syndromes, three-tier budget
-accounting, and Horizon-2 barrier proof were not found in reviewed
-sources, we do not claim certified worldwide priority or any improvement
-in exponential worst-case time complexity.
+\textbf{Bounded-shell versus unrestricted God's-number optimality.}
+Theorem 1 proves exact optimality over \(\mathcal T_H^{\le \bar D}(s)\),
+the space of two-phase factorizations entering \(H\) within
+\(\bar D \le D_1\) moves. A globally shortest \(\le 20\)-move path in
+\(G\) whose prefixes up to length \(\bar D\) never enter \(H\) lies
+outside \(\mathcal T_H^{\le \bar D}(s)\) (which is why \(0.2\%\) of
+\texttt{hbewExact} states at \(D_1=11\) take \(23\) moves while
+\(99.8\%\) take \(\le 22\)). Nor do we claim certified worldwide
+priority or any change in exponential worst-case search complexity.
 
-\textbf{Storage and compilation tradeoffs.} Although \texttt{h2only}
-(\(7.49\) MiB) is smaller than Stage-1 COVE-3 (\(7.55\) MiB), full
-dual-horizon compilation (\texttt{dual}, \(11.49\) MiB) increases
-persistent typed-array memory by \(51.8\%\) over Stage-1 COVE-3
-(\(107.1\%\) over raw scalar bytes) and adds \(478.8\) ms of worker
-compilation after the first scalar solve. Peak V8 heap and physical
-mobile-device cache behavior remain unmeasured.
+\textbf{Storage and compilation tradeoffs.} Full dual-horizon
+compilation (\texttt{11.49} MiB) and HBEW holonomy compilation
+(\texttt{14.03} MiB total, \(+2.54\) MiB, \(+219.1\) ms compile time)
+expand persistent typed-array storage relative to raw scalar tables
+(\texttt{5.55} MiB). Peak V8 heap and physical mobile-device cache
+behavior remain unmeasured.
 
-\textbf{Search policy and comparator scope.} Count-budget equivalence
-holds whenever wall-clock deadlines do not intervene; faster execution
-can still alter real-time timeout outcomes. External \texttt{cubejs}
-timings reflect different move-length targets, and native C++/Rust or
-symmetry-reduced \texttt{min2phase} solvers are outside our
-pure-JavaScript browser scope. Only 3×3 two-phase solving is compiled
-(with 2×2/3×3 exact search retained for pedagogical modes, and manual
-sticker verification required for camera inputs).
+\textbf{Search policy and comparator scope.} COVE-3 count-budget
+equivalence holds whenever wall-clock deadlines do not intervene. HBEW
+intentionally operates on a single coordinate axis without inverse-cube
+probing, pre-moves, or \(D_{4h}\) symmetry compression
+(\texttt{min2phase} style) so its mathematical bundle mechanisms can be
+isolated cleanly; combining HBEW with 3-axis symmetry conjugation is
+left to future work. Only 3×3 two-phase/holonomy solving is compiled.
 
 \hypertarget{conclusion}{%
 \section{Conclusion}\label{conclusion}}
 
-Diagnosing why 1-step contour compilation stalled---Phase-1 signature
-explosion (\(b_1=18\)) and \(53.81\%\) Phase-2 Horizon-1 ghost
-expansions---led us to \textbf{potential-free dual-horizon compilation}:
-representing heuristic tables purely by their discrete coboundaries with
-zero stored scalar distances. In Phase 1, the Cayley-\(K_4\) clique
-structure of outer-face turns compresses 18-move contours into 24-bit
-SWAR syndromes with a closed-form linear coboundary update; in Phase 2,
-level-set quotienting fits unary canonical Horizon-2 masks into a
-unified \(24,743\)-entry dictionary smaller than 1-step COVE-3, paired
-with an \(O(1)\) three-tier ghost-accounting rule proved tight up to a
-Horizon-2 communication-complexity barrier. Across 500 held-out states,
-COVE-3 preserves exact scalar solutions and node budgets while cutting
-generated visits by \(93.62\%\) relative to scalar (\(68.47\%\) beyond
-Stage-1 COVE-3) and reducing median solve latency down to
-\(1.43\)--\(1.84\) ms.
+Across three cumulative stages, we showed how discrete differential and
+bundle geometry transform both the \textbf{compiler} and the
+\textbf{search algorithm} of two-phase Rubik's Cube solving.
+Representing heuristic tables purely by their discrete
+coboundaries---24-bit Cayley-\(K_4\) clique syndromes in Phase 1 and a
+unified \(24,743\)-entry potential-free Horizon-2 dictionary with
+three-tier ghost accounting in Phase 2---cuts generated visits by
+\(93.62\%\) down to \(1.43\)--\(1.84\) ms at 100\% identical scalar
+trajectories. Lifting the search itself onto the principal \(H\)-bundle
+\(G \to G/H\), \textbf{Holonomy-Guided Bifurcated Eikonal Wavefront
+Search (HBEW)} funnels trajectories through the \(4/495\) UD-slice
+bottleneck, co-integrates \(K_2\) quarter-turn sister fibers
+\(y_- = y_+ F^2\), forecasts subgroup holonomy above \(\partial H\) via
+4-bit Bellman potentials, and verifies surviving fibers in monotone
+\(\sigma_2\) strata---achieving \(20.58\) mean moves (\(100\% \le 22\))
+on 500 held-out uniform states and strictly Pareto-dominating
+\texttt{cubejs\ 1.3.2} in both speed (\(6.54\times\) median,
+\(15.7\times\) P95) and solution length (\(20.46\) vs.~\(21.71\) moves).
 
 \bibliographystyle{ieeenat_fullname}
 \bibliography{references}
